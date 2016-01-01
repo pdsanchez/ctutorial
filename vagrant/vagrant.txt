@@ -1,0 +1,1862 @@
+
+A virtual machine is a computing node that runs within a software process that mimics the
+behavior of a physical computer. The software process (often called a hypervisor) provides
+infrastructure to virtual machines such as computing power (CPU), memory (RAM), and
+interfaces to external resources (such as networking interfaces and physical (disk) storage).
+A host machine is a computer that runs a hypervisor to host virtual machines. A host machine
+will, most likely, run one of two types of hypervisor:
+A Type 1 hypervisor that runs natively on host machine hardware. A Type 1 hypervisor
+does not require a separate operating system; the hypervisor itself controls access
+to physical resources and shares them between hosted virtual environments.
+A Type 2 hypervisor is a software that runs on top of a traditional operating system.
+In this case, the hypervisor uses the underlying operating system to control (or
+define) resources and gain access to resources. Most use cases for Vagrant use
+Type 2 hypervisors as host environments for virtual machines
+In both cases, the hypervisor is responsible for managing physical resources and sharing
+them with one or many virtual machines.
+A guest machine is a virtual machine that runs within the hypervisor. The machines that we
+will define with Vagrant are guest machines that operate within the environment controlled
+by our hypervisor. Guest machines are often entirely different operating systems and
+environments from the host environment
+
+It's important here to note that Vagrant is simply a framework to manage virtual machines,
+not an application to create and host virtual machines. When using a Vagrant environment,
+you'll often encounter errors that are not only related to Vagrant itself, but also related to the
+hypervisor application. For this reason, the choice of hypervisor becomes important when
+working with Vagrant.
+
+
+There are two ways with which we can often work with Vagrant:
+-In a new environment with a newly initialized Vagrantfile
+-In an environment maintained in source control that has a Vagrantfile included
+in a project
+Keeping Vagrantfiles and projects in a source control system (such as Git, SVN, and so on) is a
+powerful technique to manage and track changes in Vagrant environments. The use of source
+control systems allows developers and users to check in Vagrant projects, which makes
+modification of the project less risky and makes the sharing of Vagrant projects much simpler.
+
+
+$ vagrant init puppetlabs/ubuntu-14.04-32-nocm
+$ vagrant up
+
+PuppetLabs packaged Ubuntu 14.04 boxes for a few different hypervisors
+(VirtualBox and VMware).
+
+
+In this example, we'll install the VMware Fusion plugin, although the plugin installation
+will be similar for any number of providers. (See https://github.com/mitchellh/
+vagrant/wiki/Available-Vagrant-Plugins for a relatively up-to-date listing of
+maintained plugins.)
+1.	 Install the VMware Fusion plugin with the vagrant plugin install vagrant-
+vmware-fusion command.
+This will download the plugin and add the code to your local Vagrant installation. With
+many plugins, this will be the final step—installation itself is pretty straightforward. In
+this case, however, we'll need to install the license for the plugin.
+2.	 Install the plugin license using the plugin license command from the directory
+where the license file was placed:
+vagrant plugin license vagrant-vmware-fusion-license.lic
+This will install the plugin license and ready the plugin for use.
+3.	 Verify the plugin installation with:
+vagrant plugin list
+A list of currently installed plugins is returned, including some that are packaged with
+the distribution, these are marked system.
+4.	 Start a VMware environment by initializing a new environment. This will be identical to
+the steps in the prior recipe.
+5.	 With a terminal window open and the command executing in a directory of your choice,
+execute the vagrant init puppetlabs/ubuntu-14.04-32-nocm command
+This will create a new Vagrantfile that is identical to the previous example. This time,
+we'll start the environment with the provider option:
+vagrant up –provider=vmware_fusion
+A boot sequence will be presented with the difference to the prior example being that
+a new environment (box file) will be downloaded and booted. This new machine will
+use the VMware Fusion hypervisor to manage the Vagrant virtual machine.
+
+If you
+want to ensure that a virtual machine always uses a specific provider when starting, set
+the VAGRANT_DEFAULT_PROVIDER=vmware_fusion environment variable.
+Setting an environment variable depends on your system and terminal shell in a
+Unix- based system (OS X, Linux); you might set this variable in your login shell profile
+(either .bash_profile or .bashrc ), and for Microsoft Windows, this variable is set
+in the Environment Variables... dialog.
+With a VMware Desktop plugin installed, you can use VMware to manage virtual
+environments, whereas with other plugins, we can also use Vagrant to manage virtual
+machines locally with other hypervisors (for example, Parallels on OS X) or even in remote
+hypervisors (for example, VMware ESXi environments, Amazon Web Services).
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+
+
+
+With one command, Vagrant does all of the following:
+• Creates a virtual machine for you based on an operating system of your choice.
+• Modifies the physical properties of this virtual machine (e.g., RAM, number of
+CPUs, etc.).
+• Establishes network interfaces so that you can access your virtual machine from
+your own computer, another device on the same network, or even from another
+virtual machine.
+• Sets up shared folders so that you can continue editing files on your own machine
+and have those modifications mirror over to the guest machine.
+• Boots the virtual machine so that it is running.
+• Sets the hostname of the machine, since a lot of software depends on this being
+properly set.
+• Provisions software on the machine via a shell script or configuration management
+solution such as Chef, Puppet, or a custom solution.
+• Performs host and guest specific tweaking to work around known issues that may
+arise. For example, Ubuntu 12.04 LTS breaks VirtualBox networking defaults, so
+Vagrant makes minor modifications to some configuration in Ubuntu to make sure
+networking continues working. Vagrant does these sorts of things for many host/
+guest pairs.
+
+Once Vagrant finishes setting up the machine, you are left with a completely sandboxed,
+fully provisioned development environment. Due to the shared folders and networking,
+you continue using your own editor and your own browser to develop and test your
+applications, but the code itself runs on the virtual machine.
+Vagrant handles the entire lifecycle of the machine for you, so in addition to setting up
+your development environment, Vagrant can do all of the following:
+• SSH into the machine.
+• Halt (shut down) the machine.
+• Destroy the machine, completely deleting its virtual hard drive and metadata.
+• Suspend or resume the machine.
+• Package the machine state so that you can distribute it to other developers.
+
+In a world with Vagrant, developers can check out any repository from version control,
+run vagrant up , and have a fully running development environment without any hu‐
+man interaction. Developers continue to work on their own machines, in the comfort
+of their own editors, browsers, and other tools. The existence of Vagrant is transparent
+and unimportant in the mind of the developer. Vagrant is the workhorse that creates
+consistent and stable development environments.As a result, productivity abounds and
+“works on my machine” bugs disappear.
+
+Alternatives to Vagrant
+-Plain Desktop Virtualization
+Vagrant is a layer on top of some virtualization solution. Instead, you could use that
+virtualization solution directly.
+-Containers
+Another approach is to use container-based solutions such as LXC or OpenVZ.
+Containers don’t provide full virtualization but instead are super-powered isolated en‐
+vironments running the same kernel. A big benefit of containers is that they don’t incur
+the same overhead as virtualization, since they run just like any other process on your
+machine. A downside of containers is that you can only run the same kernel that is
+running on your host system, so you can’t have a Windows container on Linux, for
+example.
+Containers are highly specific to the host oper‐
+ating system. Linux supports LXC and OpenVZ, while FreeBSD supports Jails. OS X
+provides no container support, and neither does Windows. Therefore, container usage
+requires an entire team to use the same host operating system.
+In general, containers are ideal for production usage, since they offer a reasonably secure
+way to isolate resources within the same operating system without performance over‐
+head. But for development, containers impose strict limitations that are often hard to
+work with.
+-Cloud
+Another approach is to ditch desktop virtualization altogether and do development
+directly in the cloud, such as on EC2.
+The main benefit of this approach is that it allows developers to work from incredibly
+low-powered desktop machines in an environment that closely resembles production.
+It is also possible to mimic much more advanced production environments, since the
+remote machines can be much more powerful than a typical development machine.
+The disadvantage here is that this approach requires an Internet connection, and it can
+have a much higher financial cost associated with it.
+If your organization is at the point where they have enough automation to support this
+sort of remote work, it is generally quite easy to make the switch to Vagrant, if possible.
+
+Installing VBox
+On Linux, you may need to install extra packages and run an extra command in order
+to set it up. Extra packages generally include kernel headers, DKMS (Dynamic Kernel
+Module System), and perhaps others. The VirtualBox installation process should tell
+you if you’re missing anything. To set up the kernel drivers on Linux, run /etc/init.d/
+vboxdrv setup as root.
+On all platforms, it is highly recommended that you restart your computer after instal‐
+ling VirtualBox, just to make sure the kernel driver starts up cleanly. This is especially
+important if you’re installing VirtualBox over a previous version, since VirtualBox has
+been known to be finicky with replacing prior kernel drivers without a restart.
+
+Installing Vagrant (Linux)
+For the Linux packages, Vagrant installs to /opt/vagrant. You must add /opt/
+vagrant/bin to your PATH manually in order to have access to the vagrant executable.
+Future packages will automatically create a symbolic link in /usr/bin to avoid this extra
+step.
+
+
+
+Your First Vagrant Machine
+$ vagrant init precise64 http://files.vagrantup.com/precise64.box
+$ vagrant up
+After these commands finish running, an isolated, fully featured 64-bit Ubuntu 12.04
+LTS virtual machine will be running in the background.
+$ vagrant ssh
+$ vagrant destroy
+Run vagrant destroy , and the virtual machine will be deleted and any resources it
+consumed such as RAM or disk space will be reclaimed
+
+The Vagrantfile
+Each project has a single Vagrantfile.
+The Vagrantfile is a simple text file that Vagrant reads in order to determine what needs
+to be done to create your working environment. The file is a description of what oper‐
+ating system you want to boot, physical properties of the machine you need (e.g., RAM),
+what software needs to be installed on the machine, and various ways you’d like to access
+the machine over the network.
+This file is meant to be placed under version control. Then, when another member of
+your team checks out the source of your project, they can use Vagrant to automatically
+and easily create their work environment without having to configure anything.
+Vagrantfiles are generally rarely modified
+
+Now, let’s create a Vagrantfile. In your terminal, create a folder to be your project di‐
+rectory for the duration of this book and navigate to that folder.
+$ mkdir vagrant_book_example
+$ cd vagrant_book_example
+Once in the project directory, we can ask Vagrant to create an initial Vagrantfile by
+running vagrant init
+$ vagrant init precise64 http://files.vagrantup.com/precise64.box
+The parameters given to the vagrant init command configure the “box” and “box_url”
+parameters within the Vagrantfile.
+the Vagrantfile is written
+in a programming language named Ruby.
+
+Vagrant::Config.run do |config|
+ config.vm.box = "precise64"
+ config.vm.share_folder "v-root", "/vagrant", "."
+ config.vm.provision "shell" do |s|
+  s.path = "script.sh"
+ end
+end
+The first line starts a block of Vagrant configuration. The |config| portion of the line says that for the duration of the configuration block, the configuration can be set on the config variable.
+The second line sets a basic configuration value for config.vm.box using simple
+variable assignment.
+The next line shows a config directive that isn’t basic variable assignment. In this
+case, share_folder is a function call and three parameters are passed to it.
+The next line is also a functional call, this time to provision , but an additional
+configuration block is opened here, again using do and end . This pattern of
+opening configuration blocks is used throughout Vagrant configuration.
+The final line closes the configuration block opened on the first line.
+
+Vagrantfiles are portable, meaning they can be read and used on every platform that
+Vagrant supports (Linux, Mac OS X, and Windows).
+
+Vagrant supports two versions of configuration, known as V1 and V2 configuration.
+ou can mix and match V1 and V2 configura‐
+tions within the same Vagrantfile
+
+Vagrant::Config.run do |config|
+# V1 config here
+end
+Vagrant.configure("2") do |config|
+# V2 config here
+end
+
+Boxes
+In addition to the Vagrantfile, Vagrant requires just one more thing before it can bring
+up the virtual machine: a box.
+Because building a virtual machine from scratch is a resource-intensive and time-
+consuming endeavor, Vagrant uses a base image and clones it to rapidly create a usable
+machine. In Vagrant terminology, this base image is called a box and is distributed in
+the form of box files. An analogy that often helps people understand the purpose of box
+files is that box files are a template for a Vagrant-managed machine created later.
+Boxes contain already-installed operating systems, so they’re usually quite large, ranging
+from a few hundred megabytes to a few gigabytes. The 300 MB file downloaded in the
+earlier example was this box file. Luckily, Vagrant will save this box file for future usage,
+so it won’t have to be downloaded again.
+The box required is specified on a per-project basis via config.vm.box in the Vagrantfile.
+In our Vagrantfile, this was set to “precise64,” the box requested from the call to vagrant
+init . Removing comments, the relevant Vagrantfile sections look like this:
+Vagrant::Config.run do |config|
+config.vm.box = "precise64"
+config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+end
+The value of config.vm.box specifies the name of the box. The box name maps to an
+installed box on the system. You’ll see how boxes are managed later in Chapter 6. Mul‐
+tiple Vagrant environments can have the same config.vm.box value, and each envi‐
+ronment will use the same underlying template when the machine is created.
+We also set an optional configuration option config.vm.box_url . This option tells
+Vagrant where to find the necessary box if it isn’t already available on the user’s system.
+Multiple Vagrant environments often share the same underlying box, so Vagrant man‐
+ages boxes globally, unlike Vagrantfiles, which are managed on a per-project basis. Once
+a box is downloaded, it can be used by multiple projects. Because Vagrant only uses the
+boxes as a base image to clone from, there is never any risk of conflicting changes. File
+modifications in one Vagrant environment never affect another.
+The format of boxes and details on how to create new boxes will be covered in “Box
+Format” on page 74. For now, we’ll use prebuilt boxes to learn the ins and outs of Vagrant.
+
+Boxes are managed using the vagrant box command. Instead of using a URL in a
+Vagrantfile, boxes can also be added external to a project using vagrant box add.
+
+Vagrant will list out the boxes that are installed using vagrant box list . And if you
+don’t plan on using a box anymore, or want to replace a box, you can remove a box using
+vagrant box remove .
+If a Vagrant project that uses a removed box is already running, it will not be affected,
+since Vagrant already cloned the box for that machine. However, projects that aren’t
+running will need to re-download the box before they can be started.
+
+Up
+With a box configured and a Vagrantfile created, it is time to build the Vagrant envi‐
+ronment, which can be accomplished by simply running vagrant up . You’ll see the
+following output:
+$ vagrant up
+After a vagrant up , you won’t see anything since Vagrant runs the virtual machines
+headless (without a graphical user interface) by default. But if you look at the running
+processes on your machine, you should see a VBoxHeadless process running. This is
+your virtual machine.
+
+$ vagrant up
+Bringing machine 'default' up with 'virtualbox' provider...
+[default] Importing base box 'precise64'... 1
+[default] Matching MAC address for NAT networking... 2
+[default] Setting the name of the VM... 3
+[default] Clearing any previously set forwarded ports... 4
+[default] Creating shared folders metadata... 5
+[default] Clearing any previously set network interfaces... 6
+[default] Preparing network interfaces based on configuration...
+[default] Forwarding ports... 7 
+[default] -- 22 => 2222 (adapter 1)
+[default] Booting VM... 8
+[default] Waiting for VM to boot. This can take a few minutes.
+[default] VM booted and ready for use!
+[default] Configuring and enabling network interfaces... 9
+[default] Mounting shared folders... 10
+[default] -- /vagrant
+
+1 During this step, Vagrant creates a new VirtualBox machine based on the base
+image within the box specified in the Vagrantfile. This process involves copying
+large virtual hard disk files and therefore can take some time.
+2 Most operating systems associate network configurations with the MAC address
+of their network devices. VirtualBox randomly generates a MAC address when
+creating a new machine. In order for the Internet access to work properly in the
+guest, Vagrant must set the MAC address of the network devices to be what they
+were when the operating system was installed. This information is retrieved from
+the box as well.
+3 This step sets the visible name of the virtual machine that you see if you open the
+VirtualBox application. When importing a machine, by default VirtualBox
+generates a random, unhelpful name. Vagrant by default sets the name to the
+name of the project directory with a timestamp attached to it. This helps identify
+virtual machines more easily. Of course, this can be further customized to
+whatever you’d like.
+4 Vagrant manages all forwarded port definitions, so it clears out any existing
+forwarded ports on the machine prior to setting its own. We haven’t covered
+forwarded port definitions, but when we do, you’ll understand the necessity of
+this step.
+5 VirtualBox requires the metadata about shared folders to be created prior to
+booting the machine. In this step, Vagrant configures the virtual machine with
+the shared folders that it will need.
+6 Vagrant also manages all the network interfaces on the virtual machine, so it first
+clears them, and then sets them up. At this point, we haven’t covered how
+networking is done with Vagrant, so the details aren’t important. However, when
+networking is covered later, this is the step where Vagrant prepares the actual
+virtual network devices.
+7 This step creates the metadata for the forwarded ports that VirtualBox will need.
+Forwarded ports are used for basic network access and most importantly for SSH
+later.
+8 Finally, after much preparation, Vagrant boots the machine. It then waits for the
+machine to complete booting, which is signaled by SSH becoming available.
+9 While a previous step prepared the metadata for the network devices, this step
+performs the actual operating system configuration for the network devices.
+Vagrant comes with deep knowledge of many operating systems, such as Ubuntu,
+RedHat, CentOS, FreeBSD, and many more. It uses this knowledge to properly
+configure networks based on the operating system you’re using within the virtual
+machine.
+10 This step mounts shared folders so that data can be shared across the virtual
+machine and your host machine. This will be covered more in depth shortly.
+
+Version Control and .vagrant/
+As part of the vagrant up process, Vagrant creates a directory named .vagrant/ in your
+project directory that is used to maintain some state for Vagrant.
+This directory keeps track of guest machine IDs, locks, configurations, and more.
+This state is specific to each vagrant up call, so the .vagrant/ directory should be ignored
+by your version control system. Committing it into version control can cause Vagrant
+virtual machines to get “lost” or corrupted if they’re accidentally shared.
+
+
+State of the Vagrant Machine
+Because Vagrant runs the virtual machines without a user interface, it is easy to forget
+the current state of the environment is (i.e., whether the virtual machine was created, if
+it’s running, etc.). For this, vagrant status comes in handy:
+$ vagrant status
+
+SSH
+Accessing the machine is done via SSH. Vagrant includes the command vagrant ssh ,
+which handles connecting and authenticating SSH, and drops you directly into an SSH
+prompt for the machine:
+$ vagrant ssh
+
+SSH on Windows requires OpenSSH to be installed. It is left up to the
+reader to obtain this external software package. The easiest way to get
+this, however, is to set up Cygwin or an MSYS environment such as
+msysgit.
+If OpenSSH isn’t available, Vagrant will output information on how to
+configure an SSH client such as PuTTY to connect to the Vagrant
+machine.
+
+Shared Filesystem
+Vagrant supports setting up shared folders so that files and folders are synced to and
+from the virtual machine and the host machine. Having a shared filesystem between
+the host machine and the guest has numerous benefits.
+First, and most important to developers using Vagrant, shared folders let users of Va‐
+grant edit files using their own editor on the host machine, and have these changes
+synced into the virtual machine automatically. This is an important part of “The Tao of
+Vagrant” on page 4, because it doesn’t impede on years of experience that developers
+may have with their particular toolsets.
+The shared filesystem also gives you a place to store files that won’t be destroyed as part
+of a vagrant destroy . When a guest machine is destroyed, files stored on the shared
+system are not deleted, and are therefore available the next time a machine is created
+with vagrant up , as long as the shared filesystem mapping is kept in the Vagrantfile.
+Files on the shared filesystem are also ideal for files you may want to backup as part of
+routing system backups on the host system. Because virtual machine hard disks are large
+and giant binary blobs, they are usually ignored by host backup systems. Shared file‐
+systems, on the other hand, just show up as a normal folder on the host, and are therefore
+more easily backed up. This is very useful for sensitive data you create from the guest
+machine that you may want backed up in the case of a disaster.
+By default, Vagrant shares the project directory (the directory with the Vagrantfile)
+to /vagrant inside the virtual machine. After SSHing into the virtual machine, this can
+be verified by listing the files in that directory:
+vagrant@precise64:~$ ls /vagrant/
+Vagrantfile
+The Vagrantfile in that directory is actually the Vagrantfile from the project directory.
+If a file is created on the host machine or within the Vagrant machine, the changes will
+be mirrored from host to guest and vice versa.
+The location of the default shared folder can be overridden from the Vagrantfile:
+Vagrant::Config.run do |config|
+# ...
+config.vm.share_folder "v-root", "/foo", "."
+end
+The config.vm.share_folder directive defines a shared folder for Vagrant. It takes a
+few parameters:
+• First, an identifier for the shared folder. In this case, by specifying v-root , the default
+shared folder that Vagrant sets up is overridden.
+• Next, /foo is the path where the folder will exist in the guest machine. This path will
+be created if it doesn’t already exist. If it does already exist, the location will be
+replaced with the contents of the shared folder.
+• The third parameter, " . " is the path of the folder to be shared from the host machine.
+This can be an absolute or relative path. If it is relative, like the example, it is relative
+to the project root. So in the example, it is sharing the project root.
+
+For Vagrant to reconfigure the guest machine, the vagrant reload command must be
+run. This halts the machine, and then starts the machine again with the new configu‐
+ration. It skips the initial step to clone the box, since the machine is already created.
+Your files and changes within the virtual machine are preserved.
+Once the machine reboots, SSH in and you should see that the /foo directory is now
+shared with the project root directory.
+In addition to overriding the default shared folder, new shared folders can be defined
+as well. This looks very similar to what was done above, except now the first parameter
+should be a new, unique identifier for the shared folder:
+Vagrant::Config.run do |config|
+# ...
+config.vm.share_folder "data", "/data", "./data"
+end
+After another vagrant reload , the virtual machine will have a /data directory synced
+with the ./data directory on the host machine. This is in addition to the default shared
+folder setup.
+Shared folders incur a heavy performance penalty within the virtual machine when
+there is heavy I/O, so they should only be used for source files. Any compilation step,
+database files, and so on should be done outside the shared folder filesystem inside the
+guest filesystem itself.
+
+Basic Networking
+Equally important as shared folders, Vagrant automatically configures various options
+for networking with the virtual machine. This allows developers using Vagrant to com‐
+municate with the machine.
+This feature is import for environments such as web projects, because developers can
+continue using their own browser and development tools to access their project, while
+the web application code itself and all of its dependencies run isolated within the virtual
+machine.
+A forwarded port exposes a port on the guest
+machine as a port on the host machine. Let’s expose port 80, so that we can access any
+web service. Modify the Vagrantfile to look like the following:
+Vagrant::Config.run do |config|
+# ...
+config.vm.forward_port 80, 8080
+end
+The config.vm.forward_port directive in the Vagrantfile defines a new forwarded
+port. In this case, Vagrant will forward port 80 on the guest to port 8080 on the host.
+Run vagrant reload to bring in the new changes.
+
+To show that this forwarded port works, we’ll start a simple web server from within the
+virtual machine and access it from a browser on the host machine:
+$ vagrant ssh
+vagrant@precise64:~$ cd /vagrant
+vagrant@precise64:/vagrant$ sudo python -m SimpleHTTPServer 80
+Serving HTTP on 0.0.0.0 port 80 ...
+This uses a convenient command-line one-liner using Python to start a web server on
+port 80. Open a browser to localhost:8080 on the host machine, and a directory listing
+of /vagrant, served from the guest machine,
+
+With forwarded ports and shared folders, developers can continue to use the develop‐
+ment tools they’re most comfortable and efficient with. Using Vagrant doesn’t mean
+sacrificing your favorite browser or IDE. This helps not only with productivity, but it
+also makes deploying Vagrant within your environment easier, since there is less push‐
+back from existing developers.
+
+Teardown
+At this point, there is a fully running Vagrant-managed virtual machine—with shared
+folders and networks defined—ready for work. But now let’s say it is time to switch
+gears, maybe work on another project, maybe go out to lunch, or maybe just time to go
+home. It is time to clean up the Vagrant environment to leave our computer in a pristine
+state.
+For many web developers, teardown of Vagrant environments is very cool. All web
+developers have at some point has made the mistake of forgetting to turn off the web
+server, database, or background job runner (or something similar) before going home.
+With Vagrant, this is simply impossible. Because all the software related to development
+is isolated within a single virtual machine, by remembering to run a single command,
+Vagrant is able to properly clean up the host machine.
+After tearing down the machine, development can always be resumed with a vagrant
+up at any time. This causes Vagrant to automatically re-create the entire development
+environment
+Vagrant can suspend, halt, or destroy the guest machine. Each of these functions has its
+time and place. Try each method and choose the one that works best for you.
+
+-Suspend
+Suspending the guest machine will save the current running state of the machine and
+stop it. The machine can then later be resumed from this exact suspended state.
+Suspending is literally a point-in-time snapshot of the machine. When the machine is
+later resumed, it begins executing the exact instruction it was at when it was suspended.
+This is unlike actually shutting down the machine, where the operating system goes
+through an entire shutdown sequence. With suspending, it is more like freezing time.
+The main benefit of suspending is that resuming your work is very fast, usually taking
+no more than 5 to 10 seconds. You also resume exactly where you left off. This means
+that any web services, databases, in-memory cache, and so on are all left intact. The
+actual act of suspending is fairly fast too, taking 5 to 20 seconds depending on the size
+of the guest machine’s RAM and the speed of the host machine’s local hard disk.
+The downside is that the hard disk space taken up by the guest machine remains, and
+guest machines can often take up 2 GB of disk space or more. In addition to this, extra
+disk space is needed to store the entire contents of the guest machine’s RAM so that it
+can be properly resumed. This means that for a guest machine with 1 GB of RAM, one
+extra gigabyte of disk space is needed to suspend it.
+After suspending the guest machine, no more CPU or RAM resources are consumed
+on the host machine for the Vagrant environment, but disk space continues to be used.
+Vagrant will suspend the machine using vagrant suspend . The state of the machine
+can be inspected with the status command:
+$ vagrant suspend
+$ vagrant status
+
+Later, the machine can be resumed with vagrant up or vagrant resume . The difference
+between the two is that the latter command will show an error if the machine isn’t
+suspended, whereas the former will do the proper boot sequence depending on the state
+of the machine, even if it isn’t suspended
+$ vagrant up
+
+-Halt
+Halting the guest machine will shut it down, like a normal computer. The machine can
+then later be resumed via a normal boot up process, as if hitting the power button.
+When halting, Vagrant will first attempt to gracefully halt the machine. Vagrant does
+this by executing the proper commands to initiate a shutdown from within the guest
+machine, such as shutdown on Linux. This allows the guest to execute a proper shutdown
+sequence, cleaning up all resources and safely shutting down.
+If Vagrant is unable to gracefully shut down the machine, it will forcefully shut it down.
+This is the equivalent of physically pulling the power on the machine. Vagrant will resort
+to this if it is unable to communicate with the guest or if the graceful shutdown sequence
+times out.
+The benefit of halting the Vagrant environment is that the guest machine is preserved
+while taking up no runtime resources of the host machine, such as CPU or RAM. The
+disk of the guest machine is preserved. When resumed, the Vagrant environment will
+start cleanly but avoid the potentially time-consuming import step. Unlike suspending,
+the RAM is not preserved, since the machine was fully shut down, so when you begin
+working again, you’ll have to make sure the necessary processes such as web servers
+and databases are started again.
+The downside to halting, similar to suspending, is that the guest machine continues to
+consume hard drive space. Depending on the guest machine, this can range from only
+2 GB to more than 10 GB.
+Vagrant will halt the machine when vagrant halt is called. The state of the machine,
+as always, can be inspected using vagrant status :
+$ vagrant halt
+$ vagrant status
+
+If you’re not interested in gracefully shutting down the machine, the --force flag can
+be passed to Vagrant to simply force halt the machine:
+$ vagrant halt --force
+
+Later, when you’re ready to begin working again, vagrant up will boot up and recon‐
+figure the Vagrant environment. Note in the next example that the import step is skipped
+because the machine already exists:
+$ vagrant up
+
+-Destroy
+Destroying the guest machine will shut it down and remove all traces of it by deleting
+hard disks, state files, and so on. After destroying the guest machine, the host machine
+should be returned to a pristine state as if vagrant up was never called.
+Destroying a machine will cause you to lose any changes made to the
+machine while it was running, including any files or folders created
+outside of shared folders.
+The benefit of destroying is that the host system is left in a pristine state. No extra hard
+disk space is taken up and no guest-related processes are running to consume CPU and
+RAM. The computer is left in such a state that it appears as if Vagrant was never run.
+The downside of a full destroy is that the subsequent vagrant up to begin working again
+requires a full import and configuration of the guest machine. This takes considerably
+longer than resuming from suspend or booting after a halt.
+Vagrant will destroy the guest when vagrant destroy is called:
+$ vagrant destroy
+$ vagrant status
+
+vagrant destroy asks you to confirm prior to actually executing, since destroy actually
+deletes all the virtual hard drives (i.e., if you have any data that isn’t in a shared folder,
+it’ll be lost).
+You can skip the confirmation dialog by passing the --force flag to destroy:
+$ vagrant destroy --force
+
+Later, when you’re ready to work again, vagrant up will re-create the Vagrant
+environment.
+$ vagrant up
+
+
+
+
+Provisioning Your Vagrant VM
+----------------------------
+all the
+necessary software for each project being developed should be installed on the guest.
+This can be done one of two ways: baking the software into the box itself, or automat‐
+ically installing the software as part of the development environment creation process.
+Provisioning does the latter.
+In practice, the base boxes used by Vagrant are usually quite bare
+
+The problem of installing software on a booted system is known as provisioning, and
+is often the job of shell scripts, configuration management systems, or manual
+command-line entry.
+Vagrant supports automated provisioning, and will run configured provisioners on
+every vagrant up so that the necessary software and configurations needed to run the
+project being developed in the Vagrant environment are all properly prepared.
+Out of the box, Vagrant supports provisioning with shell scripts, Chef, or Puppet. Ad‐
+ditional provisioners can be added via plug-ins if your organization requires it.
+
+In this chapter, we’ll set up Apache to serve static files from the Vagrant shared folder.
+In the previous chapter, we did this by manually running Python’s SimpleHTTPServer
+module. Instead of requiring a manual command to run, we’ll configure Apache to
+automatically start and serve the files from the shared folder. This will allow developers
+of our basic example to work completely in their host environment, without ever having
+to SSH into the guest machine.
+
+Why Automated Provisioning?
+Automated provisioning offers three main benefits: ease of use, repeatability, and im‐
+proving parity between development and production.
+Too many developers today manually set up servers, copying and pasting configuration
+from guides online into the terminal prompt of their newly created server.
+The problem with this arises when a new server needs to be set up. The same guides
+need to be tracked down in an attempt to create another identical server. In practice,
+the server ends up slightly different, and these differences can cause huge issues down
+the road. Main pain points usually come in the form of configuration differences, leading
+to common problems such as file handles running out, databases being improperly
+tuned, and so on.
+Whether developing on Windows, Mac OS X, or Linux, Vagrant runs an identical op‐
+erating system to run the code for the project. With automating provisioning, identically
+configured and installed software is guaranteed as well. This essentially guarantees that
+any bugs seen are reproducible by every developer, and that the bugs would surely also
+exist in production.
+The result of all this is that there is a definite upfront cost to initially configure the
+automated provisioning for Vagrant, but it’s a big win in productivity amortized over
+time. And these benefits are realized more quickly the more team members use Vagrant.
+
+Supported Provisioners
+Out of the box, Vagrant supports provisioning from shell scripts, Chef, or Puppet (configuration management tool)
+I recommend starting with shell scripts. Learning Vagrant and a formal configuration
+management tool at the same time can be confusing. Shell scripts, on the other hand,
+are easy to understand and easy to hack together, resulting in some more instant grat‐
+ification while learning Vagrant. After becoming familiar with Vagrant itself, then
+learning a configuration management tool becomes much easier.
+Vagrant supports provisioning Chef via either Chef Solo or Chef Client. Chef Solo is
+primarily useful for small deployments and quickly testing cookbooks during develop‐
+ment. Chef Client is useful if your organization already uses a Chef Server, and you want
+Vagrant to hook into that existing infrastructure. If a Chef Server is not already in place,
+it usually isn’t worth doing so just for the purpose of setting up Vagrant.
+For Puppet, Vagrant supports provisioning with both a master using the Puppet Agent,
+or masterless by running puppet apply against a manifest and set of modules. Just as
+with Chef, the masterless approach is better for when you’re just getting started with
+Puppet, small deployments, and testing individual modules. Connecting to a Puppet
+Master is better if the master is already in place and you want Vagrant to provision using
+existing scripts.
+In addition to the built-in provisioners, Vagrant can be extended using plug-ins to add
+additional provisioners. So if you use a custom system or another configuration man‐
+agement tool not supported by Vagrant, you can easily add support for this. Actually, it
+is likely that the Vagrant open source community has already made a plug-in for you.
+You can usually find plug-ins by using your favorite search engine.
+
+Manually Setting Up Apache
+$ vagrant up
+$ vagrant ssh
+$ sudo apt-get update
+$ sudo apt-get install apache2
+
+By default, Ubuntu sets up Apache to start when the system boots, and Apache comes
+out of the box serving files from /var/www. To make configuration simple, we’re just
+going to change /var/www to be a symbolic link to the default shared folder directo‐
+ry /vagrant. This way, any files we put into the shared folder will be served from Apache
+by default, and we don’t have to actually modify any Apache configuration files.
+vagrant@precise64:~$ sudo rm -rf /var/www
+vagrant@precise64:~$ sudo ln -fs /vagrant /var/www
+
+
+Automated Provisioner Basics
+- Shell Scripts
+Shell scripts, at their most basic form, are just a list of commands to run. Therefore, we
+can make a simple shell script with the commands that we ran earlier, but in a file. Create
+the following provision.sh file in your project directory:
+	#!/usr/bin/env bash
+	echo "Installing Apache and setting it up..."
+	apt-get update >/dev/null 2>&1
+	apt-get install -y apache2 >/dev/null 2>&1
+	rm -rf /var/www
+	ln -fs /vagrant /var/www
+The initial line is called a shebang and specifies what shell to use to execute the rest
+of the file. In this case, we’re using bash.
+Next, we echo to the user what will be done. We do this because we silence the remaining
+commands so that our terminal isn’t filled with output.
+Then we remove all the calls to sudo . Vagrant will run the script as root, so there is no
+need to actually use sudo .
+Finally, there is a subtle change to installing Apache. If you didn’t notice, the -y flag is
+now passed to install the Apache package. This flag tells apt-get to automatically re‐
+spond “yes” to any prompts. Because apt-get usually asks for confirmation of whether
+we want to actually install the package or not, this will automatically say yes. This is
+important because for automated provisioning, there is no human interaction, so if apt-
+get were to ask for confirmation, the script would simply never finish, or crash.
+
+With the shell script created, the next step is to configure Vagrant to use the script. Add
+the following line somewhere in the Vagrantfile:
+config.vm.provision "shell", path: "provision.sh"
+And that’s it! This one line tells Vagrant to provision the machine with the shell provi‐
+sioner, and to use the shell script at the path provision.sh. Relative paths (as opposed to
+full, absolute paths) are always relative to the project root.
+Your full Vagrantfile might now look something like this:
+Vagrant::Config.run do |config|
+config.vm.box = "precise64"
+config.vm.forward_port 80, 8080
+config.vm.provision "shell", path: "provision.sh"
+end
+
+- Chef
+Vagrant has built-in support for provisioning with Chef, using both chef-solo and
+chef-client . Chef Solo uses local cookbooks to provision the machine, whereas Chef
+Client connects to a Chef Server in order to download the cookbooks and run list. In
+this example, we’re going to just use Chef Solo, since it is the easiest.
+it is extremely simple to get started with
+the Chef provisioner. Add the following line somewhere in your Vagrantfile:
+config.vm.provision "chef_solo", run_list: ["vagrant_book"]
+by default Vagrant will look for cookbooks in the
+cookbooks directory relative to the project directory.
+Your full Vagrantfile might now look something like this:
+Vagrant::Config.run do |config|
+config.vm.box = "precise64"
+config.vm.forward_port 80, 8080
+config.vm.provision "chef_solo", run_list: ["vagrant_book"]
+end
+Now let’s create the actual cookbook and recipe. Save the following file to cookbooks/
+vagrant_book/recipes/default.rb relative to your project directory:
+execute "apt-get update"
+package "apache2"
+execute "rm -rf /var/www"
+link "/var/www" do
+to "/vagrant"
+end
+
+the layout of your project directory should look something like the
+following:
+$ tree
+.
+├── Vagrantfile
+└── cookbooks
+    └── vagrant_book
+        └── recipes
+            └── default.rb
+3 directories, 2 files
+
+- Puppet
+this section will show you how to use
+Puppet without a master. This is also the best way to learn Puppet if you’re just starting
+out, and is generally a prerequisite to using a master anyways.
+config.vm.provision "puppet"
+As usual, Vagrant will make a lot of assumptions about how our Puppet manifests and
+such are laid out.
+By default, Vagrant expects manifests to be in the manifests folder, and will run the
+default.pp manifest in that folder to kick off the Puppet run.
+Next, let’s create the Puppet manifest that will set up our instance. Create the file
+manifests/default.pp relative to your project root with the following contents:
+exec { "apt-get update":
+  command => "/usr/bin/apt-get update",
+}
+package { "apache2":
+  require => Exec["apt-get update"],
+}
+file { "/var/www":
+  ensure => link,
+  target => "/vagrant",
+  force => true,
+}
+
+With this manifest in place, the layout of your project directory should look like the
+following:
+$ tree
+.
+├── Vagrantfile
+    └── manifests
+        └── default.pp
+1 directories, 2 files
+
+Multiple Provisioners
+You aren’t limited to using a single provisioner. By specifying multiple config.vm.pro
+vision directives in the Vagrantfile, Vagrant will provision the guest machine using
+each provisioner in the order they’re specified.
+You can specify as many different provisioners as you’d like, or use multiple of the same
+provision, which is sometimes useful for many shell scripts.
+In practice, a Vagrantfile using multiple provisioners looks like the following:
+Vagrant::Config.run do |config|
+  config.vm.box = "precise64"
+  config.vm.provision "shell", inline: "apt-get update"
+  config.vm.provision "puppet"
+  # ... and so on
+end
+
+After specifying multiple provisioners, you can even tell Vagrant to provision using only
+specific provisioners. As an example, this is useful when you may have a shell script to
+bootstrap the machine, and you’re using the Chef provisioner to test Chef cookbooks
+and you only want to run the Chef provisioner during a reload. To both up and
+reload , you can do the following:
+$ vagrant up --provision-with=chef
+...
+Of course, you can put the name of whatever provisioner you’re using as a parameter
+here.
+
+“No Provision” Mode
+As your automated provisioning setup becomes more complex, the time it takes for the
+provisioners to run can quickly turn into many minutes. In these cases, it is sometimes
+nice to be able to tell Vagrant to temporarily disable provisioning.
+This can be done with the --no-provision flag to up or reload :
+$ vagrant up --no-provision
+...
+This flag is most commonly used with reload when new configuration may have been
+added to the Vagrantfile, but when you don’t necessarily want to wait for all the provi‐
+sioners to run again.
+
+In-Depth Provisioner Usage
+- Shell Scripts
+·Inline scripts
+In the shell provisioner basics, a separate file was used for the shell script. Sometimes,
+what you want to do is so simple that creating another file seems like overkill. In these
+cases, you can specify an inline script:
+config.vm.provision "shell", inline: "apt-get install -y apache"
+By specifying an inline script, Vagrant will use the default shell and execute the given
+command. This is very handy for quick, one-off tasks with the shell provisioner.
+·Run-once scripts
+One of the great features of formal configuration management systems is that they’re
+idempotent, meaning they can be run many times but the end result remains the same.
+Shell scripts, on the other hand, aren’t idempotent unless you manually specify them to
+be. And doing this is usually cumbersome.
+As a trick, it is very common to see shell scripts turned into run-once scripts by using
+clever file existence checks. Here is an example shell script to do this:
+if [ -f "/var/vagrant_provision" ]; then
+  exit 0
+fi
+# Actual shell commands here.
+touch /var/vagrant_provision
+This is a simple solution to making your shell scripts run once, and is a commonly used
+pattern within the Vagrant community.
+
+- Chef Server
+In addition to running Chef against local cookbooks, Vagrant supports provisioning
+the machine by using a remote Chef Server. The Chef Server determines the proper run
+list for the node and sends down the cookbooks to provision the machine.
+If you’re new to Chef, I recommend sticking with local Chef cookbooks. Provisioning
+Vagrant machines with a Chef Server is most useful for organizations and environments
+where the Chef infrastructure is already in place and you’d like to hook into that.
+config.vm.provision "chef_client",
+  chef_server_url: "http://mychefserver.com:4000/",
+  validation_key_path: "validation.pem"
+Additional options are available if you need them to authenticate (validation_client_name, client_key_path)
+
+- Puppet
+· Modules
+uppet code is typically broken down into a set of
+reusable components known as modules.
+The Puppet provisioner for Vagrant fully supports modules by specifying the
+module_path in the Vagrantfile:
+config.vm.provision "puppet",
+  module_path: "modules"
+This is the path to the modules on the host filesystem. If the path is relative, it is expanded
+relative to the project root.
+Once the module path is set up, you can include modules as usual in your manifest file,
+or from other modules using normal Puppet include or require syntax. For example,
+if you had an “apache2” Puppet module, the default manifest file could contain the
+following to install Apache:
+include apache2
+· Hiera Data
+Hiera is a tool for configuration data within Puppet that allows you to easily set con‐
+figuration values depending on system attributes without requiring complex condi‐
+tionals within the Puppet code itself. For example, Hiera is good for setting a different
+variable value depending on if the system is a Linux or Windows machine.
+Vagrant supports exposing Hiera configuration into your Puppet code as a simple con‐
+figuration parameter:
+config.vm.provision "puppet",
+  hiera_config_path: "hiera.yaml"
+The value of hiera_config_path is the path to the Hiera configuration file on the host
+system. If the path is relative, it is expanded relative to the project root.
+Vagrant will share or copy that file into the guest machine and will configure Puppet so
+that it loads this file for Hiera configuration.
+It is common for the Hiera configuration to specify the Hiera data directories using
+relative paths. These paths are relative to the working directory when Puppet is run.
+Because this is so common, there is an additional configuration parameter ( working_di
+rectory ) to specify the working directory when Puppet is run. In conjunction with
+hiera_config_path , this allows you to run Puppet against the Hiera setup you would
+use in production:
+config.vm.provision "puppet",
+  hiera_config_path: "hiera.yaml",
+  working_directory: "/vagrant"
+The working_directory variable specifies the path on the guest machine to use as the
+working directory, and must be an absolute path.
+· Custom Facts
+Puppet brings in a set of variables with knowledge of the running system from Facter.
+The information available from Facter includes things like the operating system, net‐
+work interface information, filesystem information, and so on. This auto-detected in‐
+formation (known as “facts”) is available as top-level variables in Puppet.
+Vagrant supports setting custom facts from the Vagrantfile:
+config.vm.provision "puppet" do |p|
+  p.facter["vagrant"] = "yes"
+end
+The facter configuration variable is available and can be set like a Ruby hash (key-
+value mapping). These mappings are then exposed as facts to the running Puppet sys‐
+tem. The facter configuration variable must be set using the expanded provisioner
+configuration format, as just shown, rather than the shorthand, single-line approach.
+Given the previous example, the $vagrant variable would be available and set within
+Puppet code with the value of “yes.”
+Custom facts from a Vagrantfile are useful for many reasons. One use case is demar‐
+cating a Puppet run within Vagrant. This allows you to perform custom logic or avoid
+certain tasks if Puppet is running within Vagrant. A common thing to avoid in Vagrant
+environments is setting up monitoring systems, since Vagrant environments are gen‐
+erally only for development and don’t need robust monitoring systems.
+Another popular use case is to simulate facts of another system to test how the Puppet
+code will behave. For example, perhaps the $private_network fact is set to true on
+production systems if the machine is booted on the private network. You can manually
+set this to true for Vagrant environments to test and verify that Puppet properly runs
+certain code paths.
+· Using a Puppet Master
+In addition to running Puppet against local manifests and modules, Vagrant supports
+provisioning the machine by connecting to a remote Puppet Master. The Puppet Master
+determines the proper set of modules and manifests to run on the node, and sends it
+down to provision the machine.
+If you’re new to Puppet, I recommend sticking with local Puppet code. Provisioning
+Vagrant machines with a Puppet Master is most useful for organizations and environ‐
+ments where the Puppet infrastructure is already in place and you’d like to take advan‐
+tage of that.
+Configuring Vagrant to use an existing Puppet Master is the best way to provision de‐
+velopment environments as similar as possible to production. It also forces the Puppet
+modules to remain more stable in development as well as production since they’re ac‐
+tively being used in both environments.
+Configuring Vagrant to provision using a Puppet Master couldn’t be easier:
+config.vm.provision "puppet_server"
+
+Networking in Vagrant
+---------------------
+Part of the ideal Vagrant workflow is the firm belief that you should be able to continue
+using existing browsers and development tools on your local machine.
+One example of this is shared folders, which you saw briefly when setting up your first
+Vagrant environment. Shared folders allow you to work on your own machine and have
+files synced into the guest machine, letting you continue to use your own editor.
+Likewise, to use your own browser for web applications, we need a way to expose net‐
+work applications such as web servers to the outside world from the virtual machine.
+To do this, Vagrant exposes a set of options for networking the virtual machine.
+Vagrant offers three networking options to maximize flexibility: forwarded ports, host-
+only networking, and bridged networking.
+
+- Forwarded Ports
+With forwarded ports, Vagrant will set up a port on the host to forward to a port on the
+guest, allowing you to access services on the guest without an IP.
+As an example, if you forwarded port 80 (the standard port for serving HTTP content)
+in the guest to port 8080 on your host, then you could access the web server in the guest
+by loading localhost:8080 on your main machine. The traffic sent to port 8080 is actually
+forwarded to port 80 on the guest machine.
+
+Pros and Cons
+The benefits of forwarded ports is that they’re very simple to set up. You just tell Vagrant
+in the Vagrantfile what ports to forward where.
+The simplicity of forwarded ports comes at a cost. First, you need to be explicit about
+every port you want to forward. For basic web services, this is easy. But there are also
+databases, services that listen on multiple ports, and more that can be useful to access,
+and configuring all of this becomes tedious very quickly.
+Forwarded ports are also accessible from outside your own computer. Assuming you
+don’t have a firewall in place, any computer on the local network can access your virtual
+machine if they know your IP and the port that it is listening on. For local development
+this is often not a big issue, but it is worth noting for those who are more sensitive to
+security and privacy.
+And finally, with VirtualBox, Vagrant can’t forward to ports less than 1024 on the host
+system. This is due to operating systems not allowing this for processes without ad‐
+ministrative privileges, such as Vagrant. The main use case this negatively affects is SSL,
+which is assumed to be on port 443 for web traffic. If you want to test SSL, port for‐
+warding is not a good way to do it.
+
+Basic Usage
+We’ve been configuring forward ports throughout this book, so this shouldn’t be new.
+It is very simple:
+config.vm.forwarded_port 80, 8080
+The first argument is the port on the guest to make available via the host port, which is
+the second argument.
+Multiple forwarded port definitions can be included in a Vagrantfile in order to forward
+multiple ports.
+Just like any other configuration change in Vagrant, these changes won’t take effect on
+running machines until a vagrant reload is called.
+
+Collision Detection and Correction
+Vagrant has built-in support for detecting port collisions, the case where a forwarded
+port definition would collide with another used port on your system.
+By default, Vagrant will report an error so you can fix the issue by either freeing up that
+used port, or by changing the port in the Vagrantfile.
+Alternatively, Vagrant can auto-correct the collision by choosing another port to use
+for you. This must be explicitly enabled because it is otherwise confusing when bringing
+up a new guest machine that the forwarded port defined may have changed, even though
+Vagrant tells you about the detected collisions and auto-corrections.
+To enable auto-correction, add an extra option to your existing forwarded port defini‐
+tions, like so:
+config.vm.forwarded_port 80, 8080, auto_correct: true
+If a port collision detection is detected for that forward port, Vagrant will then auto-
+correct it to some other unused port. By default, Vagrant will choose an auto-correction
+port between port 2200 and port 2250.
+This range can also be customized with a setting in the Vagrantfile:
+config.vm.usable_port_range = (2200..2250)
+
+TCP versus UDP
+Forwarded ports by default only work with TCP connections. If you need to forward
+UDP packets as well, you have to configure an additional forwarded port with UDP
+port forwarding:
+config.vm.forwarded_port 80, 8080, protocol: "udp"
+This forwarded port will only forward UDP packets. If you want to allow both protocols,
+two forwarded port declarations must be used.
+
+- Host-Only Networking
+Host-only networking creates a network that is private to your host and the guest ma‐
+chines on that host. Because this is a new, custom network, it has its own IP address
+space, so guest machines with host-only networking get their own IP.
+Vagrant supports host-only networks by specifying a static IP for the machine. Vagrant
+will handle creating the host-only network and configuring the guest machine to get
+the specified IP.
+The machine can then be accessed directly using this IP. This is a benefit over forwarded
+ports, since you can then access all the ports directly on the guest machine, rather than
+enumerating each one on an as-needed basis.
+
+Pros and Cons
+“Host-only” literally means that only the host machine and the guest machines can
+access this network. Machines outside of the host, such as other machines on the local
+network, cannot access the assigned static IP. This is both a pro and a con.
+The pro of the isolation of host-only networks is that they’re secure. Outside computers
+have no way of accessing network services you may be running.
+The con is that because it is isolated, coworkers and team members who may be working
+on the same project can’t look at your work. The most common use cases for this are
+testing web pages on mobile, showing a coworker a bug or feature, and so on. This can’t
+be done with host-only networks.
+Another benefit of host-only networks is that multiple virtual machines can commu‐
+nicate with each other by being a part of the same network. With forwarded ports, a
+virtual machine can’t talk to another virtual machine. With host-only networking, as
+long as the machines are on the same network and know each other’s IP addresses, they
+can communicate! The primary use case for this is separating services onto multiple
+virtual machines to more accurately mimic production, such as web servers and data‐
+base servers.
+In addition to multiple virtual machines being able to communicate, the virtual ma‐
+chines can also communicate with the host itself. This can be useful for accessing services
+running on the host machine. Forwarded ports, on the other hand, can only be accessed
+from the host machine. The guest can’t talk to the host.
+
+Basic Usage
+Configuring a host-only network is done in the Vagrantfile as usual with a single line:
+config.vm.network "hostonly", "192.168.33.10"
+This is the first time seeing this configuration directive. The config.vm.network di‐
+rective configures networking on the machine. By passing hostonly in as the first ar‐
+gument, a host-only network will be created. The second argument is the static IP to
+assign to the machine.
+This static IP can be anything, although according to RFC specifications, a private,
+reserved network range should be used.
+After configuring the Vagrantfile, create the guest machine or run vagrant reload with
+a running guest for Vagrant to configure the new network.
+When the machine comes back up, it will be accessible with the configured static IP.
+You can verify this with a ping :
+$ ping 192.168.33.10
+In addition to being able to access the guest, the guest itself is able to access the host
+machine. This is very useful it the host itself is running services that may be useful for
+the guest machine. The IP address of the host is always the same IP address but with
+the final octet as a 1. In the preceding example, the host machine would have the IP
+address 192.168.33.1. This can be verified by connecting with SSH into the guest ma‐
+chine and pinging:
+$ vagrant ssh
+vagrant@precise64:~$ ping 192.168.33.1
+
+Guest Operating System Dependency
+For each operating system, there are different methods of configuring network devices.
+Unfortunately, across multiple operating systems, these methods are inconsistent.
+Vagrant has built-in knowledge of how to configure networks for a variety of operating
+systems such as Ubuntu, FreeBSD, Solaris, and more. When booting a machine, Vagrant
+probes the guest to determine the operating system, and uses this knowledge to do the
+right thing.
+The downside of this is if you’re running an operating system within Vagrant that Va‐
+grant has no knowledge of, then host-only networking cannot be used.
+
+- Bridged Networking
+Bridged networking bridges the virtual machine onto a device on your physical machine,
+making the virtual machine look like another separate physical machine on the network.
+Vagrant supports bridged networking by enabling it and allowing the network to which
+the machine is bridged to use DHCP to assign an IP to the guest machine.
+Because the machine appears to be a physical machine on your network, it is accessible
+by any machine on your network. Likewise, it adheres to any network routing rules and
+protections that may exist from routers, firewalls, and so on. As an example of this,
+home and work routers generally don’t allow inbound connections through, so the
+bridged virtual machine cannot be accessed by the global Internet. However, these
+routers generally do allow access to machines on the local network, so your mobile
+device or a coworker’s machine can access the virtual machine as long as they are all
+connected to the same network.
+
+Pros and Cons
+Bridged networking gives you all the benefits of having an IP to access your virtual
+machine, just like a host-only network. But unlike host-only networks, there is no iso‐
+lation, so you can use your mobile device to view websites served from the guest ma‐
+chine, you can share your work with coworkers, and so on.
+This lack of isolation can also be seen as a downside, if that is a necessary requirement
+for your project.
+One downside of bridged networking with Vagrant is that Vagrant doesn’t currently
+allow you to specify a static IP for the bridged network. IP addresses from bridged
+networks are served via DHCP, so you must SSH into the guest machine and inspect
+the network configurations in order to determine the IP to access the machine. Host-
+only networks, on the other hand, have predictable static IP addresses.
+Another downside of bridged networking is that because the guest must adhere to the
+network rules in place by the router, bridged networking simply has no benefits for
+some environments. Most commonly, hotel and airport networks restrict communica‐
+tion between machines on the local network, so even with the IP of the guest machine,
+you are unable to communicate. In these situations, there is simply no benefit to using
+a bridged network, and a host-only network must be used.
+
+Basic Usage
+Bridged networking is enabled within the Vagrantfile with a single line:
+config.vm.network "bridged"
+This tells Vagrant to enable a bridged network device for the virtual machine. The IP is
+served from DHCP so there are no other configuration options here.
+When running vagrant up or vagrant reload for the bridged network to take effect,
+Vagrant will ask you what network you want the device bridged to. If you don’t know
+what to answer here, you probably want to choose the same device that is connected to
+the Internet.
+In the following vagrant up output, my laptop was connected to the Internet via WiFi
+at the time, so I choose to bridge onto my wireless networking device, making my virtual
+machine appear on the WiFi network:
+$ vagrant up
+...
+[default] Available bridged network interfaces:
+1) en0: Wi-Fi (AirPort)
+2) p2p0
+3) vnic0
+4) vnic1
+What interface should the network bridge to? 1
+...
+Because the IP address is served from DHCP, we need to inspect the network configu‐
+ration from within the virtual machine in order to determine the IP address it was given.
+For Ubuntu, the box we’re currently using, we do this as follows:
+$ vagrant ssh
+vagrant@precise64:~$ ifconfig
+eth0
+Link encap:Ethernet HWaddr 08:00:27:88:0c:a6
+inet addr:10.0.2.15 Bcast:10.0.2.255 Mask:255.255.255.0
+inet6 addr: fe80::a00:27ff:fe88:ca6/64 Scope:Link
+UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
+RX packets:332 errors:0 dropped:0 overruns:0 frame:0
+TX packets:225 errors:0 dropped:0 overruns:0 carrier:0
+collisions:0 txqueuelen:1000
+RX bytes:40678 (40.6 KB) TX bytes:31408 (31.4 KB)
+eth1
+Link encap:Ethernet HWaddr 08:00:27:60:3e:01
+inet addr:10.0.1.31 Bcast:10.0.1.255 Mask:255.255.255.0
+inet6 addr: fe80::a00:27ff:fe60:3e01/64 Scope:Link
+Bridged Networking
+|
+61UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
+RX packets:10 errors:0 dropped:0 overruns:0 frame:0
+TX packets:9 errors:0 dropped:0 overruns:0 carrier:0
+collisions:0 txqueuelen:1000
+RX bytes:1216 (1.2 KB) TX bytes:1494 (1.4 KB)
+lo
+Link encap:Local Loopback
+inet addr:127.0.0.1 Mask:255.0.0.0
+inet6 addr: ::1/128 Scope:Host
+UP LOOPBACK RUNNING MTU:16436 Metric:1
+RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+collisions:0 txqueuelen:0
+RX bytes:0 (0.0 B) TX bytes:0 (0.0 B)
+A bit of experience helps here, but Vagrant generally sets up the second adapter as the
+bridged adapter. This is not always the case, however, so use your knowledge of the
+network to which you’re bridging to recognize the proper IP address that may be
+assigned.
+In the example output, eth1 is the bridged device, and 10.0.1.31 is the IP address. We
+can verify that this device is actually bridged onto our network by pinging it:
+$ ping 10.0.1.31
+the ping was successful, indicating the host is reachable. And while it
+isn’t shown with a simple ping, the host being pinged is in fact the virtual machine that
+is running.
+bridged networking often
+fails on public networks or under certain router configurations. If
+vagrant up gets stuck on configuring the networking interfaces, this is
+likely what is happening.
+
+> Composing Networking Options
+Vagrant allows you to enable multiple network options. As long as the guest machine
+has room for additional network interfaces (the limit in VirtualBox is eight), then Va‐
+grant will configure it.
+To enable multiple networks, just define multiple networks in the Vagrantfile:
+config.vm.forwarded_port 80, 8080
+config.vm.network "hostonly", "192.168.33.10"
+config.vm.network "bridged"
+Upon reading a Vagrantfile with this configuration, Vagrant would create a forwarded
+port mapping, create a host-only network with a static IP, and create a bridged network.
+In addition to specifying multiple types of networks, it is possible to define multiple
+networks of the same type, such as specifying multiple host-only networks with different
+IPs.
+
+NAT Requirement As the First Network Interface
+With VirtualBox, Vagrant requires the first network device attached to the virtual ma‐
+chine to be a NAT device. The NAT device is used for port forwarding, which is how
+Vagrant gets SSH access to the virtual machine.
+Therefore, any host-only or bridged networks will be added as additional network de‐
+vices and exposed to the virtual machine as “eth1,” “eth2,” and so on. “eth0” or “en0” is
+generally always the NAT device.
+
+
+Modeling Multimachine Clusters
+------------------------------
+Modern web applications are created using multiple distinct parts, sometimes known
+as services. At the most common level, this is seen with the separation of a web and
+database server. There can also be cache services, worker queues, and more. Complex
+websites are often created with hundreds of these services.
+When websites are designed this way, it is often called a service-oriented architecture.
+Vagrant is supposed to provide the
+developer with a complete development environment when vagrant up is run. In some
+cases, this means multiple machines are required or preferable as part of a single de‐
+velopment environment.
+Vagrant lets you accurately model these scenarios using a feature called multimachine
+environments, which builds multiple virtual machines based on one Vagrantfile.
+This is useful for properly isolating separate services as they are in production. You can
+then put your web server and database server in two separate virtual machines. It is
+trivial, in this case, to simulate network failure and observing how your application
+responds.
+Of course, running many virtual machines is taxing on the computer, and there is a
+reasonable limit to the number of virtual machines that can be run at any given time.
+Because of this, some strategy must be taken to determine what services will be separated
+and onto how many virtual machines.
+
+Running Multiple Virtual Machines
+Before getting started, make sure you run vagrant destroy to destroy any preexisting
+virtual machines. This step is required because in the process of defining multiple virtual
+machines in the Vagrantfile, Vagrant can lose the preexisting running machine. This is
+a bug that will be addressed in future versions of Vagrant. For now, destroying all virtual
+machines prior to configuring multiple machines will avoid this issue.
+Next, we have to configure the Vagrantfile to include a second machine. For an example,
+we’ll model a web and database server throughout this chapter:
+Vagrant::Config.run do |config|
+  config.vm.box = "precise64"
+  config.vm.define "web" do |web|
+    web.vm.forward_port 80, 8080
+    web.vm.provision :shell, path: "provision.sh"
+  end
+  config.vm.define "db" do |db|
+    # We'll fill this in soon.
+  end
+end
+A lot of this should look familiar, while a lot of it is also very new. The part configuring
+the box should be familiar. But the configuration directive config.vm.define is new.
+This is the directive that defines a new machine within a single Vagrantfile.
+It takes one parameter, which is the name of the machine. It then takes a block that
+configures that specific machine. You may notice that this looks very similar to the
+normal Vagrantfile configuration. That is because it is actually the same!
+The block when defining a new submachine is just another configuration block that
+you see when creating a Vagrantfile. The web and db variables are full configuration
+variables where you can override any value for that machine.
+Prior to getting a chance to override configuration values, submachines inherit the
+generic configuration. In the case of the preceding example, both the web and db ma‐
+chines will be made with the precise64 box because config.vm.box was set to precise64
+in the outer configuration.
+If you are a developer, you can think of all of this interaction as variable scopes within
+programming languages. The outer configuration is a more global scope than the inner
+submachine configuration, so the submachine can override values from the outer scope.
+$ vagrant up
+instead of bringing up one machine, Vagrant brought
+up two. This is evident from the machine name prefix Vagrant puts on the output. You
+can see both [web] and [db] in the output.
+
+Controlling Multiple Machines
+The moment multiple machines are introduced into a Vagrant environment, the be‐
+havior of vagrant commands change a little bit.
+Most commands, such as up , destroy , and reload now take an argument with the name
+of the machine to affect. As an example, if you wanted to reload just the web machine,
+you could do this:
+$ vagrant reload web
+...
+By specifying no arguments, Vagrant assumes you want to take action on every machine.
+So vagrant reload alone would reload both the web and db machines.
+For some commands, this default behavior of taking action on every machine doesn’t
+make sense. vagrant ssh can’t SSH you into every machine in one terminal! So some
+commands require a target machine.
+The output of vagrant status changes, too. It now lists multiple machines and the
+state of each of them:
+$ vagrant status
+For detailed information on the state of a machine as well as helpful instructions on
+how to change the state of the machine, just call vagrant status with a target machine:
+$ vagrant status web
+In cases where the environment has many machines, you can specify multiple targets
+in the same command:
+$ vagrant reload node1 node2 node3
+...
+Or, if you’re managing many nodes, you can even use a regular expression. Vagrant
+assumes if the node name starts and ends with / that it is a regular expression. For
+example:
+$ vagrant reload /node\d/
+...
+
+Communication Between Machines
+If multimachine environments were made to model service-oriented architectures,
+there needs to be a way for the machines to communicate with each other. By default,
+by simply defining the machines, there is no way for them to communicate.
+
+- Host-Only Networks
+By defining a host-only network on the machines that exists on the same subnet, the
+machines are able to communicate with each other. When specifying a static IP address
+with host-only networks on Vagrant, Vagrant by default uses a subnet mask of
+255.255.255.0. This means that as long as the first three parts (octets) of the IP address
+are the same, the machines will be placed on the same network.
+Let’s modify the Vagrantfile so the machines can communicate. The Vagrantfile should
+look like this now:
+Vagrant::Config.run do |config|
+  config.vm.box = "precise64"
+  config.vm.define "web" do |web|
+    web.vm.forward_port 80, 8080
+    web.vm.provision :shell, path: "provision.sh"
+    web.vm.network :hostonly, "192.168.33.10"
+  end
+  config.vm.define "db" do |db|
+    db.vm.network :hostonly, "192.168.33.11"
+  end
+end
+The two machines are configured with host-only configurations that give them static
+IP addresses on the same subnet. You can tell they’re on the same subnet because the
+first three octets are the same (i.e., 192.168.33). Reload the machines with vagrant
+reload to bring in the new networking configuration.
+After the machines come back, you should be able to talk to each of them via their IP
+addresses. You can verify this with ping :
+$ ping 192.168.33.10
+$ ping 192.168.33.11
+Furthermore, if you SSH into one of the machines, you will be able to talk to the other.
+As an example, let’s SSH into the web machine and talk to the db machine, again via ping :
+$ vagrant ssh web
+vagrant@precise64:~$ ping 192.168.33.11
+Using host-only networks, the two machines are able to communicate, so if one machine
+were running a service (e.g., a database), the other could connect to it.
+
+- Bridged Networks
+In addition to host-only networking, multiple machines can communicate with bridged
+networking as well, technically, as long as they are all bridged onto the same device. In
+this case, you’ll have to manually look up the IP that the router gives to the machines
+and communicate that way. This is not ideal, however. The preferred method of com‐
+munication between machines in a multimachine environment is host-only networking
+
+Real Example: MySQL
+Now that the basics have been covered, we’ll provision the second machine with the
+shell provisioner to install MySQL on the second machine, and talk to that MySQL
+instance from the web machine using the MySQL client.
+First, create a new file db_provision.sh in your project root with the following contents:
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y mysql-server
+sed -i -e 's/127.0.0.1/0.0.0.0/' /etc/mysql/my.cnf
+restart mysql
+mysql -uroot mysql <<< "GRANT ALL ON *.* TO 'root'@'%'; FLUSH PRIVILEGES;"
+This is the shell script that will provision the db machine. Let’s quickly explain a few
+parts because it looks considerably different than the script used to set up Apache.
+First, we export an environmental variable DEBIAN_FRONTEND with the value “nonin‐
+teractive.” This makes it so that when installing MySQL server, it does not ask us ques‐
+tions for a root password and all that.
+Next, we use sed to replace the bind address from loopback to 0.0.0.0, which means all
+interfaces. This is necessary so that remote machines can connect to the server.
+Then, we restart MySQL so that our configuration changes can take effect.
+And finally, we tell MySQL to allow root to connect from any host. This is generally
+very unsafe, but for the purpose of this example, it will work well.
+Let’s wire it all up in the Vagrantfile with networking, and also by provisioning the web
+machine with the MySQL client. The Vagrantfile should look like this:
+Vagrant::Config.run do |config|
+  config.vm.box = "precise64"
+  config.vm.define "web" do |web|
+    web.vm.forward_port 80, 8080
+    web.vm.provision :shell, path: "provision.sh"
+    web.vm.provision :shell, inline: "apt-get install -y mysql-client-core-5.5"
+    web.vm.network :hostonly, "192.168.33.10"
+  end
+  config.vm.define "db" do |db|
+    db.vm.provision :shell, path: "db_provision.sh"
+    db.vm.network :hostonly, "192.168.33.11"
+  end
+end
+At this point, you should be able to fully understand the contents of the Vagrantfile. If
+there are any parts that are confusing or unclear, reread the previous sections until you
+fully understand them.
+Run vagrant destroy to fully destroy both machines if they were running before. We
+want to start from a clean slate for this example.
+After destroying the environment, run vagrant up to bring up both machines. This
+should take a few minutes, as both machines must fully provision.
+Once the machines are running, log in to the web machine via SSH and use the MySQL
+client to access the db machine. The output should look similar to the following, but
+may be slightly different depending on versions and so on:
+$ vagrant ssh web
+vagrant@precise64:~$ mysql -uroot -h192.168.33.11
+mysql>
+The web machine is able to connect to a remote MySQL server, except that the
+remote MySQL server is actually just another virtual machine on the local system.
+
+
+Boxes
+-----
+
+Boxes are the base images upon which Vagrant environments are built. A box can contain any operating system installation, and new boxes can easily be
+created.
+There are many reasons to create custom boxes. Primarily, you’ll want any box you use
+to match the same environment you’re running in production.
+Additionally, organizations with very complicated software dependencies that can
+sometimes take an hour or more to install will sometimes “prebake” their boxes with
+the software installed. For example, if your application relies on Java, instead of installing
+Java on every vagrant up , you could install Java into the base image and already have
+it available. This saves precious time for creating the Vagrant environment.
+Boxes can be created automatically from existing Vagrant environments, or manually
+from existing non-Vagrant managed VirtualBox virtual machines.
+
+Boxes are an optimization so that Vagrant doesn’t have to install a complete operating
+system on every vagrant up . Installing an operating system from scratch generally takes
+up to 30 minutes on a good computer.
+Instead, Vagrant uses snapshotted base images to start with a pre-created base, and then
+builds on top of it. Base images generally don’t change often.
+This method makes Vagrant environments disposable. A vagrant destroy and
+vagrant up cycle to get a new environment generally takes only a few minutes.
+In addition to being a basic optimization, it is another step to enforce and ensure that
+everyone working with the same Vagrant box starts with an identical base image.
+Finally, boxes are portable. A box packaged on Mac OS X should work properly on
+Windows as well as Linux.
+
+Box Format
+The box file format is nothing more than a tar file, possibly gzip compressed.
+The custom .box extension is meant to signify that it is meant to be used with Vagrant
+The contents of the box file for VirtualBox is just the output of exporting a VirtualBox
+virtual machine. If you uncompress the precise64 box file, you’ll see contents similar to
+the following:
+	$ tree
+	.
+	├── Vagrantfile
+	├── box-disk1.vmdk
+	├── box.ovf
+	└── metadata.json
+	0 directories, 4 files
+The VMDK and OVF file are results of exporting a VirtualBox machine. VirtualBox
+has a function to “export” machines, which simply compresses the virtual hard disks
+and creates a portable definition of the virtual hardware required to run the virtual
+machine. The VMDK file is the compressed hard drive, and the OVF file is a description
+of the virtual hardware running the machine
+The Vagrantfile is just a normal Vagrantfile. This file is loaded and merged in the process of loading your project Vagrantfile.
+Having a Vagrantfile in a box is optional, but allows box creators to set some defaults
+up for Vagrant that can be overridden by the user.
+The metadata.json file is just a basic JSON file that tells Vagrant what system the box
+works with (in this case VirtualBox).
+When importing a VirtualBox box, Vagrant looks for a box.ovf file and tells VirtualBox
+to import that. The OVF file itself points to the VMDK file (and possibly other files that
+were part of the export), so that VirtualBox knows how to re-create the entire virtual
+machine.
+
+Basic Box Management with Vagrant
+Vagrant manages boxes globally per user, rather than per project like a project Vagrant‐
+file. So, unlike vagrant up , vagrant ssh , and most other Vagrant commands, the com‐
+mands to manage boxes affect every Vagrant environment.
+
+How Global is “Global”?
+Vagrant puts all global state by default into the ~/.vagrant.d folder, including boxes.
+This means that when Vagrant manages boxes “globally,” it actually means it manages
+boxes per user, by default.
+Because boxes can be large (sometimes gigabytes), you can move this global state di‐
+rectory by setting the environmental variable VAGRANT_HOME to another directory.
+Boxes are mapped in Vagrant to a logical name. This name is up to you. This logical
+name is the mapping between the config.vm.box setting in a Vagrantfile and the actual
+box that is used to build the machine. Therefore, you can name a box whatever you’d
+like, but it must match the name in a Vagrantfile that you wish to start.
+Without the logical name, the box files have no unique identifier. Boxes are just files.
+Therefore, it is important to descriptively name your boxes.
+All box management is done via the vagrant box command. This command itself has
+various subcommands
+$ vagrant box
+Usage: vagrant box <command> [<args>]
+Available subcommands:
+add
+list
+remove
+repackage
+
+The first box management command you’ll likely encounter is to add a box. We’ve
+actually avoided doing this throughout the entire book by using config.vm.box_url
+within Vagrantfiles, which automatically adds a box for us for an environment if it is
+missing. But under the hood, it’s doing the same thing as the following:
+$ vagrant box add precise64 http://files.vagrantup.com/precise64.box
+Once the box is added, it is available for use by the rest of your Vagrant environments.
+You only need to download a box once, then Vagrant reuses it for multiple environments.
+Since it is only a base image, it is cloned for each environment.
+$ vagrant box add ubuntu/trusty64
+In this case, we're using the vagrant box command to manage our box cache. Using the add
+command will trigger the download of the box from the Vagrant Cloud repository to the local
+cache. With the box cached locally, we can use it later to initialize new environments without
+triggering a download.
+You can see all the boxes you have installed by listing them:
+$ vagrant box list
+Boxes at the minimum are a couple hundred megabytes, and when they’re large can be
+many gigabytes. If you feel like you’re not going to use a box anymore, you can remove
+it from your system in order to reclaim some disk space. This is done with vagrant box
+remove :
+$ vagrant box remove precise64 virtualbox
+You can remove a box even if there are running Vagrant environments based on that
+box. The box is only used as an initial clone and is not needed after that. But note that
+if you destroy those running Vagrant environments, Vagrant will need the box again
+the next time you run vagrant up .
+Finally, if you want to share a box with a coworker or friend and you lost the original
+box file, you can repackage a box using vagrant box repackage . This command pro‐
+duces no output, but will put a package.box file in your current directory. This file is
+identical to the original box file you downloaded.
+
+Creating New Boxes from an Existing Environment
+The easiest way to create new boxes is using an existing Vagrant environment as a
+starting point.
+This method is used to create new boxes that have more preinstalled software than their
+previous base. Therefore, if you want to support a new operating system, or a new bare-
+bones image, you’ll want to read the next section which instead creates new boxes from
+scratch.
+Creating new boxes from an existing Vagrant environment is useful to preinstall and
+configure software in the base image so that vagrant up can be faster.
+This is common practice for larger organizations where provisioning runs can take
+upward of an hour or more. This sort of provisioning time drastically reduces the dis‐
+posability of Vagrant environments, harming a critical productivity boost of the tool.
+To build a box from an existing environment, you’ll first need an existing environment,
+so vagrant up ! After doing this, install any software you’d like on the machine.
+$ vagrant ssh
+vagrant@precise64:~$ sudo apt-get install -y htop
+Next, exit out of SSH and run vagrant package :
+$ vagrant package
+The resulting package.box is now a new box based on the existing running Vagrant
+environment. If you add this box and run a new Vagrant environment based on it, htop
+will be installed!
+
+“package” versus “repackage”
+There is both a vagrant package and a vagrant box repackage command. To the
+Vagrant newcomer, the differences between these two may not be quickly apparent.
+vagrant package takes the currently running Vagrant environment and packages it into
+a reusable box. The use case for vagrant package is to take a running Vagrant envi‐
+ronment that was possibly modified from the original box by installing and configuring
+software, and packaging it into a reusable box for other people.
+vagrant box repackage takes a box that was previously added and repackages it back
+into a box file that can be distributed. A running Vagrant environment has no effect on
+repackage, and repackaging can be done even without a running Vagrant environment.
+The use case for repackage is to get a box file back from a box you added using vagrant
+box add in the past.
+
+Creating New Boxes from Scratch
+Creating new boxes from an existing environment requires there to already be a box
+that you can build off of. If you want to create a box for a new operating system or
+configured in a way that no other box exists, then you’ll have to create one from scratch.
+This process is much more manual and much more time consuming, but generally
+doesn’t have to be done often since once you have a base image, you can create new
+images from that using the technique covered in the previous section.
+Creating the VirtualBox Machine
+To create a box from scratch, create the virtual machine manually in VirtualBox itself,
+from the VirtualBox application.
+You can configure this virtual machine in any way you’d like, but in general it is rec‐
+ommended that you use a dynamically resizing drive with a generous amount of disk
+space to start, something like 40 to 100 GB.
+Additionally, if you plan on sharing this box, try not to set the default memory allocation
+too high. Users of Vagrant can always modify the RAM size later, so it is better to err on
+the side of caution, and use the minimum amount of RAM necessary for a pleasant
+experience. Usually, for bare-bones operating system installs, 360 to 512 MB is good.
+Finally, disable audio, USB, and other nonessential peripheral controllers. Most appli‐
+cations don’t need these auxiliary features and they just waste resources.
+The only thing that Vagrant absolutely requires is that the first network device must be
+a NAT device. Vagrant uses this initial NAT device for setting up port forwards necessary
+for SSH. Without this properly configured, the VM will not boot.
+With this all prepared, go ahead and start the virtual machine and install and configure
+the operating system you’d like.
+Configuring the Operating System
+Once the operating system is installed, you must configure some things if you want to
+work within Vagrant defaults.
+First, a Vagrant user must exist. This is the default SSH user. You can always use another
+SSH user by specifying the config.ssh.username variable, so if you want to match
+production more closely, feel free to use any other user here, and set the configuration
+later.
+Since Vagrant uses SSH, you must also make sure that an SSH server is installed and
+properly configured to run on system boot.
+The SSH user must be configured to authenticate using public key authentication. Va‐
+grant doesn’t support SSH using a normal password. Again, if you want to work within
+Vagrant’s defaults, you should set up the SSH user to authenticate using the insecure
+private key that ships with Vagrant. The insecure private key is “insecure” because it is
+public knowledge and is the default key used by Vagrant to authenticate SSH
+connections.
+However, if you’re creating a private box for yourself or your team, you may want to use
+a custom private key that is more secure. In this case, you can configure the con
+fig.ssh.private_key_path variable later to point to the proper private key.
+If you decide to use the insecure private key, here is what it looks like to set up the user
+on a basic Linux system (note that you may need to change some paths if your SSH user
+is different or if the home directories are in a different path):
+$ mkdir /home/vagrant/.ssh
+$ chmod 700 /home/vagrant/.ssh
+$ cd /home/vagrant/.ssh
+$ wget --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/
+keys/vagrant.pub' -O authorized_keys
+$ chmod 600 /home/vagrant/.ssh/authorized_keys
+$ chown -R vagrant /home/vagrant/.ssh
+Finally, the SSH user must also have privileges to sudo . More specifically, the SSH user
+must have permissions to use sudo without a password. Vagrant uses sudo quite a bit
+in configuring the virtual machine.
+When configuring sudo , also make sure that requiretty is disabled. Vagrant runs
+commands without a TTY, so if sudo requires it, all commands will fail.
+Installing VirtualBox Guest Additions
+VirtualBox Guest Additions are additional kernel drivers and configuration so that the
+virtual machine can take advantage of VirtualBox features such as shared folders, im‐
+proved networking performance, and more.
+For many features of Vagrant to work, or more specifically many features of VirtualBox,
+these guest additions must be installed.
+The exact process of installing the guest additions can vary from system to system. For
+Linux-based machines, you’ll need to install the Linux kernel headers for your system
+as well as build tools. For Ubuntu, both of these can be retrieved using the standard
+package manager:
+$ sudo apt-get install linux-headers-$(uname -r) build-essential
+...
+Next, insert the guest additions image by using the GUI and clicking the Install Guest
+Additions menu item, usually under the “Devices” menu. This will insert a virtual CD
+into the machine.
+Mount this CD within your virtual machine and start the installation process. For
+Ubuntu, this looks like this:
+$ sudo mount /dev/cdrom /media/cdrom
+...
+$ sudo sh /media/cdrom/VBoxLinuxAdditions.run
+...
+This process should be similar, but different, for other operating systems.
+Additional Software
+At this point, the bare minimum necessary for a box is complete. However, additional
+software can be installed to enable additional features within Vagrant.
+If you want to support Chef or Puppet provisioning, you must install Chef or Puppet.
+Installation for each of these tools is out of the scope of this book, but there should be
+simple instructions within the documentation for each project.
+If you want to support NFS shared folders, the NFS client must be installed. This can
+typically be found and installed using the package manager for your operating system.
+Each of these is not required, but installing them will help make your box function with
+more Vagrant features.
+
+Remove udev Rules
+It is very common for Linux-based boxes to fail to boot initially. This is often a very
+confusing experience because it is unclear why it is happening. The most common case
+is because there are persistent network device udev rules in place that need to be reset
+for the new virtual machine.
+To avoid this issue, remove all the persistent-net rules. On Ubuntu, these are the steps
+necessary to do this:
+$ rm /etc/udev/rules.d/70-persistent-net.rules
+$ mkdir /etc/udev/rules.d/70-persistent-net.rules
+$ rm -rf /dev/.udev/
+$ rm /lib/udev/rules.d/75-persistent-net-generator.rules
+
+Minimizing the Final Box Size
+Virtual machine images are big. On average, they’re between 500 MB and 2 GB. Luckily,
+there are some easy optimizations that can be made prior to packaging the boxes to save
+a lot of disk space in the final package.
+Start by removing any unnecessary packages from the system. These can always be
+reinstalled later by provisioners if the user of the box feels they’re needed. Easy things
+to remove are build tools, linux-headers, man pages, and so on.
+Next, fill the virtual hard drive with zeros and delete the zero-filled file. This fixes frag‐
+mentation issues with the underlying disk, which allows it to compress much more
+efficiently later. On Ubuntu, it looks like this:
+$ dd if=/dev/zero of=/EMPTY bs=1M
+...
+$ rm -f /EMPTY
+Make sure that creating the zero-filled file is the final thing you do prior to packaging,
+so that the hard drive is in a pristine state for packaging with optimal disk space
+efficiency.
+Packaging It Up
+The final step is to turn the VirtualBox virtual machine into a Vagrant box file.
+Vagrant is able to do this for you by using vagrant package with the --base flag (the
+argument to the flag should be the name of the virtual machine in the VirtualBox GUI):
+$ vagrant package --base my_new_box
+[my_new_box] Clearing any previously set forwarded ports...
+[my_new_box] Creating temporary directory for export...
+[my_new_box] Exporting VM...
+[my_new_box] Compressing package to: /private/tmp/v/package.box
+package.box in the current directory is the resulting box. You can test it by adding it and
+bringing up a new environment with it. Everything should work.
+Setting Vagrantfile Defaults
+If you used any nondefaults when setting up your box, such as a custom SSH user or
+custom SSH key, you can set these defaults in a Vagrantfile that is packaged with the
+box.
+This Vagrantfile will be loaded prior to the project Vagrantfile, and the settings will be
+merged, with the project Vagrantfile overriding any conflicting values. This allows boxes
+to set defaults, while still letting users override these defaults.
+To do this, create a normal Vagrantfile anywhere on your system. For example, if you
+changed the SSH user to "custom_user" , then you might create a Vagrantfile that looks
+like the following:
+Vagrant::Config.run do |config|
+  config.ssh.username = "custom_user"
+end
+Then, when packaging the box, tell Vagrant to use it as the packaged Vagrantfile:
+$ vagrant package --base my_new_box --vagrantfile Vagrantfile
+...
+Of course, make sure “Vagrantfile” is a path to the Vagrantfile you created. In the case
+of the previous example, Vagrant would look for the Vagrantfile in the current directory.
+
+Packaged Vagrantfiles and “vagrant init”
+It is a common misconception to think that Vagrantfiles packaged with boxes become
+the Vagrantfiles that are created when vagrant init is called with that box.
+This is not the case.
+Instead, when Vagrant is configured to use the box, the Vagrantfile packaged with the
+box is loaded and merged with the settings set in the project Vagrantfile.
+
+Extending Vagrant with Plug-Ins
+---------------------------------
+
+A list of currently available Vagrant plugins: https://github.com/mitchellh/
+vagrant/wiki/Available-Vagrant-Plugins
+
+developing plug-ins requires a
+strong understanding of the Ruby programming language.
+
+it is
+very easy for a plug-in to crash Vagrant. If this happens, you can always
+uninstall the plug-in.
+
+Extensible Features
+Vagrant exposes many features that can be extended by plug-ins. The places where plug-
+ins can extend Vagrant is carefully controlled
+
+Plug-ins can add new commands to the vagrant program. For example, a plug-in might
+make vagrant ip tell you the static IP for a running Vagrant machine. Behavior like
+this is completely possible using a plug-in:
+$ vagrant ip
+10.30.30.10
+
+Plug-ins can also add new configuration options for the Vagrantfile itself. This is typi‐
+cally used in conjunction with some other plug-in capabilities so that the plug-in can
+be fine-tuned by the user. For example, a plug-in can make this possible:
+Vagrant::Config.run do |config|
+  config.fire_missles.enable = true
+end
+Plug-ins can add new provisioners, in case you want to use something other than shell
+scripts, Chef, or Puppet. There are much more than those three configuration man‐
+agement tools out there, and Vagrant is able to integrate with all of them via plug-ins.
+Additionally, if your organization uses a custom, in-house software provisioning tool,
+you can enable Vagrant to use it. It ends up looking like this in your Vagrantfile:
+Vagrant::Config.run do |config|
+  config.vm.provision "my_custom_provisioner", option: "value"
+end
+Plug-ins are also able to add or change functionality within existing virtual machine
+manipulation events (e.g., vagrant up , vagrant destroy , etc.). As an example, it is
+possible for a plug-in to also configure DNS on your host machine during vagrant
+up so that you can visit a domain name to access your Vagrant machine.
+Finally, plug-ins can add new guest-specific or host-specific functionality to Vagrant.
+As mentioned at earlier points in the book, some features of Vagrant rely on operating
+system specific behavior, such as mounting folders, configuring networks, enabling
+NFS, and so on. Vagrant comes with knowledge of many common operating systems,
+but is still missing many. Plug-ins are able to add new guest- and host-specific logic to
+Vagrant so that Vagrant can work with any operating system.
+
+Managing Vagrant Plug-Ins
+Plug-in management is a core feature of Vagrant, exposed as the vagrant plugin
+command. This command is responsible for installing, uninstalling, and listing plug-
+ins. Similar to vagrant box , this command has even more subcommands.
+To install a plug-in, use the vagrant plugin install command with the name of the
+plug-in you want to install:
+$ vagrant plugin install foo
+Vagrant will install the plug-in and any dependencies it might have. It will also tell you
+the version it installed so you can verify it got the proper version with what the author
+of the plug-in might list.
+In addition to installing by plug-in name, you can also install using a path to the actual
+plug-in file, if the author offers a download:
+$ vagrant plugin install /path/to/foo.gem
+You can further verify what plug-ins are installed by listing them:
+$ vagrant plugin list
+And if you need to uninstall the plug-in, you can use the uninstall command:
+$ vagrant plugin uninstall foo
+
+
+Vagrant Environmental Variables
+--------------------------------
+
+There are a handful of envrionmental variables you can set to control various aspects
+of Vagrant on your system.
+
+VAGRANT_CWD can be set to change the working directory of Vagrant. By default, Vagrant
+uses the current directory you’re in. The working directory is important because it is
+where Vagrant looks for the Vagrantfile.
+
+VAGRANT_HOME can be set to change the directory where Vagrant stores global state. By
+default this is set to ~/.vagrant.d, which is the .vagrant.d folder in your home folder.
+The Vagrant home directory is where things such as boxes are stored, so it can actually
+become quite large on disk.
+There are two common use cases for this environmental variable.
+First, some people have small solid state drives as their main filesystem for speed, but
+also have a much larger, slower drive attached for larger files where speed doesn’t matter
+as much. In this case, to save disk space on the expensive solid state drive, it makes sense
+to change VAGRANT_HOME to point to the much larger drive.
+Another common use case is to isolate Vagrant installations for testing or scripting. The
+Vagrant home directory combined with the project .vagrant directory is all the state
+Vagrant uses to function. By specifying a new VAGRANT_HOME , Vagrant appears to be a
+clean installation.
+
+VAGRANT_LOG specifies the verbosity of log messages from Vagrant. By default, Vagrant
+does not store any logs.
+Log messages are very useful when troubleshooting issues, reporting bugs, or getting
+support. At the most verbose level, Vagrant outputs basically everything it is doing.
+Available log levels are “debug,” “info,” “warn,” and “error.” Both “warn” and “error” are
+practically useless since there are very few cases of these, and Vagrant generally reports
+them within the normal output.
+“info” is a good level to start with if you’re having problems, because while it is much
+louder than the normal output, it is still very human-readable and can help identify
+certain issues.
+
+If VAGRANT_NO_PLUGINS is set to any value, then Vagrant will not load any plug-ins.
+Plug-ins can introduce instability into Vagrant because it is just arbitrary third-party
+code. If you install a Vagrant that crashes Vagrant repeatably, then you can disable all
+plug-ins with this environmental variable.
+
+VAGRANT_VAGRANTFILE specifies the filename of the Vagrantfile that Vagrant searches
+for. By default, this is “Vagrantfile.” Note that this is not a file path, but is just a filename.
+This environmental variable is most commonly used in scripting environments where
+a single folder may contain multiple Vagrantfiles representing different configurations.
+This variable is also used if you’re testing new Vagrant configurations and don’t want to
+mess up the old one. For example, if you were working in “Vagrantfile.new” temporarily
+until it is ready, you could test it like this:
+$ VAGRANT_VAGRANTFILE=Vagrantfile.new vagrant up
+...
+Note that even while using a custom Vagrantfile name, Vagrant will still use the .vagrant
+directory in the project directory to store some local state. Therefore, it is not safe to
+run multiple Vagrant environments out of the same folder, and this environmental
+variable was not made for that purpose.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

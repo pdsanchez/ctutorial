@@ -1,0 +1,874 @@
+
+Installing Docker on Linux
+--------------------------
+
+You should be able to the use the script provided at https://get.docker.com to automatically install Docker
+$ wget -qO- https://get.docker.com/ | sh
+or
+$ curl -sSL https://get.docker.com | sh 
+
+
+Running Without sudo (Ubuntu):
+$ sudo usermod -aG docker
+which will create the docker group, if it doesn’t exist already, and add the current user (log out and log in again)
+
+Restart the Docker service (Ubuntu):
+$ sudo service docker restart
+
+Check:
+$ docker version
+$ docker --version
+
+If the Docker daemon isn’t running (or the client can’t access it), try starting the Docker daemon manually by running:
+$ sudo docker daemon
+
+Test Docker:
+$ docker run debian echo "Hello World"
+run command, which is responsible for launching containers. 
+The argument debian is the name of the image we want to use
+Docker turns the image into a running container and executes the command we specified — echo "Hello World" — inside it.
+
+$ docker run -i -t debian /bin/bash
+The flags -i and -t tell Docker we want an interactive session with a tty attached.
+The command /bin/bash gives us a bash shell inside a container.
+
+
+The Basic Commands
+$ docker run --name boris debian echo "Boo"
+Contenedor con nombre boris (en lugar de cientifico aleatorio)
+
+$ docker run -h CONTAINER -i -t debian /bin/bash
+Launch a new container; we’ll give it a new hostname with the -h flag
+
+$ docker ps
+This tells us a few details about all the currently running containers
+$ docker ps -a
+list of all containers including stopped containers (officially called exited containers).
+$ docker rm stupefied_turing
+$ docker rm -v $(docker ps -aq -f status=exited)
+To get rid of the container
+
+You can avoid piling up stopped containers by giving the --rm flag to docker run , which will delete the container and associated file system when the container exits.
+
+$ docker inspect stupefied_turing
+$ docker inspect stupefied_turing | grep IPAddress
+$ docker inspect --format {{.NetworkSettings.IPAddress}} stupefied_turing
+$ docker logs stupefied_turing
+If you run this command with the name of your container, you will get a list of everything that’s happened inside the container
+
+
+$ docker run -it --name cowsay --hostname cowsay debian bash
+root@cowsay:/# apt-get update
+root@cowsay:/# apt-get install -y cowsay fortune
+root@cowsay:/# /usr/games/fortune | /usr/games/cowsay
+
+
+Excellent. Let’s keep this container. 6 To turn it into an image, we can just use the
+docker commit command. It doesn’t matter if the container is running or stopped. To
+do this, we need to give the command the name of the container (“cowsay”) a name
+for the image (“cowsayimage”) and the name of the repository to store it in (“test”):
+root@cowsay:/# exit
+exit
+$ docker commit cowsay test/cowsayimage
+d1795abbc71e14db39d24628ab335c58b0b45458060d1973af7acf113a0ce61d
+The returned value is the unique ID of our image. Now we have an image with cow‐
+say installed that we can run:
+$ docker run test/cowsayimage /usr/games/cowsay "Moo"
+
+This is great! However, there are a few problems. If we need to change something, we
+have to manually repeat our steps from that point. For example, if we want to use a
+different base image, we would have to start again from scratch. More importantly, it
+isn’t easily repeatable; it’s difficult and potentially error-prone to share or repeat the
+set of steps required to create the image. The solution to this is to use a Dockerfile to
+create an automated build for the image.
+
+
+Building Images from Dockerfiles
+A Dockerfile is simply a text file that contains a set of steps that can be used to create
+a Docker image. Start by creating a new folder and file for this example:
+$ mkdir cowsay
+$ cd cowsay
+$ touch Dockerfile
+And insert the following contents into Dockerfile:
+FROM debian:wheezy
+RUN apt-get update && apt-get install -y cowsay fortune
+The FROM instruction specifies the base image to use ( debian , as before; but this time,
+we have specified that we want to use the version tagged “wheezy”). All Dockerfiles
+must have a FROM instruction as the first noncomment instruction. RUN instructions
+specify a shell command to execute inside the image. In this case, we are just instal‐
+ling cowsay and fortune in the same way as we did before.
+We can now build the image by running the docker build command inside the same
+directory:
+$ ls
+Dockerfile
+$ docker build -t test/cowsay-dockerfile .
+Sending build context to Docker daemon 2.048 kB
+Step 0 : FROM debian:wheezy
+---> f6fab3b798be
+Step 1 : RUN apt-get update && apt-get install -y cowsay fortune
+---> Running in 29c7bd4b0adc
+...
+Setting up cowsay (3.03+dfsg1-4) ...
+---> dd66dc5a99bd
+Removing intermediate container 29c7bd4b0adc
+Successfully built dd66dc5a99bd
+Then we can run the image in the same way as before:
+$ docker run test/cowsay-dockerfile /usr/games/cowsay "Moo"
+
+Images, Containers, and the Union File System
+In order to understand the relationship between images and containers, we need to
+explain a key piece of technology that enables Docker—the UFS (sometimes simply
+called a union mount). Union file systems allow multiple file systems to be overlaid,
+appearing to the user as a single filesytem. Folders may contain files from multiple
+filesystems, but if two files have the exact same path, the last mounted file will hide
+any previous files. Docker supports several different UFS implentations, including
+AUFS, Overlay, devicemapper, BTRFS, and ZFS. Which implementation is used is
+system dependent and can be checked by running docker info where it is listed
+under “Storage Driver.” It is possible to change the filesystem, but this is only recom‐
+mended if you know what you are doing and are aware of the advantages and disad‐
+vantages.
+Docker images are made up of multiple layers. Each of these layers is a read-only fil‐
+eystem. A layer is created for each instruction in a Dockerfile and sits on top of the
+previous layers. When an image is turned into a container (from a docker run or
+docker create command), the Docker engine takes the image and adds a read-write
+filesystem on top (as well as initializing various settings such as the IP address, name,
+ID, and resource limits).
+Because unnecessary layers bloat images (and the AUFS filesystem has a hard limit of
+127 layers), you will notice that many Dockerfiles try to minimize the number of lay‐
+ers by specifying several UNIX commands in a single RUN instruction.
+A container can be in one of several states: created, restarting, running, paused, or exi‐
+ted. A “created” container is one that has been initialized with the docker create
+command but hasn’t been started yet. The exited status is commonly referred to as
+“stopped” and indicates there are no running processes inside the container (this is
+also true of a “created” container, but an exited container will have already been
+started at least once). A container exits when its main processes exits. An exited con‐
+tainer can be restarted with the docker start command. A stopped container is not
+the same as an image. A stopped container will retain changes to its settings, meta‐
+data, and filesystem, including runtime configuration such as IP address that are not
+stored in images. The restarting state is rarely seen in practice and occurs when the
+Docker engine attempts to restart a failed container.
+
+
+But we can actually make things a little bit easier for the user by taking advantage of
+the ENTRYPOINT Dockerfile instruction. The ENTRYPOINT instruction lets us specify an
+executable that is used to handle any arguments passed to docker run .
+Add the following line to the bottom of the Dockerfile:
+ENTRYPOINT ["/usr/games/cowsay"]
+We can now rebuild and run the image without needing to specify the cowsay com‐
+mand:
+$ docker build -t test/cowsay-dockerfile .
+...
+$ docker run test/cowsay-dockerfile "Moo"
+...
+Much easier! But now we’ve lost the ability to use the fortune command inside
+container as input to cowsay. We can fix this by providing our own script for
+ENTRYPOINT , which is a common pattern when creating Dockerfiles. Create a
+entrypoint.sh with the following contents and save it in the same directory as
+Dockerfile: 7
+the
+the
+file
+the
+#!/bin/bash
+if [ $# -eq 0 ]; then
+/usr/games/fortune | /usr/games/cowsay
+else
+/usr/games/cowsay "$@"
+fi
+Set the file to be executable with chmod +x entrypoint.sh .
+
+All this script does is pipe input from fortune into cowsay if it is called with no argu‐
+ments; otherwise, it calls cowsay with the given arguments. We next need to modify
+the Dockerfile to add the script into the image and call it with the ENTRYPOINT
+instruction. Edit the Dockerfile so that it looks like:
+FROM debian
+RUN apt-get update && apt-get install -y cowsay fortune
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+The COPY instruction simply copies a file from the host into the image’s filesys‐
+tem, the first argument being the file on the host and the second the destination
+path, very similar to cp .
+Try building a new image and running containers with and without arguments:
+$ docker build -t test/cowsay-dockerfile .
+...snip...
+$ docker run test/cowsay-dockerfile
+
+
+
+
+Image Namespaces
+There are three namespaces pushed Docker images can belong to, which can be iden‐
+tified from the image name:
+• Names prefixed with a string and / , such as amouat/revealjs , belong to the
+“user” namespace. These are images on the Docker Hub that have been uploaded
+by a given user. For example, amouat/revealjs is the revealjs image uploaded by
+the user amouat . It is free to upload public images to the Docker Hub, which
+already contains thousands of images from the whimisical supertest2014/nyan
+to the very useful gliderlabs/logspout .
+• Names such as debian and ubuntu , with no prefixes or / s, belong to “root” name‐
+space, which is controlled by Docker Inc. and reserved for the official images for
+common software and distributions available from the Docker Hub. Although
+curated by Docker, the images are generally maintained by third parties, nor‐
+mally the providers of the software in question (e.g., the nginx image is main‐
+tained by the nginx company). There are official images for most common
+software packages, which should be your first port of call when looking for an
+image to use.
+• Names prefixed with a hostname or IP are images hosted on third-party regis‐
+tries (not the Docker Hub). These include self-hosted registries for organizations,
+as well as competitors to the Hub, such as quay.io. For example, localhost:
+5000/wordpress refers to an WordPress image hosted on a local registry.
+This namespacing ensures users cannot be confused about where images have come
+from; if you’re using the debian image, you know it is the official image from the
+Docker Hub and not some other registry’s version of the debian image.
+
+
+
+Using the Redis Official Image
+Ok, I admit it: you’re probably not going to get a lot of mileage out of the cowsay
+image. Let’s see how we can use an image from one of the official Docker repositories
+—in this case, we’ll have a look at the offical image for Redis, a popular key-value
+store.
+
+Official Repositories
+If you search the Docker Hub for a popular application or service,
+such as the Java programming language or the PostgreSQL data‐
+base, you will find hundreds of results. 8 The official Docker reposi‐
+tories are intended to provide curated images of known quality and
+provenance and should be your first choice where possible. They
+should be returned at the top of searches and marked as official.
+When you pull from an official repository, the name will have no
+user portion, or it will be set to library (e.g., the MongoDB reposi‐
+tory is available from mongo and library/mongo ). You will also get
+a message saying, “The image you are pulling has been verified,”
+indicating the Docker daemon has validated the checksums for the
+image and therefore has verified its provenance.
+
+Start by getting the image:
+$ docker pull redis
+Using default tag: latest
+latest: Pulling from library/redis
+d990a769a35e:
+8656a511ce9c:
+f7022ac152fb:
+8e84d9ce7554:
+c9e5dd2a9302:
+27b967cdd519:
+3024bf5093a1:
+Pull
+Pull
+Pull
+Pull
+Pull
+Pull
+Pull
+complete
+complete
+complete
+complete
+complete
+complete
+complete
+e6a9eb403efb: Pull complete
+c3532a4c89bc: Pull complete
+35fc08946add: Pull complete
+d586de7d17cd: Pull complete
+1f677d77a8fa: Pull complete
+ed09b32b8ab1: Pull complete
+54647d88bc19: Pull complete
+2f2578ff984f: Pull complete
+ba249489d0b6: Already exists
+19de96c112fc: Already exists
+library/redis:latest: The image you are pulling has been verified.
+Important: image verification is a tech preview feature and should not be re...
+Digest: sha256:3c3e4a25690f9f82a2a1ec6d4f577dc2c81563c1ccd52efdf4903ccdd26cada3
+Status: Downloaded newer image for redis:latest
+Start up the Redis container, but this time use the -d argument:
+$ docker run --name myredis -d redis
+585b3d36e7cec8d06f768f6eb199a29feb8b2e5622884452633772169695b94a
+The -d tells Docker to run the container in the background. Docker starts the con‐
+tainer as normal, but rather than printing the output from the container, it returns
+the containers ID and exits. The container is still running in the background, and you
+can use the docker logs command to see any output from the container.
+Ok, so how do we use it? Obviously we need to connect to the database in some way.
+We don’t have an application, so we’ll just use the redis-cli tool. We could just
+install the redis-cli on the host, but it’s easier and more informative to launch a new
+container to run redis-cli in and link the two:
+$ docker run --rm -it --link myredis:redis redis /bin/bash
+root@ca38735c5747:/data# redis-cli -h redis -p 6379
+redis:6379> ping
+PONG
+redis:6379> set "abc" 123
+OK
+redis:6379> get "abc"
+"123"
+redis:6379> exit
+root@ca38735c5747:/data# exit
+exit
+Pretty neat—we’ve just linked two containers and added some data to Redis in a few
+seconds. So how did this work?
+
+
+Docker Networking Changes
+This chapter, and the rest of this book, use the --link command to
+network containers. Forthcoming changes to the way networking
+works in Docker mean that in the future, it will be more idiomatic
+to “publish services” rather than link containers. However, links
+will continue to be supported for the forseeable future, and the
+examples in this book should work without changes.
+For more information on the upcoming changes to networking, see
+“New Docker Networking”.
+
+
+The linking magic happened with the --link myredis:redis argument to docker
+run . This told Docker that we wanted to connect the new container to the existing
+“myredis” container, and that we want to refer to it by the name “redis” inside our
+new container. To achieve this, Docker set up an entry for “redis” in /etc/hosts inside
+the container, pointing to the IP address of the “myredis”. This allowed us to use the
+hostname “redis” in the redis-cli rather than needing to somehow pass in, or discover,
+the IP address of the Redis container.
+After that, we run the Redis ping command to verify that we are connected to a Redis
+server before adding and retrieving some data with set and put .
+This is all good, but there is still an issue: how do we persist and back up our data?
+For this, we don’t want to use the standard container filesystem—instead we need
+something that can be easily shared between the container and the host or other con‐
+tainers. Docker provides this through the concept of volumes. Volumes are files or
+directories that are directly mounted on the host and not part of the normal union
+file system. This means they can be shared with other containers and all changes will
+be made directly to the host filesystem. There are two ways of declaring a directory as
+a volume, either using the VOLUME instruction inside a Dockerfile or specifying the
+-v flag to docker run . Both the following Dockerfile instruction and docker run
+command have the effect of creating a volume as /data inside a container:
+VOLUME /data
+and:
+$ docker run -v /data test/webserver
+By default, the directory or file will be mounted on the host inside your Docker
+installation directory (normally /var/lib/docker/). It is possible to specify the host
+directory to use as the mount via the docker run command (e.g., docker run -d -
+v /host/dir:/container/dir test/webserver ). It isn’t possible to specify a host
+directory inside a Dockerfile for reasons of portability and security (the file or direc‐
+tory may not exist in other systems, and containers shouldn’t be able to mount sensi‐
+tive files like etc/passwd without explicit permission).
+
+So, how do we use this to do backups with the Redis container? The following shows
+one way, assuming the myredis container is still running:
+$ docker run --rm -it --link myredis:redis redis /bin/bash
+root@09a1c4abf81f:/data# redis-cli -h redis -p 6379
+redis:6379> set "persistence" "test"
+OK
+redis:6379> save
+OK
+redis:6379> exit
+root@09a1c4abf81f:/data# exit
+exit
+$ docker run --rm --volumes-from myredis -v $(pwd)/backup:/backup \
+debian cp /data/dump.rdb /backup/
+$ ls backup
+dump.rdb
+Note that we have used the -v argument to mount a known directory on the host and
+--volumes-from to connect the new container to the Redis database folder.
+Once you’ve finished with the myredis container, you can stop and delete it:
+$ docker stop myredis
+myredis
+$ docker rm -v myredis
+myredis
+And you can remove all leftover containers with:
+$ docker rm $(docker ps -aq)
+45e404caa093
+e4b31d0550cd
+7a24491027fc
+...
+
+
+
+Surrounding Technologies
+The Docker engine and the Docker Hub do not in-and-of themselves constitute a
+complete solution for working with containers.
+The current list of supporting technologies supplied by Docker includes:
+Swarm
+Docker’s clustering solution. Swarm can group together several Docker hosts,
+allowing the user to treat them as a unified resource. See Chapter 12 for more
+information.
+Compose
+Docker Compose is a tool for building and running applications composed of
+multiple Docker containers. It is primarily used in development and testing
+rather than production. See “Automating with Compose” for more details.
+Machine
+Docker Machine installs and configures Docker hosts on local or remote resour‐
+ces. Machine also configures the Docker client, making it easy to swap between
+environments. See Chapter 9 for an example.
+Kitematic
+Kitematic is a Mac OS and Windows GUI for running and managing Docker
+containers.
+Docker Trusted Registry
+Docker’s on-premise solution for storing and managing Docker images. Effec‐
+tively a local version of the Docker Hub that can integrate with an existing secu‐
+rity infrastructure and help organizations comply with regulations regarding the
+storage and security of data. Features include metrics, Role-Based Access Control
+(RBAC), and logs, all managed through an administrative console. This is cur‐
+rently the only non–open source product from Docker Inc.
+there also alternatives to the Docker Trusted Registry, including the CoreOS Enter‐
+prise Registry and Artifactory from JFrog.
+Networking
+Creating networks of containers that span hosts is a nontrivial problem that can
+be solved in a variety of ways. Several solutions have appeared in this area,
+including Weave and Project Calico. In addition, Docker will soon have an inte‐
+grated networking solution called Overlay. Users will be able to swap out the
+Overlay driver for other solutions using Docker’s networking plugin framework.
+Docker also supports volume plugins for integration with other storage systems. Notable volume plu‐
+gins include Flocker, a multihost data management and migration tool, and
+GlusterFS for distributed storage.
+Service discovery
+When a Docker container comes up, it needs some way of finding the other serv‐
+ices it needs to talk to, which are typically also running in containers. As contain‐
+ers are dynamically assigned IP addresses, this isn’t a trivial problem in a large
+system. Solutions in this area include Consul, Registrator, SkyDNS, and etcd.
+Orchestration and cluster management
+In large container deployments, tooling is essential in order to monitor and man‐
+age the system. Each new container needs to be placed on a host, monitored, and
+updated. The system needs to respond to failures or changes in load by moving,
+starting, or stopping containers appropriately. There are already several compet‐
+ing solutions in the area, including Kubernetes from Google, Marathon (a frame‐
+work for Mesos), CoreOS’s Fleet, and Docker’s own Swarm tooling.
+
+
+
+
+Connecting Containers to the World
+Say you’re running a web server inside a container. How do you provide the outside
+world with access? The answer is to “publish” ports with the -p or -P commands. This
+command forwards ports on the host to the container. For example:
+$ docker run -d -p 8000:80 nginx
+af9038e18360002ef3f3658f16094dadd4928c4b3e88e347c9a746b131db5444
+$ curl localhost:8000
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+...
+The -p 8000:80 argument has told Docker to forward port 8000 on the host to port
+80 in the container. Alternatively, the -P argument can be used to tell Docker to auto‐
+matically select a free port to forward to on the host. For example:
+$ ID=$(docker run -d -P nginx)
+$ docker port $ID 80
+0.0.0.0:32771
+$ curl localhost:32771
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+...
+The primary advantage of the -P command is that you are no longer responsible for
+keeping track of allocated ports, which becomes important if you have several con‐
+tainers publishing ports. In these cases you can use the docker port command to
+discover the port allocated by Docker.
+
+Linking Containers
+Docker links are the simplest way to allow containers on the same host to talk to each
+other. When using the default Docker networking model, communication between
+containers will be over an internal Docker network, meaning communications are
+not exposed to the host network.
+Docker Networking Changes
+In future versions of Docker (likely 1.9 and on), the idiomatic way
+to network containers will be to “publish services,” rather than link
+containers. 
+Links are initialized by giving the argument --link CONTAINER:ALIAS to docker
+run , where CONTAINER is the name of the link container 3 and ALIAS is a local name
+used inside the master container to refer to the link container.
+Using Docker links will also add the alias and the link container ID to /etc/hosts on
+the master container, allowing the link container to be addressed by name from the
+master container.
+In addition, Docker will set a bunch of environment variables inside the master con‐
+tainer that are designed to make it easy to talk to the link container. For example, if
+we create and link to a Redis container:
+$ docker run -d --name myredis redis
+c9148dee046a6fefac48806cd8ec0ce85492b71f25e97aae9a1a75027b1c8423
+$ docker run --link myredis:redis debian env
+ATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=f015d58d53b5
+REDIS_PORT=tcp://172.17.0.22:6379
+REDIS_PORT_6379_TCP=tcp://172.17.0.22:6379
+REDIS_PORT_6379_TCP_ADDR=172.17.0.22
+REDIS_PORT_6379_TCP_PORT=6379
+REDIS_PORT_6379_TCP_PROTO=tcp
+REDIS_NAME=/distracted_rosalind/redis
+REDIS_ENV_REDIS_VERSION=3.0.3
+REDIS_ENV_REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-3.0.3.tar.gz
+REDIS_ENV_REDIS_DOWNLOAD_SHA1=0e2d7707327986ae652df717059354b358b83358
+HOME=/root
+we can see that Docker has set up environment variables prefixed with REDIS_PORT ,
+that contain information on how to connect to the container. Most of these seem
+somewhat redundant, as the information in the value is already contained in the vari‐
+able name. Nevertheless, they are useful as a form of documentation if nothing else.
+Docker has also imported environment variables from the linked container, which it
+has prefixed with REDIS_ENV . While this functionality can be very useful, it’s impor‐
+tant to be aware that this happens if you use environment variables to store secrets
+such as API tokens or database passwords.
+By default, containers will be able to talk to each other whether or not they have been
+explicitly linked. If you want to prevent containers that haven’t been linked from
+communicating, use the arguments --icc=false and --iptables when starting the
+Docker daemon. Now when containers are linked, Docker will set up Iptables rules to
+allow the containers to communicate on any ports that have been declared as
+exposed.
+Unfortunately, Docker links as they stand have several shortcomings. Perhaps most
+significantly, they are static—although links should survive container restarts, they
+aren’t updated if the linked container replaced. Also, the link container must be
+started before the master container, meaning you can’t have bidirectional links.
+
+
+Managing Data with Volumes and Data Containers
+To recap, Docker volumes are directories 4 that are not part of the container’s UFS (see
+“Images, Containers, and the Union File System”)—they are just normal directories
+on the host that are bind mounted (see Bind Mounting) into the container.
+There are three 5 different ways to initialize volumes, and it’s important to understand
+the differences between the methods. First, we can declare a volume at runtime with
+the -v flag:
+$ docker run -it --name container-test -h CONTAINER -v /data debian /bin/bash
+root@CONTAINER:/# ls /data
+root@CONTAINER:/#
+This will make the directory /data inside the container into a volume. Any files the
+image held inside the /data directory will be copied into the volume. We can find out
+where the volume lives on the host by running docker inspect on the host from a
+new shell:
+$ docker inspect -f {{.Mounts}} container-test
+[{5cad... /mnt/sda1/var/lib/docker/volumes/5cad.../_data /data local
+true}]
+In this case, the volume /data/ in the container is simply a link to the direc‐
+tory /var/lib/docker/volumes/5cad.../_data on the host. To prove this, we can add a
+file into the directory on the host: 6
+$ sudo touch /var/lib/docker/volumes/5cad.../_data/test-file
+And you should immediately be able to see from inside the container:
+$ root@CONTAINER:/# ls /data
+test-file
+The second way to set up a volume is by using the VOLUME instruction in a Dockerfile:
+FROM debian:wheezy
+VOLUME /data
+This has exactly the same effect as specifying -v /data to docker run .
+
+Setting Volume Permissions in Dockerfiles
+You will often need to set the permissions and ownership on a volume or initialize a
+volume with some default data or configuration files. The key point to be aware of
+here is that any instruction after the VOLUME instruction in a Dockerfile will not be
+able to make changes to that volume. For example, the following Dockerfile will not
+work as expected:
+FROM debian:wheezy
+RUN useradd foo
+VOLUME /data
+RUN touch /data/x
+RUN chown -R foo:foo /data
+We want the touch and chown commands to run on the image’s filesystem, but they
+will actually run inside the volume of a temporary container used to create the layer
+(refer back to “How Images Get Built” for more details). This volume will be removed
+once the commands complete, rendering the instruction pointless.
+The following Dockerfile will work:
+FROM debian:wheezy
+RUN useradd foo
+RUN mkdir /data && touch /data/x
+RUN chown -R foo:foo /data
+VOLUME /data
+When a container is started from this image, Docker will copy any files from the vol‐
+ume directory in the image into the container’s volume. This won’t happen if you
+specify a host directory for the volume (so that host files aren’t accidentally overwrit‐
+ten).
+If for some reason you can’t set permissions and ownership in a RUN instruction, you
+will have to do so using a CMD or ENTRYPOINT script that runs after container creation.
+
+The third 7 way is to extend the -v argument to docker run with an explicit directory
+to bind to on the host using the format -v HOST_DIR:CONTAINER_DIR . This can’t be
+done from a Dockerfile (it would be nonportable and a security risk). For example:
+$ docker run -v /home/adrian/data:/data debian ls /data
+This will mount the directory /home/adrian/data on the host as /data inside the con‐
+tainer. Any files already existing in the /home/adrian/data directory will be available
+inside the container. If the /data directory already exists in the container, its contents
+will be hidden by the volume. Unlike the other invocations, no files from the image
+will be copied into the volume, and the volume won’t be deleted by Docker (i.e.,
+docker rm -v will not remove a volume that is mounted at a user-chosen directory).
+
+Bind Mounting
+When a specific host directory is used in a volume (the -v
+HOST_DIR:CONTAINER_DIR syntax), it is often referred to as bind
+mounting. This is somewhat misleading, as all volumes are techni‐
+cally bind mounted—the difference is that the mount point is made
+explicit rather than hidden in a directory owned by Docker.
+
+
+Sharing Data
+The -v HOST_DIR:CONTAINER_DIR syntax is very useful for sharing files between the
+host and one or more containers. For example, configuration files can be kept on the
+host and mounted into containers built from generic images.
+We can also share data between containers by using the --volumes-from CONTAINER
+argument with docker run . For example, we can create a new container that has
+access to the volumes from the container in our previous example like so:
+$ docker run -it -h NEWCONTAINER --volumes-from container-test debian /bin/bash
+root@NEWCONTAINER:/# ls /data
+test-file
+root@NEWCONTAINER:/#
+It’s important to note that this works whether or not the container holding the vol‐
+umes ( container-test in this case) is currently running. As long as at least one exist‐
+ing container links to a volume, it won’t be deleted.
+
+
+Data Containers
+A common practice is to create data containers—containers whose sole purpose is to
+share data between other containers. The main benefit of this approach is that it pro‐
+vides a handy namespace for volumes that can be easily loaded using the --volumes-
+from command.
+For example, we can create a data container for a PostgreSQL database with the fol‐
+lowing command:
+$ docker run --name dbdata postgres echo "Data-only container for postgres"
+This will create a container from the postgres image and initialize any volumes
+defined in the image before running the echo command and exiting. 8 There’s no need
+to leave data containers running, since doing so would just be a waste of resources.
+We can then use this volume from other containers with the --volumes-from argu‐
+ment. For example:
+$ docker run -d --volumes-from dbdata --name db1 postgres
+
+Images for Data Containers
+There’s normally no need to use a “minimal image” such as busy
+box or scratch for the data container. Just use the same image that
+is used for the container consuming the data. For example, use the
+postgres image to create a data container to be used with the Post‐
+gres database.
+Using the same image doesn’t take up any extra space—you must
+already have downloaded or created the image for the consumer. It
+also gives the image a chance to seed the container with any initial
+data and ensures permissions are set up correctly.
+
+Deleting volumes
+Volumes are only deleted if:
+• the container was deleted with docker rm -v , or
+• the --rm flag was provided to docker run
+and:
+• no existing container links to the volume
+• no host directory was specified for the volume (the -v HOST_DIR:CONTAINER_DIR
+syntax was not used)
+At the moment, this means that unless you are very careful about always running
+your containers like this, you are likely to have orphan files and directories in your
+Docker installation directory and no easy way of telling what they represent. Docker
+is working on a top-level “volume” command that will allow you to list, create,
+inspect, and remove volumes independent of containers. This is expected to land in
+1.9, which should be out by the time this book is published.
+
+
+
+Common Docker Commands
+I have not specified in detail the arguments and
+syntax of the various commands (with the exception of docker run ). Refer to the in-
+built help for this, which can be accessed by giving the --help argument to any com‐
+mand or via the docker help command.
+
+Docker Boolean Flags
+In most Unix command-line tools, you will find flags that don’t
+take a value, such as -l in ls -l . Since these flags are either set or
+not set, Docker considers these to be boolean flags and—unlike
+most other tools—supports explictly supplying a boolean value flag
+(i.e., it will accept both -f=true and -f ). In addition (and this is
+where things get confusing), you can have both default true and
+default false flags. Unlike default false, default true flags are consid‐
+ered to be set if unspecified. Specifying a flag without an argument
+has the same effect as setting it to true—a default true flag is not
+unset by an argument with a value; the only way a default true flag
+can be unset is by explicitly setting it to false (e.g., -f=false ).
+To find out if a flag is default true or default false, refer to docker
+help for the command. For example:
+$ docker logs --help
+...
+-f, --follow=false
+--help=false
+-t, --timestamps=false
+...
+Follow log output
+Print usage
+Show timestamps
+shows that the -f , --help , and -t arguments are all default false.
+To give a couple of concrete examples, consider the default true --
+sig-proxy argument to docker run . The only way to turn this
+argument off is by explicitly setting it false. For example:
+$ docker run --sig-proxy=false ...
+All of the following are equivalent:
+$ docker run --sig-proxy=true ...
+$ docker run --sig-proxy ...
+$ docker run ...
+In the case of a default false argument, such as --read-only , the
+following will set it to true:
+$ docker run --read-only=true
+$ docker run --read-only
+Leaving it unspecified or explicitly setting to false are equivalent.
+This also leads to some quirky behavior with flags that normally
+short-circuit logic (e.g., docker ps --help=false will work as
+normal without printing the help message).
+
+The run Command
+---------------
+Launchs new containers.
+
+The following options control the lifecycle of the container and its basic mode of
+operation:
+-a, --attach
+Attaches the given stream ( STDOUT , etc.) to the terminal. If unspecified, both stdout and stderr are attached. If unspecified and the container is started in interactive mode ( -i ), stdin is also attached.
+Incompatible with -d
+-d, --detach
+Runs the container in “detached” mode. The command will run the container in the background and return the container ID.
+-i, --interactive
+Keeps stdin open (even when it’s not attached). Generally used with -t to start an interactive container session.
+--restart
+Configures when Docker will attempt to restart an exited container.
+--rm
+Automatically removes the container when it exits. Cannot be used with -d .
+-t, --tty
+Allocates a pseudo-TTY. Normally used with -i to start an interactive container.
+
+The following options allow setting of container names and variables:
+-e, --env
+Sets environment variables inside the container. For example:
+$ docker run -e var1=val -e var2="val 2" debian env
+Also note the --env-file option for passing variables in via a file.
+-h, --hostname
+Sets the container’s unix host name to NAME
+--name NAME
+Assigns the name NAME to the container. The name can then be used to address
+the container in other Docker commands.
+
+The following options allow the user to set up volumes:
+-v, --volume
+There are two forms of the argument to set up a volume (a file or directory
+within a container that is part of the native host filesystem, not the container’s
+union file system). The first form only specifies the directory within the con‐
+tainer and will bind to a host directory of Docker’s choosing. The second form
+specifies the host directory to bind to.
+--volumes-from
+Mounts volumes from the specified container. Often used in association with
+data containers (see “Data Containers”).
+
+There are several options affecting networking:
+--expose
+Equivalent of Dockerfile EXPOSE instruction. Identifies the port or port range as
+being used in the container but does not open the port. Only really makes sense
+in association with -P and when linking containers.
+--link
+Sets up a private network interface to the specified container. See “Linking Con‐
+tainers” for more information.
+-p, --publish
+“Publishes” a port on the container, making it accessible from the host. If the host
+port is not defined, a random high-numbered port will chosen, which can be dis‐
+covered by using the docker port command. The host interface on which to
+expose the port may also be specified.
+-P, --publish-all
+Publish all exposed ports on the container to the host. A random high-numbered
+port will be chosen for each exposed port. The docker port command can be
+used to see the mapping.
+
+The following options directly override Dockerfile settings:
+--entrypoint
+Sets the entrypoint for the container to the given argument, overriding any ENTRY
+POINT instruction in the Dockerfile.
+-u, --user
+Sets the user that commands are run under. May be specified as a username or
+UID. Overrides USER instruction in Dockerfile.
+-w, --workdir
+Sets the working directory in the container to the provided path. Overrides any
+value in the Dockerfile.
+
+Managing Containers
+-------------------
+In addition to docker run , the following docker commands are used to manage con‐
+tainers during their lifecyle:
+docker attach [OPTIONS] CONTAINER
+The attach command allows the user to view or interact with the main process
+inside the container. For example:
+$ ID=$(docker run -d debian sh -c "while true; do echo 'tick'; sleep 1; done;")
+$ docker attach $ID
+tick
+tick
+tick
+tick
+Note that using CTRL-C to quit will end the process and cause the container to exit.
+docker create
+Creates a container from an image but does not start it. Takes most of the same
+arguments as docker run . To start the container, use docker start .
+docker cp
+Copies files and directories between a container and the host.
+docker exec
+Runs a command inside a container. Can be used to perform maintenance tasks
+or as a replacement for ssh to log in to a container.
+For example:
+$ ID=$(docker run -d debian sh -c "while true; do sleep 1; done;")
+$ docker exec $ID echo "Hello"
+Hello
+$ docker exec -it $ID /bin/bash
+root@5c6c32041d68:/# ls
+bin dev home lib64 mnt proc run
+selinux sys usr
+boot etc lib
+media opt root sbin srv
+tmp var
+root@5c6c32041d68:/# exit
+exit
+docker kill
+Sends a signal to the main process (PID 1) in a container. By default, sends a
+SIGKILL , which will cause the container to exit immediately. Alternatively, the
+signal can be specified with the -s argument. The container ID is returned.
+For example:
+$ ID=$(docker run -d debian bash -c \
+"trap 'echo caught' SIGTRAP; while true; do sleep 1; done;")
+$ docker kill -s SIGTRAP $ID
+e33da73c275b56e734a4bbbefc0b41f6ba84967d09ba08314edd860ebd2da86c
+$ docker logs $ID
+caught
+$ docker kill $ID
+e33da73c275b56e734a4bbbefc0b41f6ba84967d09ba08314edd860ebd2da86c
+docker pause
+Suspends all processes inside the given container. The processes do not receive
+any signal that they are being suspended and consequently cannot shut down or
+clean up. The processes can be restarted with docker unpause . docker pause
+uses the Linux cgroups freezer functionality internally. This command contrasts
+with docker stop , which stops the processes and sends signals observable by the
+processes.
+docker restart
+Restarts one or more containers. Roughly equivalent to calling docker stop fol‐
+lowed by docker start on the containers. Takes an optional argument -t that
+specifies the amount of time to wait for the container to shut down before it is
+killed with a SIGTERM .
+docker rm
+Removes one or more containers. Returns the names or IDs of succesfully
+deleted containers. By default, docker rm will not remove any volumes. The -f
+argument can be used to remove running containers, and the -v argument will
+remove volumes created by the container (as long as they aren’t bind mounted or
+in use by another container).
+For example, to delete all stopped containers:
+$ docker rm $(docker ps -aq)
+b7a4e94253b3
+e33da73c275b
+f47074b60757
+docker start
+Starts a stopped container (or containers). Can be used to restart a container that
+has exited or to start a container that has been created with docker create but
+never launched.
+docker stop
+Stops (but does not remove) one or more containers. After calling docker stop
+on a container, it will transition to the “exited” state. Takes an optional argument
+-t which specifies the amount of time to wait for the container to shutdown
+before it is killed with a SIGTERM .
+docker unpause
+Restarts a container previously paused with docker pause .
+
+Detaching from Containers
+When attached to a Docker container, either by starting it in inter‐
+active mode or attaching to it with docker attach , you will stop
+the container if you try to disconnect with CTRL-C. Instead, if you
+use CTRL-P CTRL-Q you can detach from the container without
+stopping it.
+This code will only work when attached in interactive mode with a
+TTY (i.e., using both the -i and -t flags).
+
+
+
+
+
+
+
+
+
+
+
+
+

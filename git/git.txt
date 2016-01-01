@@ -1,0 +1,128 @@
+Setup inicial
+$ git config --global user.name "Your Name"
+$ git config --global user.email your_email@example.com
+$ git config --global push.default matching (git hace push de los cambios desde todas las ramas locales a las ramas remotas con el mismo nombre)
+$ git config --global push.default simple (git hace push de los cambios desde la rama actual a la rama remota que tiene el mismo nombre) PREFERIBLE
+$ git config --list
+
+Crear directorio con contenido.
+$ git init ------ crear nuevo repositorio en la carpeta actual (se crea .git)
+$ git status ----- chequear estado del repositorio
+
+Guardar fichero nuevo
+$ git add file.txt
+$ git commit -m "initial comment"
+
+Guardar cambios de fichero existente
+$ git commit -am "new comment" (hace add y commit)
+
+
+$ git log  ---- historico de cambios
+
+$ git checkout hash  ----- volver a version
+
+###############################
+
+Uso de git por línea de comandos o por GUI
+
+Para guardar una versión de un fichero (staged)
+$ git add nombre_fichero
+Hacer commit
+$ git commit -m "comentario" (-m --- message)
+Ver histórico
+$ git log
+
+Para excluir ficheros:
+crear .gitignore y escribir el nombre los ficheros a excluir (uno por línea)
+El fichero .gitignore debe ser commiteado
+
+#########
+
+$ git add .  -------  guarda todo lo de la carpeta actual (recursivamente, excepto las carpetas vacías)
+$ git add folder ----- guarda todo lo de la carpeta folder (recursivamente)
+
+########
+
+$ git revert hash  ---- abre editor para escribir comentario
+$ git reset hash  --- no comentario, no queda en stage (habrá que hacer add y commit)
+$ git reset --soft hash  ---- idem que lo anterior, pero queda en stage (habrá que hacer commit)
+$ git reset --hard hash ------ borra todo hasta lo especificado (peligroso)
+
+
+REPOSITORIO REMOTO (github / Bitbucket - permite crear proy. privados)
+Repositorio local
+
+github
+------
+
+login y crear repositorio
+crear repo local con: $ git clone https://github.com/... (dirección del repo de github)
+Hacer modificaciones y subir a local (add, commit)
+Subir a remoto: $ git push (pedirá credenciales username y pwd)
+
+Si otro hace cambios y lo sube a remoto (o hacemos cambios directamente en github) los replicamos en local con:
+$ git pull
+
+Bitbucket
+---------
+
+Partimos de un repo local
+login y crear repositorio
+Ir al directorio del repo local
+$ git remote add origin https://agv9@bitbucket.org/... (enlaza el repo local al remoto. Con git clone se ejecuta automáticamente el git remote)
+$ git push -u origin --all # pushes up the repo and its refs for the first time
+$ git push -u origin --tags # pushes up any tags
+
+
+
+BRANCHES - línea independiente de desarrollo
+master - rama ppal (se crea automáticamente)
+$ git branch ---- lista ramas
+$ git branch nombre_rama  -------- crea rama
+$ git checkout nombre_rama ------- cambia a rama especificada
+
+$ git checkout -b nombre_rama ------ crea rama y cambia a esa rama
+
+merge (automático o manual)
+AUTOMATICO (merge de una rama secundaria a la ppal -master)
+$ git checkout master ---- ir a master
+$ git merge nombre_rama ---- se especifica la rama con la que quiero hacer merge y se abre editor para poner comentario (la rama especificada permanece sin cambios, la rama master contiene los cambios procedentes de la rama secundaria)
+se combinan los commits de la rama especificada con los de la rama actual y los deja en la rama actual.
+MANUAL
+Se produce cuando git no sabe como combinar contenidos (conflictos)
+<<<<<<<< HEAD
+...contenido de la rama actual
+========
+...contenido de la rama a unir
+>>>>>>>> dev
+Eliminaremos lo que no queremos, guardamos, add y commit
+
+BRANCHES y REMOTES
+
+$ git push (si estamos en master, se envia a master remoto. Si no estamos en master da error: hay que poner $ git push -u [--set-upstream] origin nombre_rama --- después de esto ya puedo hacer $ git push sin que de error)
+$ git push origin master (origin es el alias por defecto del repo remoto)
+$ git push origin --all (git envia los cambios de todas las ramas locales a las ramas remotas con el mismo nombre)
+$ git push origin master
+
+_________
+
+SSH keys (para trabajar en remoto sin que pida credenciales - se necesita key pública en github o bitbucket, y la pública y privada en el pc)
+
+https://help.github.com/articles/generating-ssh-keys
+
+Se necesitan ficheros id_rsa (el pub contiene la clave pública) en .ssh del home
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

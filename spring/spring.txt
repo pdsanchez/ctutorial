@@ -1,0 +1,302 @@
+
+
+
+Considering a scenario of JDBC application without using the Spring Framework,
+we have a lot of boilerplate code that needs to be written over and over again to
+accomplish common tasks. Whereas in Spring JDBC application, which internally
+uses plain JDBC, the JdbcTemplate class eliminates boilerplate code and allows
+the programmer to just concentrate on application-specific logics development.
+•	 For a plain JDBC application without Spring, follow these steps:
+1.	 Register driver with the DriverManager service.
+2.	 Establish a connection with the database.
+3.	 Create a statement object.
+4.	 Prepare and execute an SQL query.
+5.	 Gather and process the result.
+6.	 Perform exception handling.
+7.	 Perform transaction management.
+8.	 Close JDBC object.
+
+For a Spring JDBC application (internally uses plain JDBC), follow these steps:
+1.	 Get access to JdbcTemplate .
+2.	 Prepare and execute an SQL query.
+3.	 Gather and process the result.
+
+
+Spring Core Container
+• Core module: provides features such as IoC and Dependency Injection (Hollywood principle: "Don't call me, I'll call you." -- "don't create me, I'll create myself using someone else")
+Dependency Injection is the basic design principle in Spring Core Container that removes explicit dependence on container APIs
+• Beans module: provides BeanFactory , which is a generic factory pattern that separates the dependencies such as initialization, creation, and access of the objects from your actual program logic. BeanFactory in Spring Core Container supports the following two scopes modes of object:
+° ° Singleton: only one shared instance of the object with a particular name will be retrieved on lookup. Spring singleton returns a same bean instance per Spring IoC container. Each time you call getBean() on ApplicationContext , Spring singleton returns the same bean instance.
+° ° Prototype or non-singleton: each retrieval results in the creation of a brand new instance. Each time you call getBean() on ApplicationContext , Spring prototype creates a separate bean instance.
+• Context module: An ApplicationContext container loads Spring bean definitions and wires them together. The ApplicationContext container is the focal point of the Context module. ApplicationContext supports the Message lookup, supporting internationalization (i18N) messages.
+• Expression language: Spring Expression Language (SpEL) supports the features for querying and manipulating an object graph at runtime. SpEL can be used to inject bean or bean property in another bean. SpEL supports method invocation and retrieval of objects by name from IoC container in Spring.
+
+The AOP module
+Is a proxy-based framework implemented in Java. 
+AOP is a mechanism that allows us to introduce new functionalities into an existing code without modifying it design. 
+The Spring AOP framework is configured at runtime.
+Spring integrates with AspectJ, which is an extension of AOP. AspectJ lets programmers define special constructs called Aspects, which contains several
+entities unavailable to standard classes.
+
+Data access/integration
+• JDBC module: The central class of Spring JDBC abstraction framework is the JdbcTemplate class that includes the most common logic in using the JDBC API to access data such as handling the creation of connection, statement creation, statement execution, and release of resource. The JdbcTemplate class resides inside the org.springframework.jdbc.core package.
+• ORM module: The Object-relational mapping (ORM) module of the Spring Framework provides a high-level abstraction for ORM APIs, including JPA
+and Hibernate. 
+• OXM module: Spring OXM module stands for Spring Object XML Mappers,which supports Object/XML mapping. It also supports integration with
+Castor, JAXB, XmlBeans, and the XStream framework.
+Spring provides common interfaces for marshalling (transforming JavaBeans into XML) and unmarshalling (transforming XML into Java objects) for DI into any Spring beans. Spring also has modules to convert data to and from JSON, in addition to OXM.
+• JMS module: The Java Messaging Service (JMS) module comprises features to produce and consume messages. It is a Java Message Oriented Middleware (MOM) API for sending messages between two or more clients.
+JMS is a specification that describes a common way for Java program to create, send, and read distributed enterprise messages.
+° ° Spring Java mail: The org.springframework.mail package is the root package that provides mail support in the Spring Framework. It handles electronic mail.
+• Transaction module: The Spring transaction module provides abstraction mechanism to supports programmatic and declarative transaction management for classes.
+
+The Web module
+• Web module: The Spring Web module builds on the application context module and includes all the support for developing robust
+and maintainable web application in a simplified approach. It also supports multipart file-upload functionality.
+• Servlet module: In Spring, the Servlet module contains Model-View-Controller (MVC) implementation that helps to build enterprise web
+applications. In Spring Framework, the MVC provides clean separation between binding request parameter, business objects, and controller logic.
+• Struts module: The Web Struts module supports integration of Struts Web tier within a Spring application. It also supports configuration of
+Struts Actions using Spring Dependency Injection.
+• Portlet module: Spring Portlet supports for easier development of web application using Spring. Portlet is managed by the Portlet container,
+similar to the web container. Portlet is used in the UI layer for displaying contents from data source for end user.
+
+The Test module
+helps to test applications developed using the Spring Framework, either using JUnit or TestNG. It also helps in creating mock
+object to perform unit testing in isolation. It supports running integration tests outside the application server.
+
+
+http://agilestyle.iteye.com/blog/1684338
+
+core JARs from the Spring Framework
+° ° spring-aop-4.1.4.RELEASE
+° ° spring-aspects-4.1.4.RELEASE
+° ° spring-beans-4.1.4.RELEASE
+° ° spring-context-4.1.4.RELEASE
+° ° spring-context-support-4.1.4.RELEASE
+° ° spring-core-4.1.4.RELEASE
+° ° spring-expression-4.1.4.RELEASE
+° ° commons-logging-1.2
+
+
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+GreetingMessageService greetingMessageService = context.getBean("greetingMessageServiceImpl", GreetingMessageService.class);
+
+The Spring bean configuration file can be named anything, but developers usually keep the name beans.xml . This Spring bean configuration file should be available in classpath.
+
+
+What is a container
+In software development terminology, the word "container" is used to describe
+any component that can contain other components inside it.
+The container first creates the objects and then wires them together, after
+which it moves on to configure them, and finally manage their complete life cycle.
+It identifies the object dependencies, creates them, and then injects them into the
+appropriate objects.
+we can think about a container as an intermediate
+
+Spring Container
+Spring Container is the central component of the Spring Framework. Spring
+Container manages the life cycle of an application's bean, which will live within
+Spring Container. Spring Container is responsible for wiring an application's beans
+by associating different beans together. Spring Container manages the components
+of applications using DI. The configuration metadata, which can be represented in
+XML, Java annotations, or Java code, helps Spring Container to decide the object to
+initiate, configure, and assemble.
+It is a container of beans and
+behaves as a factory of beans. So, we can have Spring Container and we can have as
+many objects as we want, as shown in the following diagram. Also, all these objects
+are managed by Spring Container. The container handles the instantiation of object,
+their whole life cycle, and finally their destruction
+
+Beans
+Beans are reusable software components that are managed by the Spring IoC
+container. It contains the properties, setter, and getter methods of a class.
+The Spring IoC container is represented by the interface org.springframework.
+context.ApplicationContext , which is responsible for instantiating, configuring,
+and assembling beans. Beans are reflected in the configuration metadata used by
+a container. The configuration metadata defines the instruction for the container
+and the objects to instantiate, configure, and assemble. This configuration metadata
+can be represented in XML, Java annotations, or Java code.
+
+XML-based bean configuration
+The bean configuration information is stored in an XML file, which is used to create
+a bean definition using the <bean>...</bean> element. The bean definition contains
+the following metadata, which represents the configuration information of a bean:
+•	 A fully qualified class name that represents bean name
+•	 The behavioral configuration elements, such as scope, life cycle, and so on,
+describe the bean's behavior in the Spring IoC container.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd">
+  <bean id="..." class="...">
+    <!-- configuration for this bean here -->
+  </bean>
+  <!-- more bean definitions here -->
+</beans>
+
+Spring provides the following two interfaces that act as containers:
+•	 BeanFactory : This is a basic container, and all other containers
+implement BeanFactory .
+•	 ApplicationContext : This refers to the subinterface of BeanFactory
+and is mostly used as a container in enterprise applications.
+The ApplicationContext interface implements
+the BeanFactory interface, which provides enterprise-specific functionality and
+supports message-resource handling, Spring's AOP features, event publication,
+and WebApplicationContext for use in web applications.
+
+To instantiate Spring Container, create an object of any of the BeanFactory
+or ApplicationContext implementation classes that supply the Spring bean
+configuration. The basic packages in the Spring IoC container of the Spring
+Framework are org.springframework.beans and org.springframework.context .
+
+Both the containers, BeanFactory and ApplicationContext , are responsible for
+providing DI. For all the configured beans, these containers act as a repository.
+These containers initiate a registered bean, populate the bean's properties, and call
+the init() method to make the bean ready for use. The destroy() method of bean
+is invoked during the shutdown of the application.
+
+BeanFactory
+Spring creates all the instances, along with the references to the objects you require.
+This is different from when you create an instance yourself with the help of the new
+method. This is called a factory pattern.
+In a factory pattern, we have an object that behaves as the object factory. Basically,
+if you need an instance of any object, you don't have to create the instance yourself.
+Instead, you call a method of this factory, which then returns the instance you
+wanted. This factory reads from a configuration file, which acts as a blueprint that
+contains guidelines on how we can create the object.
+Spring has objects of the BeanFactory type that behave like the Factory object. You
+specify the blueprints object in a configuration file, which is an XML file, and then
+supply it to BeanFactory . Later, if you need the instance of any object, you can ask
+BeanFactory for it, which then refers to the XML file and constructs the bean as
+specified. This bean is now a Spring bean as it has been created by Spring Container
+and is returned to you. Let's now summarize this:
+1.	 Spring has BeanFactory , which creates new objects for us. So, the Foo object
+will call BeanFactory .
+2.	 BeanFactory would read from Spring XML, which contains all the bean
+definitions. Bean definitions are the blueprints here. BeanFactory will
+create beans from this blueprint and then make a new Spring bean.
+3.	 Finally, this new Spring bean is handed back
+The advantage here is that this new bean has been created in this BeanFactory , which
+is known by Spring. Spring handles the creation and the entire life cycle of this bean.
+So, in this case, Spring acts as container for this newly created Spring bean.
+BeanFactory is defined by the org.springframework.beans.factory.BeanFactory
+interface. The BeanFactory interface is the central IoC container interface in Spring
+and provides the basic end point for Spring Core Container towards the application
+to access the core container service.
+
+Implementation of BeanFactory
+There are many implementations of the BeanFactory interface, with the org.
+springframework.beans.factory.xml.XmlBeanFactory class being the most
+popularly used one, which reads the bean definition and initiates them based on
+the definitions contained in the XML file.
+This class has been deprecated in favor of DefaultListableBeanFactory and
+XmlBeanDefinitionReader , and the purpose of this implementation is just to
+explain BeanFactory . The constructor for XmlBeanFactory takes an implementation
+of the Resource interface as an argument, as shown in the following line of code:
+XmlBeanFactory (Resource resource)
+The Resource interface has many implementations. The two commonly used
+implementations are shown in the following table:
+Resource interface: org.springframework.core.io.FileSystemResource -- This loads the configuration file from the underlying filesystem
+Resource interface: org.springframework.core.io.ClassPathResource -- This loads the configuration file from the classpath
+
+Let's assume that beans are configured in the beans.xml file located in the C drive:
+...
+<bean id="mybean" class="...">
+...
+</bean>
+...
+The code snippet to load the configuration file using BeanFactory is given as follows:
+BeanFactory bfObj = new XmlBeanFactory (new FileSystemResource
+("c:/beans.xml"));
+MyBean beanObj= (MyBean) bfObj.getBean ("mybean");
+Here, we've used FileSystemResource , which is one of the Resource interface
+implementations. The bfObj object corresponds to Spring Container, one that
+has loaded the bean definitions from the beans.xml file. BeanFactory is a lazy
+container, so at this point, only bean definitions get loaded, but beans themselves
+are not instantiated yet. At the second line, we call the getBean() method of the
+BeanFactory object created by passing the bean ID "mybean" as an argument to
+this method.
+BeanFactory reads the bean definition of a bean with the ID "mybean" from
+Spring's beans.xml file, instantiates it, and then returns a reference.
+
+The BeanFactory container is usually used in very simple applications; however,
+in real-time projects, the ApplicationContext container is used.
+
+ApplicationContext
+Like BeanFactory , ApplicationContext is also used to represent Spring Container,
+built upon the BeanFactory interface. ApplicationContext is suitable for Java
+EE applications, and it is always preferred over BeanFactory . All functionality of
+BeanFactory is included in ApplicationContext .
+The org.springframework.context.ApplicationContext interface defines
+ApplicationContext . ApplicationContext and provides advanced features to
+our Spring applications that make them enterprise-level applications, whereas
+BeanFactory provides a few basic functionalities. Let's discuss them:
+•	 Apart from providing a means of resolving text messages,
+ApplicationContext also includes support for i18n of those messages.
+•	 A generic way to load file resources, such as images, is provided by
+ApplicationContext .
+•	 The events to beans that are registered as listeners can also be published by
+ApplicationContext .
+•	 ApplicationContext handles certain operations on the container or beans
+in the container declaratively, which have to be handled with BeanFactory
+in a programmatic way.
+•	 It provides ResourceLoader support. This is used to handle low-level
+resources, Spring's Resource interface, and a flexible generic abstraction.
+ApplicationContext itself is ResourceLoader . Hence, access to
+deployment-specific Resource instances is provided to an application.
+•	 It provides MessageSource support. MessageSource , an interface used to
+obtain localized messages with the actual implementation being pluggable,
+is implemented by ApplicationContext .
+
+Implementation of ApplicationContext
+The most commonly used ApplicationContext implementations are as follows:
+•	 ClassPathXmlApplicationContext : This bean definition is loaded by
+the container from the XML file that is present in the classpath by treating
+context definition files as classpath resources. ApplicationContext
+can be loaded from within the application's classpath using
+ClassPathXmlApplicationContext :
+ApplicationContext context =
+new ClassPathXmlApplicationContext("spring-beans.xml");
+•	 FileSystemXmlApplicationContext : This bean definition is loaded
+by the container from an XML file. Here, the full path of the XML bean
+configuration file should be provided to the constructor:
+ApplicationContext context =
+new FileSystemXmlApplicationContext("classpath:beans.xml");
+In the preceding code snippet, the ApplicationContext instance is created
+using the FileSystemXmlApplicationContext class and beans.xml is
+specified as a parameter.
+The getBean() method can be used to access a particular bean by specifying
+its ID, as shown in following code snippet:
+MyBean beanObj= (MyBean) context.getBean ("mybean");
+In the preceding code snippet, the getBean() method accepts the ID of the
+bean and returns the object of the bean.
+ApplicationContext is an active container that initiates all the configured
+beans as soon as the ApplicationContext instance is created and before
+the user calls the getBean() method. The advantage of this active creation
+of beans by ApplicationContext is the handling of exceptions during the
+startup of the application itself.
+•	 XmlWebApplicationContext : This is used to create the context in web
+application by loading configuration the XML file with definitions of
+all beans from standard locations within a web application directory.
+The default location of the configuration XML file is /WEB-INF/
+applicationContext.xml .
+•	 AnnotationConfigApplicationContext : This is used to create the context
+by loading Java classes annotated with the @Configuration annotation
+instead of XML files. The AnnotationConfigApplicationContext class
+is used when we define Java-based Spring bean configuration for the bean
+definition instead of XML files.
+•	 AnnotationConfigWebApplicationContext : This is used to create the
+web application context by loading the Java classes annotated with the @
+Configuration annotation instead of XML files in the web application.
+
+
+
+
+
+
+
+
+
+

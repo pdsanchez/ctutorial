@@ -1,0 +1,244 @@
+Security engineering:
+Diseño e implementación de sistemas que no permitan la fuga de información privada y sepan tratar con ataques maliciosos, errores o contratiempos. Hay 5 factores a tener en cuenta:
+- Estrategia: definir objetivos.
+- Implementación: implementar la estrategia a nivel de software y hardware.
+- Fiabilidad: confianza en cada componente del sistema y en el sistema en conjunto. Disponibilidad 24/7 del sistema.
+- Relevancia: capacidad del sistema para contrarrestar las amenazas más recientes.
+- Motivación de las personas encargadas de la seguridad. 
+
+La seguridad en los sistemas Big Data es un reto. Existen muchos catálogos e interfaces, cuando una base de datos tradicional tiene sólo un catálogo y una interfaz.
+
+
+Combatir phishing:
+- Password Scramblers
+- Client Certificates o Custom-Built Applications
+- Two-Phase Authentication (vulnerable a los ataques real-time man-in-the-middle)
+- Trusted Computing
+- Strong Password Protocols
+- Two-Channel Authentication (vulnerable a los ataques real-time man-in-the-middle)
+
+Protocolo de seguridad Kerberos:
+Herramienta de autenticación que usa dos servidores:
+- un servidor de autenticación.
+- un servidor que provee tickets de acceso a recursos.
+
+Kerberos es el protocolo de seguridad más usado, aunque es vulnerable a la manipulación del timestamp. En Hadoop se usa como autenticación primaria.
+
+1. El usuario se autentica (con contraseña)
+2. El software cliente solicita un ticket. Este se encripta con la contraseña y contiene una session key valida durante un tiempo predeterminado.
+3. Si el usuario es autenticado, usará la session key para acceder al sistema seguro controlado por el servidor de tickets.
+4. Si el usuario tiene permisos se le permitirá el acceso. Se crea un ticket con una key que se envía al usuario. El usuario también toma una copia de la key encriptada con la session key.
+5. El usuario verifica el ticket enviando un timestamp al sistema asegurado. El ticket confirma que sigue vivo devolviendo el timestamp incrementado en 1 (esto demuestra que fue posible desencriptar el ticket correctamente y extraer la key)
+6. Después de esto el usuario puede comunicarse con el sistema seguro.
+
+
+Los protocolos de seguridad sólo protegen la puerta principal (el acceso al programa). Una vez que el programa comienza a ejecutarse, necesita tener una lógica robusta que permita acceder únicamente a los recursos necesarios sin facilitar vías de acceso a ataques maliciosos que modifiquen recursos del sistema o tomen el control del mismo. 
+
+Factores que hacen un programa inseguro:
+Un programa al ejecutarse puede modificar el entorno, por eso hay que asegurarse que sólo modifique lo que queremos.
+Hay que considerar los defectos que puede tener un programa:
+-Fault: es un fallo humano.
+-Failure: es una desviación de la funcionalidad requerida.
+-No maliciosos: por errores humanos no intencionados que generalmente causan una mala funcionalidad y ocasionalmente brechas de seguridad.
+	-Buffer Overflow: el sobrante de datos puede sobreescribir datos del sistema (un hacker puede usar esto para tomar el control del sistema)
+	-Incomplete Mediation: un programa acepta datos de usuario sin verificar o validar. Un hacker puede crear un cliente que usa en lugar de un navegador para enviar datos arbitrarios al servidor. Ejemplo: SQL injection --> “' or '1'='1”
+Es importante definir el tamaño máximo de caracteres para evitar modificaciones de las queries. Hay que asegurar que los permisos del usuario que accede a base de datos tenga los mínimos privilegios posibles y sólo para la base de datos implicada.
+	-Time-of-Check to Time-of-Use Errors: desincronización entre autorización y ejecución de tareas.
+-Maliciosos: código malicioso diseñado para causar daños.
+	- virus: programa autoreplicativo que añade una copia de su código malicioso a otros programas, infectándolos. Estos programas se convierten en virus y se repite el proceso hasta infectar el sistema al completo. Usan otros programas como medio para propagarse.
+	Transient virus: depende del programa hospedador y se ejecuta cuando el hospedador arranca.
+	Resident virus: reside en la memoria del sistema y se ejecuta como un programa independiente (stand-alone)
+	- worm: programa stand-alone que se replica a través de la red.
+	- rabbit: virus o gusano que se autoreplica sin límite hasta dejar exhaustos los recursos del sistema.
+	- trojan horse: código con un propósito malicioso oculto además del propósito principal.
+	- logic trigger: código malicioso que se ejecuta cuando una condición particular se cumple.
+	Time trigger: la condición de activación es una fecha concreta.
+	- trap door: punto de entrada secreto a un programa que evita autenticación. Suele usarse por los programadores con propósitos legítimos (debug, test)
+	Malware puede instalar programas maliciosos o puertas traseras en ordenadores conectados a Internet. Una vez instalado, las puertas traseras pueden abrir un puerto de Internet y realizar tareas destructivas.
+
+Prevención:
+- usar software comercial de vendedores fiables.
+- mantener parches de soluciones open source.
+- checkear configuraciones por defecto del software instalado.
+- testear aisladamente el nuevo software.
+- abrir sólo adjuntos fiables.
+- mantener una imagen recuperable del sistema creada diariamente o semanalmente.
+- hacer backups de los ficheros ejecutables del sistema y de los datos importantes que puedan contener código infectable.
+- usar antivirus y realizar scan diaria o semanalmente. Actualizar la base de datos de virus.
+
+Los sistemas distribuidos implican tener seguridad a varios niveles. Los datos se encuentran tras múltiples capas de defensa: autenticación, autorización (con diferente granularidad), encriptación...
+
+
+HADOOP
+El uso de hardware de bajo costo y la redundancia son los principales factores que hace Hadoop una opción atractiva a la mayoría de las empresas que lo utilizan para el almacenamiento. Además, las funciones como el procesamiento distribuido que multiplica el poder de procesamiento por el número de nodos, la facilidad para manipular petabytes de datos, la capacidad de expansión sin tiempo de inactividad; y una gran tolerancia a fallos hacen Hadoop una propuesta atractiva para un creciente
+número de usuarios corporativos.
+
+Arquitectura
+------------
+Hadoop tiene dos componentes principales: HDFS y un framework para procesar grandes cantidades de datos en paralelo usando MapReduce.
+
+HDFS (Hadoop Distributed File System)
+HDFS es un sistema de ficheros distribuido que se sitúa sobre el sistema de ficheros nativo del sistema operativo. Al guardar, los datos se distribuyen entre los nodos. Esto ayuda a que el proceso MapReduce sea más eficiente. 
+Los ficheros se escriben una vez y se leen múltiples veces (lectura en streaming sin acceso random), aunque se puede añadir contenido. Se almacenan como bloques (de 64MB por defecto) y se replican (por defecto 3 veces) para permitir redundancia y fiabilidad.
+
+NameNode
+Contiene metadatos con las direcciones de los bloques de datos y coordina el acceso a HDFS. Los metadatos se guardan en la RAM para reducir el tiempo de respuesta. Esta configuración ofrece un controlador central y un único punto de fallo (SPOF - single point of failure). En versiones anteriores el Secondary NameNode permitía recuperarse de fallos; ahora se puede clusterizar un nodo Hot Standby (donde el nodo standby se encarga de todas las funciones del NameNode sin intervención del usuario) configurado en Active/Passive para eliminar el SPOF y que exista redundancia del NameNode.
+HDFS trabaja mejor con pocos ficheros muy grandes que con muchos ficheros pequeños.
+Al almacenarse los metadatos en RAM, un gran número de ficheros pequeños dispara la RAM consumida. Además, los ficheros de tamaño menor al tamaño de bloque (64MB) se mapean a un bloque y reservan espacio que no necesitan.
+
+HDFS File Storage and Block Replication
+El almacenamiento y replicación de los bloques permite la recuperación por fallo de un nodo. Cuando el NameNode procesa la petición de un cliente de almacenar un fichero:
+- el NameNode guarda la primera copia del bloque localmente en el cliente si este forma parte del cluster.
+- si el cliente no forma parte del cluster, el NameNode guarda el bloque en un DataNode que no este muy lleno u ocupado.
+La segunda copia del bloque se guarda en un DataNode diferente del mismo rack, y la tercera copia en un DataNode de otro rack (para reducir el riesgo de una pérdida completa de datos por fallo del rack)
+Los DataNodes envian pulsos (heartbeats) al NameNode, y si no se envía pulso durante un periodo de tiempo concreto, se considera que ese DataNode se ha perdido.
+El NameNode encuentra otros DataNodes que contengan una copia de los bloques que se han perdido, y les da instrucciones para hacer una nueva copia de esos bloques en otro DataNode. Así el número de réplicas de los bloques coincide siempre con el factor de replicación que está configurado.
+
+Adding or Removing DataNodes
+Para añadir sólo es necesario incluir el hostname del nuevo DataNode en un fichero de configuración (un fichero de texto llamado slaves) y ejecutar una utilidad administrativa que notifique al NameNode de la adición.
+Eliminar un DataNode implica eliminar la entrada del hostname del fichero slaves y ejecutar la utilidad administrativa que notifique al NameNode. El NameNode replicará los bloques del DataNode eliminado en otros DataNodes.
+
+Cluster Rebalancing
+Añadir o eliminar un DataNode puede provocar que el cluster HDFS quede desbalanceado. Hadoop tiene una utilidad (Hadoop Balancer) que rebalancea el cluster de nuevo. El Balancer mueve bloques de DataNodes con sobreuso a DataNodes infrausados siguiendo la política de replicación por la que no se pueden tener todas las replicas en DataNodes de un mismo rack. Esto se hace en background sin sobrecargar el cluster.
+El movimiento de bloques continúa hasta que la utilización (radio de espacio usado respecto a la capacidad total) de todos los DataNodes está dentro de un umbral. POr ejemplo, un umbral del 5% significa que la utilización de todos los DataNodes es del 5%.
+
+Disk Storage
+HDFS usa almacenamiento local para el NameNode, Secondary NameNode, y DataNodes, por lo que es importante elegir correctamente el tipo de almacenamiento. El NameNode necesita tener almacenamiento redundate y tolerancia a fallos, por lo que se usará RAID 10 (grabando en bandas y duplicando datos en al menos dos discos). Secondary NameNode requerirá tener almacenamiento RAID 10. Los DataNodes pueden usar JBOD (Just a Bunch Of Disks) local. Al replicarse no es necesario usar discos RAID.
+
+RAID son las siglas de Redundant Array of Independent (o Inexpensive) Disks. Es un método de almacenamiento de la información en varios discos duros para conseguir una mayor protección.
+RAID 10 es rápido, a prueba de fallos y consume espacio de disco.
+
+Secondary NameNode
+El Secondary NameNode mantiene una copia de repuesto (standby) de los metadatos del NameNode. El NameNode usa un fichero llamado 'fsimage' que almacena el estado actual del HDFS (un map de todos los ficheros almacenados en el sistema de ficheros y la localización de sus bloques correspondientes) y un fichero llamado 'edits' que almacena las modificaciones del HDFS.
+Este fichero puede crecer mucho y el 'fsimage' puede quedar desactualizado (no refleja correctamente el estado de HDFS). Así, si el NameNode se cae, el estado actual del HDFS se perdería y no se podrían usar los datos de los DataNodes.
+Para evitar esto, el Secondary NameNode realiza un checkpoint (por defecto cada hora), fusiona localmente los ficheros 'fsimage' y 'edits' del NameNode y copia el resultado de nuevo en el NameNode (crea un 'fsimage' con los metadatos de NameNode actualizados y lo copia en NameNode). De este modo sólo se perderán las ediciones o modificaciones hechas al HDFS, ya que el Secondary NameNode guarda la última copia del 'fsimage' localmente.
+
+NameNode High Availability
+El NameNode es un SPOF. Si un cluster de Hadoop se usa en producción, hay que asegurar su funcionamiento en caso de fallo del NameNode. Para eso podemos recurrir a HA (NameNode High Availability), donde el cluster se despliega con un par de NameNodes activo/pasivo. El fichero 'edits' necesita estar disponible para ambos NameNodes (activo/pasivo) y por tanto se localiza en un directorio NFS compartido.
+El NameNode activo escribe el 'edits' y el NameNode en espera reproduce la misma transacción para asegurar que está actualizada (así está dispuesta para tomar el control en caso de fallo). Los DataNodes envían informes de los bloques a ambos nodos.
+Se puede configurar el par HA NameNode para un procedimiento contra fallos manual o automático (los nodos activo y pasivo intercambian los roles).
+En el procedimiento manual, se ejecuta un comando para que el Standby NameNode sea el Primary NameNode o NameNode activo.
+En el procedimiento automático, cada NameNode necesita ejecutar un proceso adicional controlador para monitorizar los procesos del NameNode y coordinar la transición. La aplicación ZooKeeper se suele usar para manejar el procedimiento contra fallos.
+
+En caso de recuperación de fallo, no se puede determinar si el NameNode activo no está disponible o es inaccesible desde el NameNode en standby. Si los dos procesos NameNode se ejecutan en paralelo, ambos pueden escribir en el estado compartido y corromper los metadatos del sistema de ficheros (split-brain scenario). Para evitar esta situación hay que asegurarse que el NameNode que ha fallado está parado o "cercado" (petición de stop con RPC, STONITH -shoot the other node in the head- para reiniciar remotamente o cortar la alimentación programáticamente durante un periodo de corta duración)
+Al usar HA, como el NameNode enstandby toma el rol de Secondary NameNode, no es necesario un proceso de Secondary NameNode.
+
+
+Inherent Security Issues with HDFS Architecture
+En esta arquitectura no existe servidor que procese los datos, autentique los usuarios... En el diseño original de Hadoop no existia mecanismo de autenticación o una entrada segura. Aunque ahora Hadoop tiene un buen sistema de autenticación, es complejo integrarlo con los sistemas existentes y la autorización basada en roles presenta numerosos retos.
+
+Cualquier usuario con acceso al servidor que ejecuta el NameNode, y que tenga permisos de ejecución de los binarios de Hadoop, puede solicitar cualquier dato del NameNode y borrarlo. El acceso está limitado solo por el directorio de Hadoop y os permisos del fichero; pero es fácil impersonar otro usuario (el Hadoop superuser) y acceder a todo. Además Hadoop no te permite dar acceso basado en roles o acceso a nivel de objeto, o de ofrecer granularidad para acceso a nivel de atributo de un objeto. Por ejemplo, no ofrece roles especiales para ejecutar demonios o servicios específicos de Hadoop. Existe un todo poderoso superusuario de Hadoop que accede a todos los ficheros, a menos que los permisos de acceso a ficheros se especifiquen para grupos o propietarios específicos.
+Por tanto, la flexibilidad que la arquitectura de Hadoop ofrece también origina vulnerabilidades ya que se carece de un mecanismo central de autenticación. Los datos están distribuidos a lo largo de un gran número de DataNodes, con la ventaja del procesado y almacenamiento distribuido, y con el inconveniente de que los DataNodes tambien son puntos de entrada potenciales para ataques (por lo que necesitan ser securizados)
+
+
+Los clientes de Hadoop ejecutan operaciones en los metadatos como crear y abrir ficheros en el NameNode usando el protocolo RPC, y leer/escribir los datos de un fichero directamente desde los DataNodes usando el protocolo de streaming de sockets (data-transfer protocol) Es posible encriptar la comunicación hecha vía protocolo RPC a través de los ficheros de configuración de Hadoop, pero encriptar el tráfico de los datos entre los DataNodes y el cliente requiere el uso de Kerberos o SASL (Simple Authentication and Security Layer)
+La comunicación HTTP entre las consolas web y los demonios de Hadoop (NameNode, Secondary NameNode,DataNode, etc.) no está encriptaada ni securizada (permite acceso sin ningún tipo de autenticación por defecto). Es muy fácil acceder a los metadatos del cluster.
+
+En resumen, en HDFS y por su arquitectura, podemos encontrar las siguientes amenzas:
+- Acceso de cliente no autorizado a ficheros de HDFS o a los metadatos del cluster a través de protocolos RPC o HTTP (la comunicación es no encriptada y no securizada por defecto)
+- Un cliente no autorizado puede leer/escribir un data block de un fichero en un DataNode a través de streaming (data-transfer protocol, no encriptado)
+- Una tarea o nodo puede enmascararse como un componente de servicio de Hadoop (como un DataNode) y modificar los metadatos o realizar actividades destructivas.
+- Un usuario con acceso de red puede interceptar las comunicaciones no encriptadas entre nodos.
+- Los datos de discos erroneos en grandes clusters de Hadoop pueden tener fugas de información si no se manejan correctamente.
+
+Cuando los demonios (o servicios) de Hadoop se comunican entre sí, no verifican que el otro servicio sea quién dice ser. Sería posible iniciar un TaskTracker malicioso para acceder a los bloques de datos. Existen formas para que los servicios de Hadoop realicen autenticaciones mutuas; pero Hadoop no lo implementa por defecto y son necesarios cambios de configuración y la instalación de componentes adicionales.
+
+
+Hadoop’s Job Framework using MapReduce
+En el procesado distribuido de los datos se usa MapReduce, que distribuye una tarea entre múltiples nodos. Cada nodo procesa datos almacenados en ese nodo (si es posible). Consta de dos fases: Map y Reduce. 
+El Map trabaja sobre porciones (split) de datos (un par clave-valor), lo transforma y genera los datos intermedios transformados. A continuación existe un intercambio de datos entre nodos en un proceso de mezcla (ordenación), y los datos intermedios con la misma clave se dirigen al mismo Reducer.
+Cuando el Reducer recibe la salida de varios mappers, ordena esos datos que entran usando la clave (del par clave-valor) y agrupa los valores por clave. Después el método de reduce es invocado (por el Reducer) generándose una (posiblemente vacía) lista de pares clave-valor al iterar sobre los valores asociados a una clave, y escribe la salida en un fichero.
+El framework de Hadoop usa dos demonios de Hadoop (JobTracker y TaskTracker) para programar y procesar los trabajos MapReduce. El JobTracker se ejecuta en el nodo maestro (normalmente el mismo nodo en el que se ejecuta el NameNode) y organiza los trabajos enviados al cluster de Hadoop. Un JobTracker usa un número de TaskTrackers en los nodos esclavos (DataNodes) para procesar partes de un trabajo según se requiera.
+Un task attempt es una instancia de una tarea ejecutándose en un nodo esclavo (TaskTracker). Las task attempts pueden fallar, en ese caso se reiniciarán. Habrá al menos tantas task attempts como tareas que tengan que ejecutarse.
+Por tanto, un proceso MapReduce consta de los siguientes pasos:
+	 1.	 El cliente lanza un trabajo (data request) a Hadoop.
+	 2.	 El job consiste en un mapper, un reducer y una lista de entradas.
+	 3.	 El job se envía al proceso JobTracker del nodo maestro.
+	 4.	 Cada nodo esclavo ejecuta un proceso llamado TaskTracker.
+	 5.	 El JobTracker da instrucciones a los TaskTrackers para ejecutar y monitorizar las tareas (un Map o un Reduce para los datos de entrada).
+
+Las tareas envían pulsos al TaskTracker. Los TaskTrackers envían pulsos al JobTracker. Cualquier tarea que no reporte en 10 minutos se asume que ha fallado y es matada por el TaskTracker. También se considera que la tarea ha fallado si lanza una excepción.
+Las tareas fallidas se reportan al JobTracker por el TaskTracker. El JobTracker reprograma las tareas fallidas tratando de evitar reprogramar las tareas en el mismo TaskTracker donde previamente fallaron.
+Si una tarea falla mas de 4 veces, el trabajo completo falla. Cualquier TaskTracker que falle en reportar 10 minutos, se asume que ha caído y todas sus tareas asignadas se relanzan en otro nodo TaskTracker.
+Cualquier TaskTracker que reporte un número alto de tareas fallidas se mete en una lista negra (para prevenir que el nodo bloquee todo el trabajo). También existe una lista negra global para TaskTrackers que fallen en múltiples trabajos. El JobTracker dirige el estado de cada trabajo y los resultados parciales o tareas fallidas son ignoradas.
+
+
+Apache Hadoop YARN
+El algoritmo MapReduce usado en versiones tempranas de Hadoop no era suficiente en escenarios que requirieran el manejo de recursos personalizados. Con YARN, Hadoop tiene ahora un framework generico y distribuido para procesar datos (con un programador incorporado) que puede usarse para definir nuestro propio modo de manejar recursos. MapReduce es ahora una de las aplicaciones de procesado distribuido de datos que puede usarse con YARN.
+YARN separa en 2 demonios las 2 principales funcionalidades del JobTracker (manejo de recursos y programación/monitorización de trabajos): un ResourceManager global y un ApplicationMaster para cada aplicación.
+El ResourceManager y el NodeManager (que se ejecutan en cada nodo esclavo) forman un sistema genérico de procesado de datos distribuido en conjunción con el ApplicationMaster.
+
+
+ResourceManager asigna los recursos a las aplicaciones del cluster. Usa un Scheduler (Fair, FIFO...) que asigna los recursos en función de las necesidades de las aplicaciones. Este scheduler no realiza monitorización, ni seguimiento del estado, ni relanza tareas fallidas.
+Es el ApplicactionMaster de cada aplicación quien negocia los recursos con el ResourceManager, trabaja con los NodeManagers para ejecutar las tareas, hacer seguimiento del estado y monitorizar el progreso (esto lo realizaba anteriormente el TaskTracher junto con el scheduling).
+El NodeManager es responsable de lanzar los containers de la aplicación, monitorizar el uso de recursos (CPU, memoria, disco, red) e informar al ResourceManager.
+YARN divide las funcionalidades del JobTracker entre el ResourceManager (scheduling) y el ApplicationMaster (gestión de recursos). Además se mueve el código especifico de la aplicación al ApplicationMaster, generalizando el sistema de modo que múltiples frameworks de procesamiento distribuido (MR, MPI -Message Passing Interface, Graph Processing) son soportados.
+
+
+Inherent Security Issues with Hadoop’s Job Framework
+Los problemas de seguridad relacionados con MR giran en torno a la carencia de autenticación, la comunicación insegura entre demonios y que los demonios no se autentican entre si.
+• Un usuario no autorizado puede lanzar un trabajo, borrarlo o cambiar su prioridad(Hadoop no autentica ni autoriza, por lo que es fácil impersonar a un usuario)
+• Un cliente no autorizado puede acceder a los datos intermedios de un Map a través del protocolo HTTP shuffle del TaskTracker (que no está encriptado ni asegurado)
+• Una tarea en ejecución puede usar las interfaces del SO del host para acceder a otras tareas y datos locales (no encriptados)
+• Una tarea o nodo puede disfrazarse como un servicio de Hadoop (DN, NN, JT, TT) ya que no existe autenticación en los procesos del host)
+• Un usuario puede ejecutar un workflow (con Oozie) como otro usuario (impersona un usuario)
+
+
+
+Algunos retos de seguridad que presenta Hadoop son:
+
+Incapacidad de usar las credenciales y políticas de usuario
+Si una organización usa single sign-on o active directory domain accounts para conectarse a varias aplicaciones, Hadoop permite usar integración LDAP (Lightweight Directory Access Protocol), pero es difícil de configurar (depende de los SO, sus versiones, existe poca documentación...)
+Asignar recursos especificos de Hadoop a los usuarios del active directory no siempre es posible.
+No se pueden dar politicas de acceso de lectura a los usuarios de la aplicación, de escritura y lectura a los desarrolladores, etc.
+Lo más fácil es crear credenciales separadas para el acceso a Hadoop y establecer el control de acceso manualmente.
+Hadoop tiene su propio modelo de seguridad, parecido (en apariencia) al de Linux. Hadoop y el ecosistema combinan muchos componentes con diferentes configuraciones y variedad de métodos de autorización (POSIX file-based, SQL database-like). Esto supone un reto a la hora de desarrollar y mantener una política de seguridad para las autorizaciones. Existen proyectos como Apache Sentry y Argus.
+
+
+Dificultad de integrar con la seguridad de la empresa
+Muchas organizaciones usan una solución de seguridad a nivel de empresa con una gran variedad de objetivos, pero Hadoop no se puede integrar con todas las políticas de seguridad.
+
+
+Datos no encriptados en tránsito
+Los datos son transmitidos a través de la red entre nodos, pero sin encriptar (existe información sensible como datos financieros, información personal, etc, suceptible de ataques)
+La comunicación entre nodos usa protocolos como RPC, TCP/IP, y HTTP. Solo la comunicación RPC se puede encritar facilmente (comunicación entre NameNode, JobTracker, DataNodes y clientes Hadoop). La lectura/escritura de datos entre clientes y DataNodes (TCP/IP) y la comunicación HTTP (consolas web, comunicación entre NameNode/Secondary NameNode y MapReduce shuffle
+data) es suceptible de ataques.
+Es posible encriptar las comunicaciones TCP/IP o HTTP, pero requiere usar Kerberos or SASL (Simple
+Authentication and Security Layer). Además tiene un impacto muy negativo en el rendimiento, por lo que no se usa.
+
+
+No existe encriptación de datos en reposo.
+Hadoop no encripta los datos almacenados en disco ni ofrece herramientas para ello.
+La distribución de Intel de Hadoop provee encriptación a traves de codecs propietarios y el proyecto Rhino de Apache.
+La encriptación/desencriptación en Hadoop lleva tiempo.
+
+
+Hadoop no rastrea el origen de los datos
+Hadoop no facilita el backward tracing (buscar los datos iniciales que dan lugar a una salida, principalmente cuando esa salida no es la esperada). Se necesitan herramientas externas como RAMP para esta funcionalidad (disminuye rendimiento)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

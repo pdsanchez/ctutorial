@@ -1,0 +1,441 @@
+Holland, J.H. (1975) desarrolló el concepto de algoritmo genético.
+Los algoritmos genéticos no suelen ser la mejor elección para resolver un problema muy específico (suele haber mejores soluciones para un problema concreto)
+Pero los algoritmos genéticos son una excelente herramienta genérica que se puede aplicar a diferentes problemas. Son la navaja suiza del aprendizaje automático:
+Problemas difíciles de implementar o de resolver.
+Problemas que cambian constantemente y que requieren una solución adaptativa.
+Problemas en los que no se puede encontrar todas las posibles soluciones y una solución buena (no la mejor) es aceptable.
+Problemas basados en restricciones (constraint satisfaction problems). Problemas con una serie de variables que se establecen y que deben cumplirse. Las restricciones pueden ser "hard constraints" (tienen que satisfacerse para llegar a la solución) o "soft constraints" (es preferible que se cumplan para llegar a una mejor solución)
+
+Términos:
+Population – colección de candidatos (soluciones) sobre los que se aplican operadores genéticos (crossover y mutación)
+Candidate Solution – una posible solución a un problema dado.
+Gene – bloque indivisible que conforma el cromosoma.
+Chromosome – cadena de genes que define un candidato (solución) específico. Un cromosoma codifica una solución.
+Mutation – proceso que modifica un gen aleatoriamente.
+Crossover (recombination) – proceso de combinación de genes para crear un nuevo candidato (offspring)
+Selection – tomar un candidato para generar la siguiente generación de soluciones.
+Fitness – puntuación que mide el grado en el que un candidato se ajusta a la solución del problema dado. Lo contrario al fitness se denomina "cost".
+Allele – valores que puede tomar un rasgo específico.
+Locus – posición del cromosoma que codifica un rasgo.
+Gene Pool – toda la información genética posible de la población.
+Survival of the fittest – sólo los individuos más aptos sobreviven y pasan su DNA (selective pressure). La presión selectiva guía lentamente la evolución para encontrar los individuos mejor adaptados.
+
+Search Spaces
+En los problemas de optimización con numerosas soluciones, la colección de soluciones es el espacio de búsqueda.
+Cada punto específico del espacio de búsqueda es una solución candidata del problema. 
+Las soluciones que están próximas son más propensas a tener rasgos similares que las que están lejos.
+La distancia entre las soluciones en el espacio de búsqueda se puede aprovechar para afinar la búsqueda.
+
+Fitness Landscapes
+Cada solución candidata tiene asociada un fitness lo que genera una gráfica de simas y colinas.
+Los algoritmos de optimización debenevitar los óptimos locales y buscar soluciones próximas al óptimo global:
+Simulated Annealing y Tabu search son variaciones del hill climbing algorithm que evitan los óptimos locales.
+Los algoritmos genéticos son buenos evitando los óptimos locales porque su población se distribuye a lo largo de todo el espacio de búsqueda y localiza los óptimos para continuar la búsqueda en esas zonas. Esto se debe a que las peores soluciones se eliminan y la recombinación genera mejores soluciones. La mutación permite saltar de la posición actual a otras posiciones del espacio de búsqueda.
+
+Parametros:
+- Mutation Rate: probabilidad de que un gen específico de un cromosoma mute. 
+Una tasa de mutación alta provoca mayor diversidad genética en la población y facilita evadir óptimos locales, pero también se pierden candidatos buenos.
+Una tasa de mutación baja aumenta el tiempo de localización de la mejor solución.
+- Population Size: número de individuos del algoritmo genético. A mayor número, mayor es el espacio de búsqueda que se abarca (y por tanto mejores soluciones), y mayores los recursos computacionales demandados.
+- Crossover Rate: frecuencia con la que se aplica la recombinación. Una tasa de recombinación alta dará lugar a un mayor número de soluciones encontradas.
+- Elitism: permite pasar los mejores individuos sin alterar (no se les aplica recombinación ni mutación) a la siguiente generación.
+Suele tomar un valor muy bajo en relación a la población total.
+Si el valor es muy alto, el tiempo de búsqueda del algoritmo aumenta.
+
+Genetic Representations
+Modo de codificar la información genética en el cromosoma (binaria, enteros, decimales, objetos, tree-based...)
+
+Condiciones de terminación:
+• Se alcanza un número máximo de generaciones.
+• Se excede un tiempo máximo.
+• Se encuentra una solución que satisface los requerimientos establecidos.
+• El algoritmo se estabiliza.
+
+Proceso de búsqueda:
+1. Inicializar población de soluciones candidatas (normalmente al azar para cubrir todo el espacio de búsqueda)
+2. Evaluación: Asignar fitness a cada individuo y determinar el fitness promedio de la población.
+3. Determinar en función de las condiciones de terminación si se finaliza o se continúa.
+4. Si no se cumple la condición de terminación se seleccionan individuos por su fitness (a mayor fitness, mayor probabilidad de seleccionarlo)
+5. Apricar recombinación y mutación a los individuos seleccionados. Se crean nuevos individuos para la siguiente generación.
+6. Evaluación y comenzar el proceso de nuevo (cada ciclo del loop se denomina generación)
+7. Cuando se cumple la condición de terminación se retornan los resultados de la búsqueda.
+
+
+
+1:generation = 0;
+2:population[generation] = initializePopulation(populationSize);
+3:evaluatePopulation(population[generation]);
+4:While isTerminationConditionMet() == false do
+5:  parents = selectParents(population[generation]);
+6:  population[generation+1] = crossover(parents);
+7:  population[generation+1] = mutate(population[generation+1]);
+8:  evaluatePopulation(population[generation]);
+9:  generation++;
+10:End loop;
+
+
+
+The ‘main’ method represents the pseudocode.
+
+• A GeneticAlgorithm class, which abstracts the genetic algorithm itself and provides problem-specific implementations of interface methods, such as
+crossover, mutation, fitness evaluation, and termination condition checking.
+rewrite: calcFitness, evalPopulation, isTerminationConditionMet, selectParent, crossoverPopulation, mutatePopulation, initPopulation, calcPopu­lation
+• An Individual class, which represents a single candidate solution and its chromosome.
+delete the constructor with the signature “public Individual(int chromosomeLength)” -- randomly initializes the chromosome
+• A Population class, which represents a population or a generation of Individuals, and applies group-level operations to them.
+
+La función de fitness suele ser la que más recursos demanda
+
+calcFitness(Individual individual) method to the GeneticAlgorithm
+
+We also need a simple helper method to loop over every individual in the
+population and evaluate them (i.e., call calcFitness on each individual). Let’s call this
+method evalPopulation(Population population)
+
+public GeneticAlgorithm(int populationSize, double mutationRate, double crossoverRate, int elitismCount) { }
+public Population initPopulation(int chromosomeLength) { }
+public double calcFitness(Individual individual) { }
+public void evalPopulation(Population population) { }
+public boolean isTerminationConditionMet(Population population) { }
+public Individual selectParent(Population population) { }
+public Population crossoverPopulation(Population population) { }
+public Population mutatePopulation(Population population) { }
+
+
+We have four more methods to implement in the GeneticAlgorithm class: isTerminationConditionMet, selectParent, crossoverPopulation, and mutate Population.
+
+
+
+
+public static void main(String[] args) {
+  // Create GA object
+  GeneticAlgorithm ga = new GeneticAlgorithm(100, 0.001, 0.95, 2);
+  // Initialize population
+  Population population = ga.initPopulation(50);
+  // Evaluate population
+  ga.evalPopulation(population);*
+  // Keep track of current generation
+  int generation = 1;
+  while (ga.isTerminationConditionMet(population, maxGenerations) == false) {
+    // Print fittest individual from population
+    System.out.println("Best solution: " + population.getFittest(0).toString());
+    // Apply crossover
+    population = ga.crossoverPopulation(population);
+    // Apply mutation
+    population = ga.mutatePopulation(population);
+    // Evaluate population
+    ga.evalPopulation(population);*
+    // Increment the current generation
+    generation++;
+  }
+  System.out.println("Found solution in " + generation + "generations");
+  System.out.println("Best solution: " + population.getFittest(0).toString());
+}
+
+
+
+Durante la recombinación, cada individuo de la población se considera para recombinarse (para esto se usa la tasa de recombinación)
+Se compara la tasa de recombinación con un número aleatorio para decidir si sobre el individuo se aplica recombinación o no.
+Si un individuo se selecciona para recombinarse, entonces hay que buscar un segundo padre a través de un método de selección:
+- Roulette Wheel Selection (fitness proportionate selection): los individuos se sitúan en una ruleta, y a mayor fitness, mayor espacio ocupan en la misma.
+- Tournament Selection:
+- Stochastic Universal Sampling (forma avanzada del fitness proportional selection)
+
+Crossover Methods (intercambio de información)
+- Uniform crossover: cada gen del offspring tiene un 50% de probabilidad de venir de un padre u otro
+- Single point crossover: se selecciona aleatoriamente una posición del genoma, la información genética anterior a ese punto procederá del padre 1 y la posterior del padre 2. Existen algunas combinaciones que no son posibles (aunque se pueden dar por mutación) y existe bias en la izquierda derivada del padre 1 y a la derecha procedente del padre 2 (para evitarlo se usa el two-point crossover)
+- Two-point crossover
+
+
+Crossover Pseudo Code
+1:For each individual in population:
+2:  newPopulation = new array;
+3:  If crossoverRate > random():
+4:    secondParent = selectParent();
+5:    offspring = crossover(individual, secondParent);
+6:    newPopulation.push(offspring);
+7:  Else:
+8:    newPopulation.push(individual);
+9:  End if
+10:End loop;
+
+
+Mutación
+- Bit Flip mutation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OPTIMIZATION
+
+Adaptive Genetic Algorithms (AGA)
+Adaptive genetic algo-
+rithms are useful because they can assist in the tuning of these parameters auto-
+matically by adjusting them based on the state of the algorithm. These parameter
+adjustments take place while the genetic algorithm is running, hopefully resulting
+in the best parameters being used at any specific time during execution. It’s this
+continuous adaptive adjustment of the algorithm’s parameters which will often
+result in a performance improvement for the genetic algorithm.
+Adaptive genetic algorithms use information such as the average population
+fitness and the population’s current best fitness to calculate and update its
+parameters in a way that best suits its present state. For example, by comparing any
+specific individual to the current fittest individual in the population, it’s possible to
+gauge how well that individual is performing in relation to the current best. Typically,
+we want to increase the chance of preserving individuals that are performing well
+and reduce the chance of preserving individuals that don’t perform well. One way
+we can do this is by allowing the algorithm to adaptively update the mutation rate.
+Unfortunately, it’s not quite that simple. After a while, the population will start
+to converge and individuals will begin to fall nearer to a single point in the search
+space. When this happens, the progress of the search can stall as there is very little
+difference between individuals. In this event, it can be effective to raise the mutation
+rate slightly, encouraging the search of alternative areas within the search space.
+We can determine if the algorithm has begun to converge by calculating the
+difference between the current best fitness and the average population fitness.
+When the average population fitness is close to the current best fitness, we know
+the population has started to converge around a small area of the search space.
+Adaptive genetic algorithms can be used to adjust more than just the mutation
+rate however. Similar techniques can be applied to adjust other parameters of the
+genetic algorithm such as the crossover rate to provide further improvements as
+needed.
+
+
+Multi-Heuristics
+Implementing a second heuristic into a genetic algorithm
+allows us to combine the best aspects of multiple heuristic approaches into one
+algorithm, providing further control over the search strategy and performance.
+Two popular heuristics that are often implemented into genetic algorithms are
+simulated annealing and Tabu search. Simulated annealing is a search heuristic
+modeled on the process of annealing found in metallurgy. Put simply, it is a hill
+climbing algorithm that is designed to gradually reduce the rate in which worse
+solutions are accepted. In the context of genetic algorithms, simulated annealing
+will reduce the mutation rate and/or crossover rate over time.
+On the other hand, Tabu search is a search algorithm that keeps a list of “tabu”
+(which derives from “taboo”) solutions that prevents the algorithm from returning
+to previously visited areas in the search space that are known to be weak. This tabu
+list helps the algorithm avoid repeatedly considering solutions it’s previously found
+and knows to be weak.
+Typically, a multi-heuristic approach would only be implemented in situations
+where including it could bring certain needed improvements to the search process.
+For example, if the genetic algorithm is converging on an area in the search space
+too quickly, implementing simulated annealing into the algorithm might help to
+control how soon the algorithm converges.
+
+
+Performance Improvements
+Possibly one of the most effective ways to optimize a genetic
+algorithm is by simply writing efficient code. 
+-Fitness Function Design
+With the fitness function typically being the most processing demanding com-
+ponent of a genetic algorithm, it makes sense to focus code improvements on the
+fitness function to see the best return in performance.
+Before making improvements to the fitness function, it’s a good idea to first
+ensure it adequately represents the problem. A genetic algorithm uses its fitness
+function to gauge the best area of the search space to focus its search in. This means
+a poorly designed fitness function can have a huge negative impact on the search
+ability and overall performance of the genetic algorithm. As an example, imagine
+a genetic algorithm has been built to design a car panel, but the fitness function
+which evaluated the car panel did so entirely by measuring the car’s top speed.
+This overly simple fitness function may not provide an adequate fitness value if
+it was also important that the panel could meet certain durability or ergonomic
+constraints as well as being aerodynamic enough.
+-Parallel Processing
+Modern computers will often come equipped with several separate processing
+units or “cores”. Unlike standard single-core systems, multi-core systems are able to
+use additional cores to process multiple computations simultaneously. This means
+any well-designed application should be able to take advantage of this characteris-
+tic allowing its processing requirements to be distributed across the extra process-
+ing cores available. For some applications, this could be as simple as processing GUI
+related computations on one core and all the other computations on another.
+Supporting the benefits of multi-core systems is one simple but effective way
+to achieve performance improvements on modern computers. As we discussed
+previously, the fitness function is often going to be the bottleneck of a genetic
+algorithm. This makes it a perfect candidate for multi-core optimization. By
+using multiple cores, it’s possible to calculate the fitness of numerous individuals
+simultaneously, which makes a huge difference when there are often hundreds of
+individuals to evaluate per population.
+Lucky for us, Java 8 provides some very useful libraries that makes supporting
+parallel processing in our genetic algorithm much easier. Using IntStream, we can
+achieve parallel processing in our fitness function without worrying about the fine
+details of parallel processing (such as the number of cores we need to support);
+it will instead create an optimal number of threads depending on the number of
+cores available.
+You may have wondered why, in Chapter 5, the GeneticAlgorithm calcFitness
+method clones the Timetable object before using it. When threading applications
+for parallel processing, one needs to take care to ensure that objects in one thread
+will not affect objects in another thread. In this case, changes made to the timetable
+object from one thread may have unexpected results in other threads using
+the same object at the same time – cloning the Timetable first allows us to give
+each thread its own object.
+Because the genetic algorithms covered in this book have used fairly simple
+fitness functions, parallel processing may not provide much of a performance
+improvement. A nice way to test how much parallel processing can improve the
+genetic algorithms performance might be to add a call to Thread.sleep( ) in the
+fitness function. This will simulate a fitness function which takes a significant
+amount of time to complete execution.
+-Fitness Value Hashing
+As discussed previously, the fitness function is usually the most computation-
+ally expensive component of a genetic algorithm. Thus, even small improvements
+to the fitness function can have a considerable effect on performance. Value hash-
+ing is another method that can reduce the amount of time spent calculating fit-
+ness values by storing previously computed fitness values in a hash table. In large
+distributed systems, you could use a centralized caching service (such as Redis or
+memcached) to the same end.
+During execution, solutions found previously will occasionally be revisited due to
+the random mutations and recombinations of individuals. This occasional revisiting
+of solutions becomes more common as the genetic algorithm converges and starts
+to find solutions in an increasingly smaller area of the search space.
+Each time a solution is revisited its fitness value needs to be recalculated,
+wasting processing power on repetitive, duplicate calculations. Fortunately, this
+can be easily fixed by storing fitness values in a hash table after they have been
+calculated. When a previously visited solution is revisited, its fitness value can be
+pulled straight from the hash table, avoiding the need to recalculate it.
+-Encoding
+Another component which can affect the genetic algorithm’s performance is the
+encoding chosen. Although, in theory, any problem can be represented using a
+binary encoding of 0s and 1s, it’s rarely the most efficient encoding to choose.
+When a genetic algorithm struggles to converge, it can often be because a bad
+encoding was chosen for the problem causing it to struggle when searching for
+new solutions. There is no hard science to picking a good encoding, but using an
+overly complex encoding will typically produce bad results. For example, if you
+want an encoding which can encode 10 numbers between 0-10, it would usually be
+best to use an encoding of 10 integers instead of a binary string. This way it’s easier
+to apply mutation and crossover functions which can be applied to the individual
+integers instead of bits representing integer values. It also means you don’t need to
+deal with invalid chromosomes such as “1111” representing the value 15 which is
+beyond our 0-10 required range.
+-Mutation and Crossover Methods
+Picking good mutation and crossover methods is another important factor
+when considering options to improve a genetic algorithm’s performance. The opti-
+mal mutation and crossover methods to use will depend mostly on the encoding
+chosen and the nature of the problem itself. A good mutation or crossover method
+should be capable of producing valid solutions, but also be able to mutate and
+crossover individuals in an expected way.
+For example: if we were optimizing a function which accepts any value
+between 0-10, one possible mutation method is Gaussian mutation which adds
+a random value to the gene increasing or decreasing its original value slightly.
+However, another possible mutation method is boundary mutation where a
+random value between a lower and upper boundary is chosen to replace the
+gene. Both of these mutation methods are capable of producing valid mutations,
+however depending on the nature of the problem and other specifics of the
+implementation, one will likely outperform the other. A bad mutation method
+might simply round the value down to 0 or up to 10 depending on the original
+value. In this situation, the amount of mutation that occurs depends on the
+gene’s value which can result in poor performance. An initial value of 1 would be
+changed to 0 which is a relatively small change. However, a value of 5 would be
+changed to 10 which is much larger. This bias can cause a preference for values
+closer to 0 and 10 which will often negatively impact the search process of the
+genetic algorithm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,328 @@
+
+
+Instalar un paquete
+> install("plotrix")
+
+Ejecutar script con el interprete de R (Rscript)
+$ Rscript test.R 
+
+Comentarios (sólo sencillos, no múltiples): #
+
+help(list)
+
+Objetos-R
+
+Vectors
+Crear vector de un elemento ( puedo obtener la clase del elemento con class(v) )
+Logical: TRUE , FALSE (v <- TRUE)
+Numeric: 12.3, 5, 999 (v <- 23.5)
+Integer: 2L, 34L, 0L (v <- 2L)
+Complex: 3+2i (v <- 2+5i)
+Character: 'a' , '"good", "TRUE", '23.4' (v <- "TRUE")
+Raw: v <- charToRaw("Hello") # "Hello" is stored as 48 65 6c 6c 6f	
+
+Para crear vector de más de un elemento se usa c() - combina elementos en el vector. Tienen que ser de la misma clase, si no lo son se transforman a una misma clase
+apple <- c('red','green',"yellow")
+print(apple)
+print(class(apple))
+
+
+Lists
+Lista de elementos (pueden ser de distinta clase)
+l <- list(c(2,5,3), 21.3, sin)
+print(l)
+[[1]]
+[1] 2 5 3
+
+[[2]]
+[1] 21.3
+
+[[3]]
+function (x)  .Primitive("sin") 
+
+
+Matrix
+Array bidimensional
+M <- matrix( c('a','a','b','c','b','a'), nrow=2, ncol=3, byrow=TRUE)
+print(M)
+     [,1] [,2] [,3]
+[1,] "a"  "a"  "b" 
+[2,] "c"  "b"  "a"  
+
+M <- matrix(c(1,2,3,11,12,13), nrow = 2, ncol = 3, byrow = TRUE, dimnames = list(c("row1", "row2"), c("C.1", "C.2", "C.3")))
+print(M)
+   c1 c2 c3 c4 c5                                                                                            
+r1  1  3  5  7  9                                                                                            
+r2  2  4  6  8 10 
+
+
+Arrays
+Cualquier número de dimensiones (especificado con el atributo dim)
+a <- array( c('green','yellow'), dim=c(3,3,2) ) # create an array with two elements which are 3x3 matrices each
+print(a)
+, , 1
+     [,1]     [,2]     [,3]    
+[1,] "green"  "yellow" "green" 
+[2,] "yellow" "green"  "yellow"
+[3,] "green"  "yellow" "green" 
+
+, , 2
+     [,1]     [,2]     [,3]    
+[1,] "yellow" "green"  "yellow"
+[2,] "green"  "yellow" "green" 
+[3,] "yellow" "green"  "yellow"
+
+
+Factors
+Vector que almacena valores y etiquetas (character)
+f <- factor( c('green','green','yellow','red','red','red','green') )
+print(f)
+[1] green  green  yellow red    red    red    yellow green 
+Levels: green red yellow
+
+La función nlevels() da el número de niveles (valores diferentes)
+print(nlevels(f))
+[1] 3   
+
+
+Data Frames
+Datos tabulados. Es una lista de vectores de igual tamaño. Cada columna puede contener un tipo de dato.
+df <- data.frame(gender = c("Male", "Male","Female"), 
+		 height = c(152, 171.5, 165), 
+		 weight = c(81,93, 78),
+		 age =c(42,38,26))
+print(df)
+  gender height weight age
+1   Male  152.0     81  42
+2   Male  171.5     93  38
+3 Female  165.0     78  26  
+
+
+Decision making
+
+if statement
+if...else statement
+switch statement
+
+
+Loops
+
+repeat loop
+while loop # It tests the condition before executing the loop body.
+for loop # It tests the condition at the end of the loop body.
+
+break statement # Terminates the loop statement and transfers execution to the statement immediately following the loop.
+Next statement # The next statement simulates the behavior of R switch.
+
+
+Function
+
+function_name <- function(arg_1, arg_2, ...) {
+    Function body 
+}
+
+# Create a function to print squares of numbers in sequence.
+new.function <- function(a) {
+  for(i in 1:a) {
+	b <- i^2
+	print(b)
+  }
+}
+# Call the function new.function supplying 6 as an argument.
+new.function(6)
+
+Calling a Function with Default Argument
+new.function <- function(a = 3,b =6) {
+	result <- a*b
+	print(result)
+}
+# Call the function without giving any argument.
+new.function()
+# Call the function with giving new values of the argument.
+new.function(9,5)
+
+Lazy Evaluation of Function
+Arguments to functions are evaluated lazily, which means so they are evaluated only when needed by the function body.
+new.function <- function(a, b) {
+   print(a^2)
+   print(a)
+   print(b)
+}
+# Evaluate the function without supplying one of the arguments.
+new.function(6)
+When we execute above code, it produces following result:
+[1] 36
+[1] 6
+Error in print(b) : argument "b" is missing, with no default
+
+
+Strings
+
+Concatenating strings - paste() function
+Many strings in R are combined using the paste() function. It can take any number of arguments to be combined together.
+
+syntax
+The basic syntax for paste function is :
+
+paste(..., sep = " ", collapse = NULL)
+Following is the description of the parameters used:
+
+... represents any number of arguments to be combined.
+sep represents any separator between the arguments. It is optional.
+collapse is used to eliminate the space in between two strings. But not the space within two words of one string.
+Example
+a <- "Hello"
+b <- 'How'
+c <- "are you? "
+
+print(paste(a,b,c))
+
+print(paste(a,b,c, sep = "-"))
+
+print(paste(a,b,c, sep = "", collapse = ""))
+When we execute above code, it produces following result:
+
+[1] "Hello How are you? "
+[1] "Hello-How-are you? "
+[1] "HelloHoware you? "
+
+
+Formatting numbers & strings - format() function
+Numbers and strings can be formatted to a specific style using format() function.
+
+syntax
+The basic syntax for format function is :
+
+format(x, digits, nsmall,scientific,width,justify = c("left", "right", "centre", "none"))     
+Following is the description of the parameters used:
+
+x is the vector input.
+digits is the total number of digits displayed.
+nsmall is the minimum number of digits to the right of the decimal point.
+scientific is set to TRUE to display scientific notation.
+width indicates the minimum width to be displayed by padding blanks in the beginning.
+justify is the display of the string to left, right or center.
+Example
+# Total number of digits displayed. Last digit rounded off.
+result <- format(23.123456789, digits = 9)
+print(result)
+
+# Display numbers in scientific notation.
+result <- format(c(6, 13.14521), scientific = TRUE)
+print(result)
+
+# The minimum number of digits to the right of the decimal point.
+result <- format(23.47, nsmall = 5)
+print(result)
+
+# Format treats everything as a string.
+result <- format(6)
+print(result)
+
+# Numbers are padded with blank in the beginning for width.
+result <- format(13.7, width = 6)
+print(result)
+
+# Left justify strings.
+result <- format("Hello",width = 8, justify = "l")
+print(result)
+
+# Justfy string with center.
+result <- format("Hello",width = 8, justify = "c")
+print(result)
+When we execute above code, it produces following result:
+
+[1] "23.1234568"
+[1] "6.000000e+00" "1.314521e+01"
+[1] "23.47000"
+[1] "6"
+[1] "  13.7"
+[1] "Hello   "
+[1] " Hello  "
+Counting number of characters in a string - ncahr() function
+This function counts the number of characters including spaces in a string.
+
+Syntax
+The basic syntax for nchar() function is :
+
+nchar(x)
+Following is the description of the parameters used:
+
+x is the vector input.
+Example
+result <- nchar("Count the number of characters")
+print(result)
+When we execute above code, it produces following result:
+
+[1] 30
+Changing the case - toupper() & tolower() functions
+These functions change the case of characters of a string.
+
+Syntax
+The basic syntax for toupper() & tolower() function is :
+
+toupper(x)
+tolower(x)
+Following is the description of the parameters used:
+
+x is the vector input.
+Example
+# Changing to Upper case.
+result <- toupper("Changing To Upper")
+print(result)
+
+# Changing to lower case.
+result <- tolower("Changing To Lower")
+print(result)
+When we execute above code, it produces following result:
+
+[1] "CHANGING TO UPPER"
+[1] "changing to lower"
+Extracting parts of a string - substring() function
+This function extracts parts of a String.
+
+Syntax
+The basic syntax for substring() function is :
+
+substring(x,first,last)
+Following is the description of the parameters used:
+
+x is the character vector input.
+first is the position of the first character to be extracted.
+last is the position of the last character to be extracted.
+Example
+# Extract characters from 5th to 7th position.
+result <- substring("Extract", 5, 7)
+print(result)
+When we execute above code, it produces following result:
+
+[1] "act"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
