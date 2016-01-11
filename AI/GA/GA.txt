@@ -1,34 +1,30 @@
 Holland, J.H. (1975) desarrolló el concepto de algoritmo genético.
-Los algoritmos genéticos no suelen ser la mejor elección para resolver un problema muy específico (suele haber mejores soluciones para un problema concreto)
-Pero los algoritmos genéticos son una excelente herramienta genérica que se puede aplicar a diferentes problemas. Son la navaja suiza del aprendizaje automático:
-Problemas difíciles de implementar o de resolver.
-Problemas que cambian constantemente y que requieren una solución adaptativa.
-Problemas en los que no se puede encontrar todas las posibles soluciones y una solución buena (no la mejor) es aceptable.
-Problemas basados en restricciones (constraint satisfaction problems). Problemas con una serie de variables que se establecen y que deben cumplirse. Las restricciones pueden ser "hard constraints" (tienen que satisfacerse para llegar a la solución) o "soft constraints" (es preferible que se cumplan para llegar a una mejor solución)
+Los algoritmos genéticos son procesos estocásticos (no determinista, aleatorio) dictados por estadística.
+Aunque no suelen ser la mejor elección para resolver un problema muy específico (suele haber mejores soluciones para un problema concreto), son una excelente herramienta genérica que se puede aplicar a diferentes problemas. Son la navaja suiza del aprendizaje automático:
+- Problemas difíciles de implementar o de resolver.
+- Problemas que cambian constantemente y que requieren una solución adaptativa.
+- Problemas en los que no se puede encontrar todas las posibles soluciones y una solución buena (no la mejor) es aceptable.
+- Problemas basados en restricciones (constraint satisfaction problems). Problemas con una serie de variables que se establecen y que deben cumplirse. Las restricciones pueden ser "hard constraints" (tienen que satisfacerse para llegar a la solución) o "soft constraints" (es preferible que se cumplan para llegar a una mejor solución)
 
 Términos:
-Population – colección de candidatos (soluciones) sobre los que se aplican operadores genéticos (crossover y mutación)
-Candidate Solution – una posible solución a un problema dado.
-Gene – bloque indivisible que conforma el cromosoma.
-Chromosome – cadena de genes que define un candidato (solución) específico. Un cromosoma codifica una solución.
-Mutation – proceso que modifica un gen aleatoriamente.
-Crossover (recombination) – proceso de combinación de genes para crear un nuevo candidato (offspring)
-Selection – tomar un candidato para generar la siguiente generación de soluciones.
-Fitness – puntuación que mide el grado en el que un candidato se ajusta a la solución del problema dado. Lo contrario al fitness se denomina "cost".
-Allele – valores que puede tomar un rasgo específico.
-Locus – posición del cromosoma que codifica un rasgo.
-Gene Pool – toda la información genética posible de la población.
-Survival of the fittest – sólo los individuos más aptos sobreviven y pasan su DNA (selective pressure). La presión selectiva guía lentamente la evolución para encontrar los individuos mejor adaptados.
-
-Search Spaces
-En los problemas de optimización con numerosas soluciones, la colección de soluciones es el espacio de búsqueda.
+- Population – colección de candidatos (soluciones) sobre los que se aplican operadores genéticos (crossover y mutación)
+- Candidate Solution – una posible solución a un problema dado.
+- Gene – bloque indivisible que conforma el cromosoma.
+- Chromosome – cadena de genes que define un candidato (solución) específico. Un cromosoma codifica una solución.
+- Mutation – proceso que modifica un gen aleatoriamente.
+- Crossover (recombination) – proceso de combinación de genes para crear un nuevo candidato (offspring)
+- Selection – tomar un candidato para generar la siguiente generación de soluciones.
+- Fitness – puntuación que mide el grado en el que un candidato se ajusta a la solución del problema dado. Lo contrario al fitness se denomina "cost".
+- Allele – valores que puede tomar un rasgo específico.
+- Locus – posición del cromosoma que codifica un rasgo.
+- Gene Pool – toda la información genética posible de la población.
+- Survival of the fittest – sólo los individuos más aptos sobreviven y pasan su DNA (selective pressure). La presión selectiva guía lentamente la evolución para encontrar los individuos mejor adaptados.
+- Search Spaces - En los problemas de optimización con numerosas soluciones, la colección de soluciones es el espacio de búsqueda.
 Cada punto específico del espacio de búsqueda es una solución candidata del problema. 
 Las soluciones que están próximas son más propensas a tener rasgos similares que las que están lejos.
 La distancia entre las soluciones en el espacio de búsqueda se puede aprovechar para afinar la búsqueda.
-
-Fitness Landscapes
-Cada solución candidata tiene asociada un fitness lo que genera una gráfica de simas y colinas.
-Los algoritmos de optimización debenevitar los óptimos locales y buscar soluciones próximas al óptimo global:
+- Fitness Landscapes - Cada solución candidata tiene asociada un fitness lo que genera una gráfica de simas y colinas.
+Los algoritmos de optimización deben evitar los óptimos locales y buscar soluciones próximas al óptimo global:
 Simulated Annealing y Tabu search son variaciones del hill climbing algorithm que evitan los óptimos locales.
 Los algoritmos genéticos son buenos evitando los óptimos locales porque su población se distribuye a lo largo de todo el espacio de búsqueda y localiza los óptimos para continuar la búsqueda en esas zonas. Esto se debe a que las peores soluciones se eliminan y la recombinación genera mejores soluciones. La mutación permite saltar de la posición actual a otras posiciones del espacio de búsqueda.
 
@@ -42,14 +38,35 @@ Una tasa de mutación baja aumenta el tiempo de localización de la mejor soluci
 Suele tomar un valor muy bajo en relación a la población total.
 Si el valor es muy alto, el tiempo de búsqueda del algoritmo aumenta.
 
-Genetic Representations
-Modo de codificar la información genética en el cromosoma (binaria, enteros, decimales, objetos, tree-based...)
 
-Condiciones de terminación:
+Encoding
+Initialization
+Evaluation
+Elitism
+Crossover - Selection Method
+Mutation
+Execution
+Termination Check
+Validation
+
+
+# Encoding (representación genética)
+Modo de codificar la información genética en el cromosoma (binaria, enteros, decimales, objetos, tree-based...)
+- binario (0s y 1s)
+- permutation encoding (secuencias de genes conocidas - genes identificados por un id)
+
+
+
+# Termination Check (condiciones de terminación)
 • Se alcanza un número máximo de generaciones.
 • Se excede un tiempo máximo.
 • Se encuentra una solución que satisface los requerimientos establecidos.
 • El algoritmo se estabiliza.
+
+# Validation:
+Los algoritmos genéticos son procesos estocásticos (no determinista, aleatorio) dictados por estadística. No se puede sacar ninguna conclusión con una única prueba. El inicializar el proceso con una población inicial aleatoria da lugar a soluciones óptimas diferentes, lo que hace dificil juzgar el comportamiento.
+
+
 
 Proceso de búsqueda:
 1. Inicializar población de soluciones candidatas (normalmente al azar para cubrir todo el espacio de búsqueda)
@@ -138,13 +155,54 @@ Durante la recombinación, cada individuo de la población se considera para rec
 Se compara la tasa de recombinación con un número aleatorio para decidir si sobre el individuo se aplica recombinación o no.
 Si un individuo se selecciona para recombinarse, entonces hay que buscar un segundo padre a través de un método de selección:
 - Roulette Wheel Selection (fitness proportionate selection): los individuos se sitúan en una ruleta, y a mayor fitness, mayor espacio ocupan en la misma.
-- Tournament Selection:
+- Tournament Selection: selección de individuos en función del fitness (a mayor fitness, mayor probabilidad de ser elegido para la recombinación)
+ournament selection selects its parents by running a series of “tournaments”.
+First, individuals are randomly selected from the population and entered into a
+tournament. Next, these individuals can be thought to compete with each other
+by comparing their fitness values, then choosing the individual with the highest
+fitness for the parent.
+Tournament selection requires a tournament size to be defined that specifies how
+many individuals from the population it should pick to compete in a tournament.
+As with most parameters, there is a tradeoff in performance depending on the
+value chosen. A high tournament size will consider a larger proportion of the
+population. This makes it much more likely to find the higher scoring individuals in
+the population. Alternately, a low tournament size will select individuals from the
+population more randomly due to less competition, often picking lower ranking
+individuals as a result. A high tournament size can lead to a loss of genetic diversity
+where only the best individuals are being selected as parents. Conversely, a low
+tournament size can slow progress of the algorithm due to the reduced selection
+pressure.
+Tournament selection is one of the most common selection methods used in
+genetic algorithms. Its strengths being that it’s a relatively simple algorithm to
+implement and allows for variable selection pressure by updating the tournament
+size. It does have limitations however. Consider when the lowest scoring individual
+is placed into a tournament. It wouldn’t matter what other individuals from the
+population are added to the tournament, it will never be chosen because the
+other individuals are guaranteed to have a higher fitness value. This drawback
+could be resolved by adding a selection probability to the algorithm. For example,
+if the selection probability is set to 0.6, there would be a 60% chance the fittest
+individual is selected. If the fittest individual isn’t selected, it will then move on
+to the second fittest individual and so on until an individual has been picked.
+While this modification allows even the worst ranking individuals to be selected
+occasionally, it doesn’t take into account the fitness difference between individuals.
+For example, if three individuals were chosen for tournament selection, one having
+a fitness value of 9, one with a fitness value of 2, and the other with a fitness value
+of 1. In this case, the individual with a fitness value of 2 would be no more likely to
+be picked if the fitness value was 8. This means occasionally individuals are given
+unreasonably high or low odds for selection.
+We will not implement selection probability in our tournament selection
+implementation; however, it is an excellent exercise for the reader.
+
 - Stochastic Universal Sampling (forma avanzada del fitness proportional selection)
 
 Crossover Methods (intercambio de información)
 - Uniform crossover: cada gen del offspring tiene un 50% de probabilidad de venir de un padre u otro
 - Single point crossover: se selecciona aleatoriamente una posición del genoma, la información genética anterior a ese punto procederá del padre 1 y la posterior del padre 2. Existen algunas combinaciones que no son posibles (aunque se pueden dar por mutación) y existe bias en la izquierda derivada del padre 1 y a la derecha procedente del padre 2 (para evitarlo se usa el two-point crossover)
 - Two-point crossover
+- Ordered crossover: a subset of the first parent’s chromosome is selected. That subset is then added to the child chromosome in the same position. The next step is to add the second parent’s genetic information to the offspring’s
+chromosome. We do this by starting from the end position of the selected subset,
+and then include each gene from parent 2, which isn’t already in the offspring’s
+chromosome.
 
 
 Crossover Pseudo Code
@@ -187,167 +245,39 @@ Mutación
 
 
 
-
-
 OPTIMIZATION
 
 Adaptive Genetic Algorithms (AGA)
-Adaptive genetic algo-
-rithms are useful because they can assist in the tuning of these parameters auto-
-matically by adjusting them based on the state of the algorithm. These parameter
-adjustments take place while the genetic algorithm is running, hopefully resulting
-in the best parameters being used at any specific time during execution. It’s this
-continuous adaptive adjustment of the algorithm’s parameters which will often
-result in a performance improvement for the genetic algorithm.
-Adaptive genetic algorithms use information such as the average population
-fitness and the population’s current best fitness to calculate and update its
-parameters in a way that best suits its present state. For example, by comparing any
-specific individual to the current fittest individual in the population, it’s possible to
-gauge how well that individual is performing in relation to the current best. Typically,
-we want to increase the chance of preserving individuals that are performing well
-and reduce the chance of preserving individuals that don’t perform well. One way
-we can do this is by allowing the algorithm to adaptively update the mutation rate.
-Unfortunately, it’s not quite that simple. After a while, the population will start
-to converge and individuals will begin to fall nearer to a single point in the search
-space. When this happens, the progress of the search can stall as there is very little
-difference between individuals. In this event, it can be effective to raise the mutation
-rate slightly, encouraging the search of alternative areas within the search space.
-We can determine if the algorithm has begun to converge by calculating the
-difference between the current best fitness and the average population fitness.
-When the average population fitness is close to the current best fitness, we know
-the population has started to converge around a small area of the search space.
-Adaptive genetic algorithms can be used to adjust more than just the mutation
-rate however. Similar techniques can be applied to adjust other parameters of the
-genetic algorithm such as the crossover rate to provide further improvements as
-needed.
+Ayudan a tunear automáticamente los parámetros en función del estado del algoritmo.
+Este ajuste se realiza mientras el algoritmo genético se ejecuta. Para ello usa información como el fitness medio de la población y el mejor fitness individual de la población.
+Podemos determinar si el algoritmo comienza a converger calculando la diferencia entre el mejor fitness actual y el fitness medio de la población. 
+Cuando el fitness medio de la población es próximo al mejor fitness actual, la población ha comenzado a converger en torno a un equeño área del espacio de búsqueda.
 
 
 Multi-Heuristics
-Implementing a second heuristic into a genetic algorithm
-allows us to combine the best aspects of multiple heuristic approaches into one
-algorithm, providing further control over the search strategy and performance.
-Two popular heuristics that are often implemented into genetic algorithms are
-simulated annealing and Tabu search. Simulated annealing is a search heuristic
-modeled on the process of annealing found in metallurgy. Put simply, it is a hill
-climbing algorithm that is designed to gradually reduce the rate in which worse
-solutions are accepted. In the context of genetic algorithms, simulated annealing
-will reduce the mutation rate and/or crossover rate over time.
-On the other hand, Tabu search is a search algorithm that keeps a list of “tabu”
-(which derives from “taboo”) solutions that prevents the algorithm from returning
-to previously visited areas in the search space that are known to be weak. This tabu
-list helps the algorithm avoid repeatedly considering solutions it’s previously found
-and knows to be weak.
-Typically, a multi-heuristic approach would only be implemented in situations
-where including it could bring certain needed improvements to the search process.
-For example, if the genetic algorithm is converging on an area in the search space
-too quickly, implementing simulated annealing into the algorithm might help to
-control how soon the algorithm converges.
+Implementar una segunda heurística en el algoritmo genético da mayor control a la estrategia de búsqueda y ejecución.
+Dos heurísticas que se suelen usar con los algoritmos genéticos son:
+- Simulated annealing: es un algoritmo de hill climbing que gradualmente reduce el ratio en el que peores soluciones son aceptadas. En los algoritmos genéticos se usa para reducir el ratio de mutación y recombinación a lo largo del tiempo (permite controlar la velocidad de convergencia del algoritmo genético)
+- Tabu search: algoritmo de búsqueda que evita que el algoritmo busque de nuevo en zonas ya visitadas. Esto evita considerar de nuevo las soluciones que se consideran malas.
 
 
-Performance Improvements
-Possibly one of the most effective ways to optimize a genetic
-algorithm is by simply writing efficient code. 
+Performance Improvements (lo más efectivo es escribir código eficiente)
 -Fitness Function Design
-With the fitness function typically being the most processing demanding com-
-ponent of a genetic algorithm, it makes sense to focus code improvements on the
-fitness function to see the best return in performance.
-Before making improvements to the fitness function, it’s a good idea to first
-ensure it adequately represents the problem. A genetic algorithm uses its fitness
-function to gauge the best area of the search space to focus its search in. This means
-a poorly designed fitness function can have a huge negative impact on the search
-ability and overall performance of the genetic algorithm. As an example, imagine
-a genetic algorithm has been built to design a car panel, but the fitness function
-which evaluated the car panel did so entirely by measuring the car’s top speed.
-This overly simple fitness function may not provide an adequate fitness value if
-it was also important that the panel could meet certain durability or ergonomic
-constraints as well as being aerodynamic enough.
+La función de fitness es la que más proceso demanda. 
+A través de esta función el algoritmo genético focaliza la búsqueda en las mejores áreas del espacio de búsqueda.
 -Parallel Processing
 Modern computers will often come equipped with several separate processing
-units or “cores”. Unlike standard single-core systems, multi-core systems are able to
-use additional cores to process multiple computations simultaneously. This means
-any well-designed application should be able to take advantage of this characteris-
-tic allowing its processing requirements to be distributed across the extra process-
-ing cores available. For some applications, this could be as simple as processing GUI
-related computations on one core and all the other computations on another.
-Supporting the benefits of multi-core systems is one simple but effective way
-to achieve performance improvements on modern computers. As we discussed
-previously, the fitness function is often going to be the bottleneck of a genetic
-algorithm. This makes it a perfect candidate for multi-core optimization. By
-using multiple cores, it’s possible to calculate the fitness of numerous individuals
-simultaneously, which makes a huge difference when there are often hundreds of
-individuals to evaluate per population.
-Lucky for us, Java 8 provides some very useful libraries that makes supporting
-parallel processing in our genetic algorithm much easier. Using IntStream, we can
-achieve parallel processing in our fitness function without worrying about the fine
-details of parallel processing (such as the number of cores we need to support);
-it will instead create an optimal number of threads depending on the number of
-cores available.
-You may have wondered why, in Chapter 5, the GeneticAlgorithm calcFitness
-method clones the Timetable object before using it. When threading applications
-for parallel processing, one needs to take care to ensure that objects in one thread
-will not affect objects in another thread. In this case, changes made to the timetable
-object from one thread may have unexpected results in other threads using
-the same object at the same time – cloning the Timetable first allows us to give
-each thread its own object.
-Because the genetic algorithms covered in this book have used fairly simple
-fitness functions, parallel processing may not provide much of a performance
-improvement. A nice way to test how much parallel processing can improve the
-genetic algorithms performance might be to add a call to Thread.sleep( ) in the
-fitness function. This will simulate a fitness function which takes a significant
-amount of time to complete execution.
+La función de fitness suele ser el cuello de botella, por lo que se suele procesar en paralelo (se calcula el fitness de numerosos individuos simultaneamente)
+En Java 8 se puede usar IntStream para no tener que preocuparse de los detalles del procesado en paralelo (se crea automáticamente el número de hilos óptimo en función de los cores disponibles)
+Al usar hilos hay que evitar que los objetos de un hilo afecten a los objetos de otro hilo (no hay que usar el mismo objeto al mismo tiempo, para evitarlo hay que clonar el objeto)
 -Fitness Value Hashing
-As discussed previously, the fitness function is usually the most computation-
-ally expensive component of a genetic algorithm. Thus, even small improvements
-to the fitness function can have a considerable effect on performance. Value hash-
-ing is another method that can reduce the amount of time spent calculating fit-
-ness values by storing previously computed fitness values in a hash table. In large
-distributed systems, you could use a centralized caching service (such as Redis or
-memcached) to the same end.
-During execution, solutions found previously will occasionally be revisited due to
-the random mutations and recombinations of individuals. This occasional revisiting
-of solutions becomes more common as the genetic algorithm converges and starts
-to find solutions in an increasingly smaller area of the search space.
-Each time a solution is revisited its fitness value needs to be recalculated,
-wasting processing power on repetitive, duplicate calculations. Fortunately, this
-can be easily fixed by storing fitness values in a hash table after they have been
-calculated. When a previously visited solution is revisited, its fitness value can be
-pulled straight from the hash table, avoiding the need to recalculate it.
+Usar una caché puede reducir el tiempo de cálculo de valores computados previamente (en sistemas distribuidos se puede usar un servicio de cache centralizado - Redis o memcached)
+Durante la ejecución pueden surgir soluciones previamente evaluadas, con lo que la caché evitará calcular de nuevo el fitness.
 -Encoding
-Another component which can affect the genetic algorithm’s performance is the
-encoding chosen. Although, in theory, any problem can be represented using a
-binary encoding of 0s and 1s, it’s rarely the most efficient encoding to choose.
-When a genetic algorithm struggles to converge, it can often be because a bad
-encoding was chosen for the problem causing it to struggle when searching for
-new solutions. There is no hard science to picking a good encoding, but using an
-overly complex encoding will typically produce bad results. For example, if you
-want an encoding which can encode 10 numbers between 0-10, it would usually be
-best to use an encoding of 10 integers instead of a binary string. This way it’s easier
-to apply mutation and crossover functions which can be applied to the individual
-integers instead of bits representing integer values. It also means you don’t need to
-deal with invalid chromosomes such as “1111” representing the value 15 which is
-beyond our 0-10 required range.
+En teoría cualquier problema puede ser representado usando codificación binaria, pero no suele ser lo más eficiente.
 -Mutation and Crossover Methods
-Picking good mutation and crossover methods is another important factor
-when considering options to improve a genetic algorithm’s performance. The opti-
-mal mutation and crossover methods to use will depend mostly on the encoding
-chosen and the nature of the problem itself. A good mutation or crossover method
-should be capable of producing valid solutions, but also be able to mutate and
-crossover individuals in an expected way.
-For example: if we were optimizing a function which accepts any value
-between 0-10, one possible mutation method is Gaussian mutation which adds
-a random value to the gene increasing or decreasing its original value slightly.
-However, another possible mutation method is boundary mutation where a
-random value between a lower and upper boundary is chosen to replace the
-gene. Both of these mutation methods are capable of producing valid mutations,
-however depending on the nature of the problem and other specifics of the
-implementation, one will likely outperform the other. A bad mutation method
-might simply round the value down to 0 or up to 10 depending on the original
-value. In this situation, the amount of mutation that occurs depends on the
-gene’s value which can result in poor performance. An initial value of 1 would be
-changed to 0 which is a relatively small change. However, a value of 5 would be
-changed to 10 which is much larger. This bias can cause a preference for values
-closer to 0 and 10 which will often negatively impact the search process of the
-genetic algorithm.
+Elegir buenos métodos de recombinación y mutación es importante para mejorar la ejecución del algoritmo genético.
+Hay que tener en cuenta factores como el grado de mutación. Si un método de mutación redondea el valor a 0 o 10, no es lo mismo un cambio pequeño (de 1 a 0 por ejemplo) que uno grande (de 5 a 10 por ejemplo). Además se genera un sesgo al existir preferencia por los valores 0 y 10.
 
 
 
@@ -431,11 +361,142 @@ genetic algorithm.
 
 
 
-
-
-
-
-
-
+traveling salesman problem (TSP)
+--------------------------------
+optimization problem - involves finding the most efficient route through a collection of cities, visiting each city exactly once.
+The only guaranteed method to produce an optimal solution for the traveling
+salesman problem is by using a brute force algorithm. A brute force algorithm is an
+algorithm designed to systematically try every possible solution.
+Attempting solving
+the traveling salesman problem with a brute force algorithm is an extremely hard
+task because the number of potential solutions experiences factorial growth as the
+number of cities is increased. For example, for 5 cities, there are 120 possible solutions (1x2x3x4x5), and for 10
+cities that number will have increased to 3,628,800 solutions! 
+There are a
+number of different algorithms that can quickly find solutions that are likely to
+be within only a couple of percent of optimal. One of the more commonly used
+algorithms is the nearest neighbor algorithm. With this algorithm, a starting city
+is picked at random. Then, the next nearest unvisited city is found and picked as
+the second city in the route. This process of picking the next nearest the unvisited
+city is continued until all cities have been visited and a complete route has been
+found. The nearest neighbor algorithm has been shown to be surprisingly effective
+at producing reasonable solutions that score within a fraction the optimal solution.
+
+We can calculate this distance with the “Euclidean distance”. This usually isn’t going to be a typical case as there could be various obstacles making the actual shortest path much longer than the Euclidean
+distance. We are also assuming that traveling from City-A to City-B takes just as
+long as traveling from City-B to City-A. Again, in reality this is rarely the case. Often
+there will be obstacles such as one-way roads that will affect the distance between
+cities while traveling in a certain direction. An implementation of the traveling
+salesman problem where the distance between the cities changes depending on
+the direction is called an asymmetric traveling salesman problem.
+
+Encoding - a list of cities in order. We can do this by assigning each city a unique ID then referencing
+it using a chromosome in the order of the candidate route (permutation encoding)
+The chromosome must be of a certain length
+(however long the city tour is), but an additional constraint is that each city must
+be visited once and only once, otherwise the chromosome is invalid. There can be
+no duplicate genes in the chromosome, and there can be no omitted cities in the
+chromosome.
+
+Evaluation
+calculate the total distance of the
+route given by the individual’s chromosome.
+the fitness is calculated by dividing 1 by the total route distance –
+a shorter distance therefore has a higher score.
+
+As usual, this function loops over the population and each individual’s fitness
+is calculated. Unlike previous implementations, we’re calculating an average
+population fitness instead of a total population fitness. (Since we’re using
+tournament selection rather than roulette wheel selection, we don’t actually need
+the population’s fitness; nothing would change if we simply didn’t record this value.)
+
+Termination Check
+As we have already learned, there is no way to know if we have found an optimal
+solution to the traveling salesman problem unless we try every possible solution.
+This means the termination check we use in this implementation cannot termi-
+nate when the optimal solution has been found, because it simply has no way of
+knowing.
+Note, however, that in situations like these—where the best solution can not
+be known—that there are many sophisticated techniques for termination beyond
+simply setting an upper bound on the number of generations.
+One common technique is to measure the improvement of the population’s
+fitness over time. If the population is still improving rapidly, you may want to allow
+the algorithm to continue on. Once the population stops improving, you can end
+the evolution and present the best solution.
+You may never find the globally optimum solution in a complex solution space
+like the traveling salesman problem’s, but there are many strong local optima, and a
+plateau in progress typically indicates that you’ve found one of these local optima.
+There are several ways you can measure the progress of a genetic algorithm over
+time. The simplest method is to measure the number of consecutive generations
+where there has been no improvement in the best individual. If the number of
+generations with no improvement has crossed some threshold, for instance 500
+generations with no improvement, you can stop the algorithm.
+One drawback of this simple approach with large solution spaces is that you may
+see constant improvement in the population’s fitness – it just may be painfully slow!
+There are so many combinations that it’s feasible to get a one-point improvement
+every dozen generations or so, and you’ll never actually encounter 500 consecutive
+generations with no improvement. You could, of course, set a maximum upper
+bound on generations irrespective of improvement. You could also implement
+a more sophisticated technique, such as taking the moving average of various
+windows and comparing them against each other. If the fitness improvement has
+been trending downwards for several windows, stop the algorithm.
+
+Crossover
+With the traveling salesman problem, both the genes and the order of the genes
+in the chromosome are very important. In fact, for the traveling salesman problem
+we shouldn’t ever have more than one copy of a specific gene in our chromosome.
+the order of the chromosome affects
+the solution’s fitness. In fact, it’s only the order that matters.
+the uniform crossover
+method works on the level of individual genes and doesn’t respect the order of
+the chromosome. Single-point and two-point crossover methods do a better job
+as they deal with chunks of the chromosome, which will preserve order within
+those chunks. The problem with single-point and two-point crossover though, is
+that they aren’t careful about which genes are being added and removed from
+the chromosome. This means we are likely to end up with invalid solutions with
+chromosomes that contain more than one reference for the same city or have cities
+missing altogether.
+A crossover method, which addresses both these problems, is ordered crossover.
+In this crossover method, a subset of the first parent’s chromosome is selected. That
+subset is then added to the child chromosome in the same position.
+The next step is to add the second parent’s genetic information to the offspring’s
+chromosome. We do this by starting from the end position of the selected subset,
+and then include each gene from parent 2, which isn’t already in the offspring’s
+chromosome.
+
+P1 1 2 | 5 3 6 | 4
+P2 5 1 | 4 3 6 | 2
+Of     | 5 3 6 | 
+
+In this example, we would start from the gene “2” checking if it can be found in the
+offspring’s chromosome. Because 2 isn’t currently in the offspring’s chromosome,
+we can add it to the first available position in the offspring’s chromosome. Then,
+because we reached the end of parent 2’s chromosome, we go back to the first
+gene, “5”. This time the 5 is in the offspring’s chromosome so we skip it and move
+onto the 1. We keep doing this until we end up with the following:
+
+P1 1 2 | 5 3 6 | 4
+P2 5 1 | 4 3 6 | 2
+Of 2 1 | 5 3 6 | 4
+
+This method of crossover retains a lot of the order from the parents, but also
+ensures solutions remain valid for problems such as the traveling salesman problem.
+this technique requires checking the offspring’s chromosome for the existence
+of a specific gene.
+
+Mutation
+Mutation is our way of randomly
+dropping candidates in new locations on our solution space, and can help improve
+long-term results at the cost of short-term gain.
+we need to ensure the chromosome is valid after it
+has been applied. A method in which we randomly change a single value of a gene
+would likely cause repeats in the chromosome and as a result, the chromosome
+would be invalid.
+An easy solution to this is called swap mutation, which is an algorithm that
+will simply swap the genetic information at two points. Swap mutation works by
+looping though the genes in the individual’s chromosome with each gene being
+considered for mutation determined by the mutation rate. If a gene is selected
+for mutation, another random gene in the chromosome is picked and then their
+positions are swapped.
 
 
