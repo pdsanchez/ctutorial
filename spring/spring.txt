@@ -292,11 +292,82 @@ web application context by loading the Java classes annotated with the @
 Configuration annotation instead of XML files in the web application.
 
 
+Dependency Injection
+--------------------
+En Spring puede ser:
+• Constructor Injection
+The <constructor-arg> subelement of the <bean> element is used for Constructor Injection.
+• Setter Injection
+The Spring bean XML configuration tag <property> is used to configure properties
+
+En ambos se suele pasar la interfaz del objeto a inyectar.
+
+The Has-A relationship
+When a class contains another class as instance field; for example, the
+EmployeeServiceImpl class contains EmployeeDao as its field. This is called
+a Has-A relationship since we say, " EmployeeServiceImpl has an EmployeeDao ".
+So, without employeeDao , EmployeeServiceImpl cannot perform.
+
+Injecting inner beans
+Similar to the concept of inner classes in Java, it is also possible to define a bean
+inside another bean;
+
+The following are the characteristics of inner beans in Spring:
+•	 A bean can optionally be declared as an inner bean when it doesn't need to
+be shared with other beans.
+•	 An inner bean is defined within the context of its enclosing bean.
+•	 Typically, the inner bean does not have an ID associated with it because the
+inner bean will not be shared outside of its enclosing bean. We can associate
+an ID; however, the value of this ID attribute is ignored by Spring.
+•	 The inner class is independent of the inner bean. Any class can be defined as
+an inner bean; for instance, a Printer class is not an inner class, but a printer
+bean is defined as an inner bean.
+•	 The scope of an inner bean is always a prototype.
+
+The limitations of using inner beans are as follows:
+•	 It cannot be reused or shared with other beans
+•	 In practice, it affects the readability of the configuration file
+
+...
+<bean id="atmBean" class="org.packt.Spring.chapter2.setterinjection.ATM">
+  <property name="printer">
+    <bean class="org.packt.Spring.chapter2.setterinjection.Printer">
+      <property name="message" value="The balance information is printed by Printer for the account number"></property>
+    </bean>
+  </property>
+</bean>
+...
 
 
+Case 1 – injecting an empty string
+We can pass an empty string as a value, as shown in the following code, which is like setEmployeeName("") in the Java code:
+...
+<bean id="employee" class="org.packt.Spring.chapter2.setterinjection.Employee">
+  <property name="employeeName" value="""></property>
+</bean>
+...
+Case 2 – injecting a null value
+We can pass a null value, as shown in the following code, which is like setEmployeeName(null) in the Java code:
+...
+<bean id="employee" class="org.packt.Spring.chapter2.setterinjection.Employee">
+  <property name="employeeName">
+    <null />
+  </property>
+</bean>
+...
 
 
+Bean definition inheritance
+Bean definition inheritance means that you have lot of bean definition in the bean
+configuration file and you have something that is common across lots of bean.
 
+•	 ParentBean : This is a parent bean that is used as a template to create other
+beans. It would be referred to in the XML file with id="pBean" .
+<bean id="pBean" class="ParentBean">
 
+•	 ChildBean : This is a child bean that inherits from the parent bean defined
+earlier. The parent="pBean" specifies that this bean is inheriting the
+properties of the ParentBean bean.
+<bean id="cBean" class="ChildBean" parent="pBean">
 
 

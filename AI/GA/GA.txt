@@ -156,54 +156,19 @@ Se compara la tasa de recombinación con un número aleatorio para decidir si so
 Si un individuo se selecciona para recombinarse, entonces hay que buscar un segundo padre a través de un método de selección:
 - Roulette Wheel Selection (fitness proportionate selection): los individuos se sitúan en una ruleta, y a mayor fitness, mayor espacio ocupan en la misma.
 - Tournament Selection: selección de individuos en función del fitness (a mayor fitness, mayor probabilidad de ser elegido para la recombinación)
-ournament selection selects its parents by running a series of “tournaments”.
-First, individuals are randomly selected from the population and entered into a
-tournament. Next, these individuals can be thought to compete with each other
-by comparing their fitness values, then choosing the individual with the highest
-fitness for the parent.
-Tournament selection requires a tournament size to be defined that specifies how
-many individuals from the population it should pick to compete in a tournament.
-As with most parameters, there is a tradeoff in performance depending on the
-value chosen. A high tournament size will consider a larger proportion of the
-population. This makes it much more likely to find the higher scoring individuals in
-the population. Alternately, a low tournament size will select individuals from the
-population more randomly due to less competition, often picking lower ranking
-individuals as a result. A high tournament size can lead to a loss of genetic diversity
-where only the best individuals are being selected as parents. Conversely, a low
-tournament size can slow progress of the algorithm due to the reduced selection
-pressure.
-Tournament selection is one of the most common selection methods used in
-genetic algorithms. Its strengths being that it’s a relatively simple algorithm to
-implement and allows for variable selection pressure by updating the tournament
-size. It does have limitations however. Consider when the lowest scoring individual
-is placed into a tournament. It wouldn’t matter what other individuals from the
-population are added to the tournament, it will never be chosen because the
-other individuals are guaranteed to have a higher fitness value. This drawback
-could be resolved by adding a selection probability to the algorithm. For example,
-if the selection probability is set to 0.6, there would be a 60% chance the fittest
-individual is selected. If the fittest individual isn’t selected, it will then move on
-to the second fittest individual and so on until an individual has been picked.
-While this modification allows even the worst ranking individuals to be selected
-occasionally, it doesn’t take into account the fitness difference between individuals.
-For example, if three individuals were chosen for tournament selection, one having
-a fitness value of 9, one with a fitness value of 2, and the other with a fitness value
-of 1. In this case, the individual with a fitness value of 2 would be no more likely to
-be picked if the fitness value was 8. This means occasionally individuals are given
-unreasonably high or low odds for selection.
-We will not implement selection probability in our tournament selection
-implementation; however, it is an excellent exercise for the reader.
-
+Los padres se seleccionan al ejecutarse una serie de torneos. En primer lugar un determinado número de individuos (tournament size) son elegidos aleatoriamente de la población. Después esos individuos compiten unos contra otros comparando sus fitness. El individuo con mayor fitness es elegido como padre.
+Un tournament size alto puede provocar una pérdida de la diversidad genética (sólo los mejores individuos son seleccionados como padres). Un valor bajo puede enlentecer el progreso del algoritmo al reducir la presión selectiva.
+Para que se puedan tomar individuos con un bajo fitness se añade una probabilidad de selección. Si esa probabilidad es del 0.6, existe un 60% de probabilidades de seleccionar al individuo con mayor fitness. Si ese individuo no se selecciona se pasa al siguiente con mayor fitness, y así sucesivamente hasta que se selecciona uno.
+Esto permite que incluso los individuos con peor fitness sean seleccionados en algunas ocasiones. 
+También podría tenerse en cuenta la diferencia de fitness entre los individuos (si es muy alta o muy baja) 
 - Stochastic Universal Sampling (forma avanzada del fitness proportional selection)
+
 
 Crossover Methods (intercambio de información)
 - Uniform crossover: cada gen del offspring tiene un 50% de probabilidad de venir de un padre u otro
 - Single point crossover: se selecciona aleatoriamente una posición del genoma, la información genética anterior a ese punto procederá del padre 1 y la posterior del padre 2. Existen algunas combinaciones que no son posibles (aunque se pueden dar por mutación) y existe bias en la izquierda derivada del padre 1 y a la derecha procedente del padre 2 (para evitarlo se usa el two-point crossover)
 - Two-point crossover
-- Ordered crossover: a subset of the first parent’s chromosome is selected. That subset is then added to the child chromosome in the same position. The next step is to add the second parent’s genetic information to the offspring’s
-chromosome. We do this by starting from the end position of the selected subset,
-and then include each gene from parent 2, which isn’t already in the offspring’s
-chromosome.
-
+- Ordered crossover: un subconjunto del primer padre es seleccionado y añadido al cromosoma hijo en la misma posición. Para añadir la información del segundo padre empezamos en la posición final del subconjunto seleccionado e incluimos cada gen del padre 2 (siempre que no estén ya en el hijo - offspring)
 
 Crossover Pseudo Code
 1:For each individual in population:
@@ -219,8 +184,10 @@ Crossover Pseudo Code
 
 
 Mutación
+Permite situar aleatoriamente candidatos en nuevos puntos del espacio de soluciones. Mejora los resultados a largo plazo.
 - Bit Flip mutation
-
+- Swap mutation: se seleccionan dos genes y se cambian sus posiciones. 
+Se considera cada gen del cromosoma de un individuo y si es seleccionado (en función de su tasa de mutación), se selecciona otro gen aleatoriamente y se intercambian. 
 
 
 
@@ -484,19 +451,17 @@ ensures solutions remain valid for problems such as the traveling salesman probl
 this technique requires checking the offspring’s chromosome for the existence
 of a specific gene.
 
-Mutation
-Mutation is our way of randomly
-dropping candidates in new locations on our solution space, and can help improve
-long-term results at the cost of short-term gain.
-we need to ensure the chromosome is valid after it
-has been applied. A method in which we randomly change a single value of a gene
-would likely cause repeats in the chromosome and as a result, the chromosome
-would be invalid.
-An easy solution to this is called swap mutation, which is an algorithm that
-will simply swap the genetic information at two points. Swap mutation works by
-looping though the genes in the individual’s chromosome with each gene being
-considered for mutation determined by the mutation rate. If a gene is selected
-for mutation, another random gene in the chromosome is picked and then their
-positions are swapped.
+
+
+
+
+
+Schedule
+---------
+El horario de clases es una variación del constraint satisfaction problem. 
+Estos problemas tienen un conjunto de variables que hay que asignar de modo que no se viole el conjunto de restricciones definido (hard constraints y soft constraints)
+A veces las soft constraints generan conflictos entre sí. Se pueden dar pesos a esas restricciones para que el algoritmo sepa cuales son las más importantes.
+
+
 
 
