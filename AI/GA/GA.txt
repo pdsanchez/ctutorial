@@ -57,11 +57,12 @@ Modo de codificar la información genética en el cromosoma (binaria, enteros, d
 
 
 
-# Termination Check (condiciones de terminación)
+# Termination Check (condiciones de terminación - se pueden combinar)
 • Se alcanza un número máximo de generaciones.
 • Se excede un tiempo máximo.
-• Se encuentra una solución que satisface los requerimientos establecidos.
+• Se encuentra una solución que satisface los requerimientos establecidos (el fitness toma un valor determinado)
 • El algoritmo se estabiliza.
+
 
 # Validation:
 Los algoritmos genéticos son procesos estocásticos (no determinista, aleatorio) dictados por estadística. No se puede sacar ninguna conclusión con una única prueba. El inicializar el proceso con una población inicial aleatoria da lugar a soluciones óptimas diferentes, lo que hace dificil juzgar el comportamiento.
@@ -188,7 +189,8 @@ Permite situar aleatoriamente candidatos en nuevos puntos del espacio de solucio
 - Bit Flip mutation
 - Swap mutation: se seleccionan dos genes y se cambian sus posiciones. 
 Se considera cada gen del cromosoma de un individuo y si es seleccionado (en función de su tasa de mutación), se selecciona otro gen aleatoriamente y se intercambian. 
-
+- Uniform mutation - creamos un nuevo individuo aleatorio y seleccionamos los genes que vamos a copiar en el individuo a mutar. 
+Esto garantiza que el individuo mutado es válido (nunca se seleccionará un gen que no sea válido). Esto es útil cuando el cromosoma está formado por IDs (no se pueden cambiar por números aleatorios)
 
 
 
@@ -330,46 +332,20 @@ Hay que tener en cuenta factores como el grado de mutación. Si un método de mu
 
 traveling salesman problem (TSP)
 --------------------------------
-optimization problem - involves finding the most efficient route through a collection of cities, visiting each city exactly once.
-The only guaranteed method to produce an optimal solution for the traveling
-salesman problem is by using a brute force algorithm. A brute force algorithm is an
-algorithm designed to systematically try every possible solution.
-Attempting solving
-the traveling salesman problem with a brute force algorithm is an extremely hard
-task because the number of potential solutions experiences factorial growth as the
-number of cities is increased. For example, for 5 cities, there are 120 possible solutions (1x2x3x4x5), and for 10
-cities that number will have increased to 3,628,800 solutions! 
-There are a
-number of different algorithms that can quickly find solutions that are likely to
-be within only a couple of percent of optimal. One of the more commonly used
-algorithms is the nearest neighbor algorithm. With this algorithm, a starting city
-is picked at random. Then, the next nearest unvisited city is found and picked as
-the second city in the route. This process of picking the next nearest the unvisited
-city is continued until all cities have been visited and a complete route has been
-found. The nearest neighbor algorithm has been shown to be surprisingly effective
-at producing reasonable solutions that score within a fraction the optimal solution.
+Problema de optimización (encontrar la ruta más eficiente en una colección de ciudades, visitando cada ciudad una sóla vez)
+El único método que garantiza obtener la solución óptima es la fuerza bruta, es decir, probar todas las posibles soluciones. En TSP el número de soluciones potenciales es el factorial del número de ciudades.
+Existen diferentes algoritmos que encuentran rápidamente sóluciones bastante óptimas.
+Uno de ellos es el nearest neighbor algorithm. Se empieza con una ciudad al azar, se encuentra la más cercana no visitada que se pone como segunda en la ruta. Este proceso se repite hasta completar la ruta completa.
 
-We can calculate this distance with the “Euclidean distance”. This usually isn’t going to be a typical case as there could be various obstacles making the actual shortest path much longer than the Euclidean
-distance. We are also assuming that traveling from City-A to City-B takes just as
-long as traveling from City-B to City-A. Again, in reality this is rarely the case. Often
-there will be obstacles such as one-way roads that will affect the distance between
-cities while traveling in a certain direction. An implementation of the traveling
-salesman problem where the distance between the cities changes depending on
-the direction is called an asymmetric traveling salesman problem.
+La distancia puede calcularse con la "distancia Euclidea" (no es lo ideal porque pueden existir obstáculos el la ruta, o el ir de A a B puede ser más largo que ir de B a A, etc - la implementación del TSP en los que la distancia entre ciudades cambia según la dirección se denomina asymmetric traveling salesman problem)
 
-Encoding - a list of cities in order. We can do this by assigning each city a unique ID then referencing
-it using a chromosome in the order of the candidate route (permutation encoding)
-The chromosome must be of a certain length
-(however long the city tour is), but an additional constraint is that each city must
-be visited once and only once, otherwise the chromosome is invalid. There can be
-no duplicate genes in the chromosome, and there can be no omitted cities in the
-chromosome.
+Encoding
+permutation encoding - Cada ciudad se identifica con un ID. La lista de IDs en un orden determinado formarán el cromosoma (por tanto el cromosoma equivale a una ruta). 
+Restricciones: no puede haber genes duplicados (no se repiten ciudades) y no se pueden omitir ciudades.
 
 Evaluation
-calculate the total distance of the
-route given by the individual’s chromosome.
-the fitness is calculated by dividing 1 by the total route distance –
-a shorter distance therefore has a higher score.
+Cálculo de la distancia total de la ruta definida por el cromosoma de un individuo.
+El fitness se calcula dividiendo 1 entre la distancia total de la ruta (a menor distancia, mayor puntuación)
 
 As usual, this function loops over the population and each individual’s fitness
 is calculated. Unlike previous implementations, we’re calculating an average
@@ -461,6 +437,29 @@ Schedule
 El horario de clases es una variación del constraint satisfaction problem. 
 Estos problemas tienen un conjunto de variables que hay que asignar de modo que no se viole el conjunto de restricciones definido (hard constraints y soft constraints)
 A veces las soft constraints generan conflictos entre sí. Se pueden dar pesos a esas restricciones para que el algoritmo sepa cuales son las más importantes.
+
+Al considerar sólo las hard constraints no existe diferencia entre el fitness dos soluciones válidas.
+Al añadir soft constraints dejamos de buscar soluciones válidas y buscamos la mejor solución.
+Las hard constraints determinan si una solución es válida y las soft constraints determinan la calidad de la solución. 
+Los algoritmos genéticos son buenos para jugar con las restricciones.
+El que cada individuo se evalúe sólo con un número (su fitness) aporta ventajas. El algoritmo usado para obtener el fitness es opaco, una caja negra, para el algoritmo genético. Al final todo depende del valor del fitness, que es un único valor no dimensional, por lo que podemos escalarlo y transformarlo con todas las restricciones que queramos. La importancia de cada restricción representará cómo de fuerte contribuirá al valor del fitness.
+
+Encoding
+Es necesario codificar todas las propiedades requeridas por el horario (timeslot, aula, profesor)
+Se asigna un ID numérico a cada timeslot, profesor y aula.
+El cromosoma codificará un array de enteros. Dividiendo el array en conjuntos de 3 tenemos la información de cada clase (cada clase estará formada por 3 enteros - los IDs de timeslot, profesor y aula)
+
+Evaluation
+El fitness de cada individuo será inversamente proporcional al número de restricciones violadas + 1 (cero restricciones violadas dará un fitness de uno)
+Los elementos del cromosoma se transforman en un array de objetos y se comparará cada objeto con los demás y se incrementará una variable cada vez que se incumpla una restricción. Al final se obtendrá el número total de restricciones violadas.
+
+Termination
+Se combinarán dos condiciones de terminación: cuando se supere un cierto número de generaciones o cuando se encuentre una solución válida (cuando el fitness sea 1)
+
+
+
+
+
 
 
 
