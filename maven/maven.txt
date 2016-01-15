@@ -1,0 +1,507 @@
+Libro: Introducing Maven (Balaji Varanasi y Sudha Belida)
+
+Maven es un framework gestor de proyectos que simplifica la construcción, validación, generación de documentación, empaquetado de los proyectos.
+- Usa una estructura de directorios estandarizada para el código y los ficheros de configuración (la estructura se vuelve independiente del IDE que usemos)
+- Gestión declarativa de dependencias: declaramos las dependencias del proyecto en el fichero pom.xml y Maven las descarga automáticamente para que las podamos usar.
+El pom.xml también sirve como herramienta de documentación donde se especifican las dependencias del proyecto y sus versiones.
+- Plugins: Maven tiene una arquitectura basada en plugins, que encapsulan la logica de la tarea y permiten su reutilización.
+- Maven permite ejecutar los comandos por consola (aunque los IDEs también soportan Maven), y se integra con productos de integración continúa como Jenkins, Bamboo y Hudson.
+- Arquetipos (Archetypes): plantillas de proyectos predefinidas que se usan para generar nuevos proyectos que contendrán todas las carpetas y ficheros necesarios.
+- Open Source
+- Convención sobre configuración (CoC), reduciendo el número de decisiones a tomar. También se pueden personalizar los valores por defecto de Maven.
+
+Alternativas a Maven
+- Ant + Ivy
+Apache Ant es una herramienta java y open source para construir scripting. Se configura con XML (build.xml)
+El uso de Ant implica definir tareas (tasks) y objetivos (targets). Una tarea es una unidad de trabajo que necesita ser completada (crear un directorio, ejecutar un test, compilar, crear un war...) Un target es un conjunto de tareas, y puede depender de otros targets (se genera una secuencia de ejecución de targets)
+Ant no impone convenciones o restricciones al proyecto, y es muy flexible. Esto provoca que el build.xml a veces sea difícil de entender y mantener.
+Apache Ivy (http://ant.apache.org/ivy/) proporciona gestión de dependencias automática. Se declaran las dependencias en el fichero ivy.xml.
+Para integrar Ivy y Ant, se declaran nuevos targets en el build.xml para recuperar y resolver las dependencias.
+- Gradle
+Gradle es una herramienta para automatizar la creación de projectos Java. Usa un DSL (Domain Specific Language) basado en Groovy para configurar. Aporta una flexibilidad similar a Ant y usa la misma noción de tareas. También sigue las convenciones de Maven y su estilo de gestión de dependencias.
+Los plugins proporcionan tareas preconfiguradas y dependencias del proyecto. 
+
+
+Setting Up Maven (W7)
+----------------
+Maven se basa en Java y requiere del JDK.
+Descargar el zip de Maven con los binarios y descomprimir en el directorio de instalación.
+Apuntar la variable de entorno M2_HOME al directorio de instalación (Start menú -> botón derecho en Computer -> selecionar System Properties -> Advanced system settings -> click en botón Environment Variables -> New en System variables)
+Modificar la variable de entorno Path para ejecutar Maven desde la línea de comandos. Click en Edit de la variable Path y añadir %M2_HOME%/bin al principio del path.
+
+MAVEN_OPTS ENVIRONMENT VARIABLE
+La ejecución de Maven puede ocasionar errores OutOfMemory.
+Para incrementar el heap size de la JVM usada por Maven crearemos una nueva variable de entorno MAVEN_OPTS con el valor -Xmx512m
+
+Testing Installation
+$ mvn –v
+$ mvn --version.
+
+Getting Help
+$ mvn -h 
+$ mvn --help
+
+Additional Settings
+Los pasos previos son suficientes para comenzar con Maven. La información de configuración adicional se añade en el fichero settings.xml que está en la carpeta .m2 situada por defecto en el directorio home.
+La carpeta .m2 contiene el fichero settings.xml y un directorio repositorio con los ficheros jar de plugins, metadatos requeridos por Maven y los ficheros jar descargados de Internet que forman parte de las dependencias de los proyectos.
+La carpeta .m2 es creada por Maven automáticamente, pero si no aparece la crearemos junto con el fichero settings.xml. Este sería el esqueleto del fichero:
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <localRepository/>
+  <interactiveMode/>
+  <usePluginRegistry/>
+  <offline/>
+  <pluginGroups/>
+  <servers/>
+  <mirrors/>
+  <proxies/>
+  <profiles/>
+  <activeProfiles/>
+</settings> 
+
+localRepository --- permite cambiar la ruta del directorio de los plugins y dependencias (por defecto en .m2/repository)
+interactiveMode --- Si el valor es true (por defecto) Maven interacciona con el usuario.
+offline --- Si el valor es true, Maven opera en modo offline. Por defecto es false.
+servers --- Maven puede interactuar con variedad de servidores (Apache Subversion (SVN) servers, build servers, y remote repository servers). Con esta etiqueta podemos especificar las credenciales de seguridad (username y password) para conectarnos a los servidores.
+mirrors --- Permite especificar localizaciones alternativas de los repositorios.
+proxies --- contiene la información HTTP del proxy necesaria para conectar a Internet.
+profiles --- permite agrupar ciertos elementos de configuración como repositorios y pluginRepositories.
+activeProfile --- permite especificar un perfil activo para Maven
+
+Setting Up a Proxy
+Para poder descargar plugins y dependencias se necesita conexión a Internet. Si existen HTTP proxies para restringir el acceso a Internet hay que editar settings.xml:
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <proxies>
+    <proxy>
+      <id>companyProxy</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>proxy.company.com</host>
+      <port>8080</port>
+      <username>proxyusername</username>
+      <password>proxypassword</password>
+      <nonProxyHosts />
+    </proxy>
+  </proxies>
+</settings>
+
+
+Maven Dependency
+----------------
+Maven proporciona un gestor de dependencias declarativo. Las dependencias se declaran en el pom.xml y Maven las descarga automáticamente.
+Los repositorios a los que se accede a través de la web son considerados remotos. Maven interactúa con el repositorio remoto Maven Central (en repo.maven.apache.org y uk.maven.org)
+Los artefactos son descargados en el repositorio local.
+Esta arquitectura no permite compartir artefactos de una compañía entre diferentes equipos (por temas legales, de licencias, de propiedad intelectual no se publican los artefactos de la empresa en Maven Central. Además la descarga está condicionada por el ancho de banda) Por tanto las empresas suelen usar un gestor de repositorios interno que actúa de proxy a los repositorios remotos. Así se regula el tipo de artefactos permitidos, y se pueden mandar los artefactos de la organización al servidor, permitiendo la colaboración.
+Algunos gestores de repositorios open source son:
+Sonatype Nexus (www.sonatype.com/nexus)
+Apache Archiva (http://archiva.apache.org/)
+Artifactory (www.jfrog.com/open-source/)
+
+Using Repositories
+Para usar un nuevo repositorio hay que modificar el settings.xml:
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/
+settings-1.0.0.xsd">
+  .......
+  <profiles>
+    <profile>
+      <id>your_company</id>
+      <repositories>
+        <repository>
+          <id>spring_repo</id>
+          <url>http://repo.spring.io/release/</url>
+        </repository>
+        <repository>
+          <id>jboss_repo</id>
+          <url>https://repository.jboss.org/</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>your_company</activeProfile>
+  </activeProfiles>
+  .......
+</settings>
+
+NOTA: la información de los repositorios se puede especificar en el fichero settings.xml o en el pom.xml. En ambos existen ventajas y desventajas. Poner la información del repositorio en el pom.xml hace que sea más portable (se construyen los proyectos sin tener que modificar el settings.xml), pero cuando los artefactos se liberan se vuelca la información de los repositorioes en ellos (si la URL del repositorio cambiara, los consumidores de esos artefactos tendrán errores porque no encuentran el camino al repositorio)
+Para evitarlo se suele usar el fichero settings.xml
+
+Dependency Identification
+Las dependencias suelen ser ficheros jar, war, ear y zip. Cada dependencia se identifica unequivocamente con las coordenadas de grupo, artefacto y version (GAV).
+-groupId: Identificador de la organización o grupo responsable del proyecto (org.hibernate, log4j, org.springframework.boot)
+-artifactId: Identificador del artefacto generado por el proyecto. Debe ser único entre los proyectos que usan el mismo groupId (hibernate-tools, log4j, spring-core)
+-version: Indica el número de versión del proyecto (1.0.0, 2.3.1-SNAPSHOT, 4.3.6.Final)
+-type: Indica el empaquetado del artefacto generado (jar, war, ear)
+
+Transitive Dependencies
+Las dependencias declaradas en el pom.xml (dependencias directas) frecuentemente tiene sus propias dependencias (dependencias transitivas).
+Maven automáticamente maneja las dependencias transitivas y las incluye en el proyecto.
+Las dependencias transitivas también pueden tener dependencias. Maven usa una técnica llamada dependency mediation para resolver los conflictos de versiones.
+NOTA: las dependencias transitivas pueden causar problemas y efectos colaterales imprevisibles por jars no necesarios o versiones antiguas.
+Es recomendable analizar el árbol de dependencias y quitar aquellas que no son necesarias.
+
+Dependency Scope
+El concepto de scope en Maven permite especificar cuando y dónde se necesita una dependencia en particular (por ejemplo, JUnit en testeos, el driver de MySQL al ejecutar la aplicación en Tomcat...)
+Maven proporciona seis scopes:
+-compile: Dependencias disponibles en el classpath en todas las fases (construcción, test, run). Este es el scope por defecto.
+-provided: Dependencias disponibles en el classpath durante las fases de construcción y test. No se incluyen en el artefacto generado. Algunos ejemplos de dependencias que usan este scope son Servlet api, JSP api...
+-runtime: Dependencias no disponibles en el classpath durante la fase de construcción. Se incluyen en el artefacto generado y están disponibles en runtime.
+-test: Dependencias disponibles en la fase de test. Ejemplo JUnit y TestNG.
+-system: Dependencias disponibles en el classpath durante las fases de construcción y test (como provided). Estas dependencias no se recuperan del repositorio, sino que se especifica un path al sistema de ficheros que tiene las dependencias.
+-import: Sólo se aplica a las dependencias del fichero pom.xml. Permite incluir información desde un pom.xml remoto.
+
+Manual Dependency Installation
+Lo ideal es recoger las dependencias de un repositorio público o desde el gestor de repositorios de la empresa. Sin embargo, a veces es necesario que un fichero esté disponible en el repositorio local.
+Maven permite instalar un fichero en el repositorio local con el plugin 'install'.
+Ejemplo: installs a test.jar file located in the c:\apress\gswm-book\chapter3 folder.
+$ mvn install:install-file -DgroupId=com.apress.gswmbook -DartifactId=test -Dversion=1.0.0 -Dfile=C:\apress\gswm-book\chapter3\test.jar -Dpackaging=jar -DgeneratePom=true
+
+
+Maven Project Basics
+--------------------
+El esqueleto de un projecto Java basado en Maven es:
+
+project_name
+ |--- pom.xml
+ |--- src
+ |     |--- main
+ |     |     |---java
+ |     |
+ |     |--- test
+ |           |---java
+ |--- target
+
+• project_name -- es el directorio root del proyecto. Normalmente el nombre del proyecto coincide con el del artefacto generado.
+• src -- directorio que contiene los artefactos relacionados con el proyecto (normalmente serán tratados con un sistema de control de versiones como SVN o Git)
+• src/main/java -- directorio con los fuentes de Java.
+• src/test/java -- directorio con los unit test de Java.
+• target -- directorio con los artefactos generados (por ejemplo los .class)
+• pom.xml -- fichero situado en el root del proyecto. Contiene información del proyecto y de configuración (dependencias, plugins)
+Además de los directorios src/main y src/test, Maven recomienda:
+src/main/resources --- recursos que deben ir en el artefacto generado (ficheros de configuración de Spring, plantillas de Velocity)
+src/main/config --- ficheros de configuración que no deben ir en el artefacto generado (ficheros de contexto de Tomcat, ficheros de configuración de James Server...)
+src/main/scripts --- scripts que los administradores de sistemas y desarrolladores necesitan para la aplicación.
+src/test/resources --- ficheros de configuración usados en testing.
+src/main/webapp --- web assets (ficheros .jsp, style sheets, imagenes)
+src/it --- los tests de integración de la aplicación.
+src/main/db --- ficheros de base de datos (por ejemplo SQL scripts)
+src/site --- ficheros requeridos durante la generación del project site.
+
+Los arquetipos permiten poner en marcha el proyecto rápidamente. 
+Para ensamblar manualmente el proyecto:
+1. Ir a la carpeta en la cual queramos crear el proyecto.
+2. Ejecutar el comando mkdir nombre_proyecto.
+3. cd en el directorio creado y crear un fichero pom.xml.
+4. Crear el directorio src/main/java
+
+Understanding the pom.xml File
+El fichero pom.xml es el único artefacto requerido en un proyecto Maven. Allí se especifica el groupId, artifactId y versión, más la información de los desarrolladores que trabajan en el proyecto.
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Getting Started with Maven</name>
+  <url>http://apress.com</url>
+  <developers>
+    <developer>
+      <id>id_developer1</id>
+      <name>nombre_developer1</name>
+      <email>email_developer1@developer.es</email>
+      <properties>
+        <active>true</active>
+      </properties>
+    </developer>
+  </developers>
+</project>
+
+MAVEN VERSIONING
+Los proyectos en Maven suelen seguir esta convención:
+<major-version>.<minor-version>.<incremental-version>-qualifier
+Los valores major, minor e incremental son numericos, y el calificador puede tomar valores del tipo RC, alpha, beta, SNAPSHOT (por ejemplo 1.0.0, 2.4.5-SNAPSHOT, 3.1.1-RC1, etc)
+El calificador SNAPSHOT tiene un significado especial, ya que indica que el proyecto está en desarrollo. Cuando un proyecto usa una dependencia SNAPSHOT, cada vez que el proyecto se construye, Maven descargará y usará el último artefacto SNAPSHOT.
+Al desarrollar una aplicación en un entorno de integración continua, se construirá a menudo y se llevará el resultado al gestor de repositorio. Es buena práctica poner el sufijo SNAPSHOT a la versión durante el desarrollo.
+
+Building a Project
+$ mvn package
+NOTA: la primera vez que se ejecuta Maven se descargan los plugins y dependencias que necesita para ejecutarse. Por eso tardará más tiempo de lo esperado.
+El sufijo 'package' es una fase de Maven que compila el código Java y lo empaqueta en un jar. Ese jar se crea en el directorio nombre_proyecto/target.
+
+Testing the Project
+Para testear con JUnit hay que añadir la dependencia JUnit con el scope test (el jar de JUnit sólo será necesario en la fase de test) al pom.xml:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Getting Started with Maven</name>
+  <url>http://apress.com</url>
+  <developers>
+    <developer>
+      <id>id_developer1</id>
+      <name>nombre_developer1</name>
+      <email>email_developer1@developer.es</email>
+      <properties>
+        <active>true</active>
+      </properties>
+    </developer>
+  </developers>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
+
+Para verificar que la dependencia se ha añadido correctamente usamos 'dependency:tree':
+$ mvn dependency:tree
+
+Para crear los .class y los informes asociados ejecutamos:
+$ mvn package
+
+Properties in pom.xml
+La etiqueta <properties/> permite declarar propiedades, y es muy útil para declarar las versiones de las dependencias, usando ${} en la versión.
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Getting Started with Maven</name>
+  <url>http://apress.com</url>
+  <properties>
+    <junit.version>4.11</junit.version>
+  </properties>
+  <developers>
+    <developer>
+      <id>id_developer1</id>
+      <name>nombre_developer1</name>
+      <email>email_developer1@developer.es</email>
+      <properties>
+        <active>true</active>
+      </properties>
+    </developer>
+  </developers>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
+
+Excluding Dependencies
+La etiqueta <exclusions/> permite excluir dependencias indicando su groupId y artifactId.
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId> org.hamcrest</groupId>
+          <artifactId>hamcrest</artifactId> 
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+
+
+Maven Life Cycle
+----------------
+Goals and Plug-ins
+La arquitectura de Maven se basa en plugins que permiten extender su funcionalidad.
+Cada plugin es una colección de uno o mas objetivos (goals) que pueden ser usados para ejecutar tareas (compilar código, ejecutar tests). Maven asocia los objetivos a fases. Las fases se ejecutan secuencialmente como parte del ciclo de vida de una construcción. 
+Los procesos que generan artefactos suelen requerir varios pasos y tareas para completarse satisfactoriamente. Algunas de esas tareas son compilar, ejecutar unit tests, empaquetar artefactos. Maven usa el concepto de objetivo o goal para representar esas tareas granulares.
+Los objetivos se empaquetan en plugins, que son colecciones de uno o más objetivos.
+Por ejemplo:
+$ mvn clean:clean
+El clean anterior a los dos puntos (:) representa el plugin clean. El clean posterior representa el objetivo clean. Este objetivo elimina el directorio target y su contenido.
+Por tanto, para lanzar un objetivo usaremos:
+$ mvn plugin_identifier:goal_identifier
+
+Los plugins y su comportamiento se pueden configurar usando la seccion plugin del pom.xml.
+Por ejemplo, si queremos forzar que el proyecto se compile con Java 1.6 (el plugin de compilado de Maven 3.0 lo hace en 1.5) habrá que modificar el comportamiento de ese plugin:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- Project details omitted for brevity -->
+  <dependencies>
+    <!-- Dependency details omitted for brevity -->
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+ 
+El proyecto se compilará en 1.6 cuando ejecutemos:
+$ mvn compiler:compile
+
+NOTA: el elemento <build/> tiene un elemento hijo (finalName) que permite cambiar el nombre del artefacto generado sin cambiar el artifactId. Esto lo hacemos con <finalName>new_name</finalName>.
+Por defecto el nombre del artefacto será <<project_artifiact_id>>-<<project_version>>
+
+Life Cycle and Phases
+El ciclo de vida que sigue Maven al construir, testear y distribuir un artefacto está formado por una serie de pasos que se ejecutan en el mismo orden, independientemente del artefacto a producir. Esos pasos se denominan fases. Maven tiene tres ciclos de vida:
+-Default: este ciclo de vida maneja la compilación, empaquetado y despliegue del proyecto Maven.
+-Clean: este ciclo de vida maneja el borrado de ficheros temporales y artefactos generados en el directorio target.
+-Site: este ciclo de vida maneja la generación de documentación y generación del site.
+
+NOTA:
+■ ■ Note  Now that you are aware of the clean life cycle, you can clean the target folder
+simply by running the clean phase using the command mvn clean.
+To better understand the build life cycle and its phases, let’s look at the some of the
+phases associated with the default life cycle:
+-Validate: Runs checks to ensure that the project is correct and
+that all dependencies are downloaded and available.
+-Compile: Compiles the source code.
+-Test: Runs unit tests using frameworks. This step doesn’t
+require that the application be packaged.
+-Package: Assembles compiled code into a distributable format,
+such as JAR or WAR.
+-Install: Installs the packaged archive into a local repository.
+The archive is now available for use by any project running on
+that machine.
+-Deploy: Pushes the built archive into a remote repository for
+use by other teams and team members.
+Because the default life cycle clearly defines the ordering of the phases, you
+can generate an artifact simply by running the command mvn package. Maven will
+automatically execute all of the phases prior to the requested phase. In the provided
+example, Maven will run phases, such as compile and test, prior to running the package
+phase. This means developers and configuration managers only have to learn and use a
+handful of commands.
+A number of tasks need to be performed in each phase. For that to happen, each
+phase is associated with one or more goals. The phase simply delegates those tasks to its
+associated goals.
+
+The <packaging /> element in the pom.xml file will automatically assign the right
+goals for each of the phases without any additional configuration. Remember that this is
+a benefit of CoC. If the packaging element contains the value jar, then the package phase
+will be bound to the jar goal in the jar plug-in. Similarly, for a WAR artifact, pom.xml will
+bind the package to a war goal in the war plug-in.
+
+SKIPPING TESTS
+As discussed earlier, when you run the package phase, the test phase is also run
+and all of the unit tests get executed. If there are any failures in the test phase, the
+build fails. This is the desired behavior. However, there are times, for example, when
+dealing with a legacy project, where you would like to skip running the tests so you
+can build a project successfully. You can achieve this using the maven.test.skip
+property. Here is an example of using this property:
+$ mvn package –Dmaven.test.skip=true  
+
+Plug-in Development
+Developing plug-ins for Maven is very straightforward. This section explains how to
+develop an example HelloPlugin that will give you a taste of plug-in development.
+As discussed earlier, a plug-in is simply a collection of goals. Thus, when we talk
+about plug-in development, we are essentially talking about developing goals. In Java,
+these goals are implemented using MOJOs, which stands for Maven Old Java Object and
+it is similar to Java’s Plain Old Java Object (POJO).
+Let’s start this plug-in development by creating a Maven Java project, named
+gswm-plugin. We are creating this project under a starter
+gswm-plugin project available in the C:\apress\gswm-book\chapter5 folder.
+■ ■ Note  In this chapter we are manually creating the plug-in project. Maven provides a
+mavan-archetype-mojo, which would jumpstart your plug-in development.
+
+The content of the pom.xml file is shown. Notice that the packaging type
+is maven-plugin. We added the maven-plugin-api dependency, because it is needed for
+plug-in development.
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.plugins</groupId>
+  <artifactId>gswm-plugin</artifactId>
+  <version>1.0.0</version>
+  <packaging>maven-plugin</packaging>
+  <name>Simple Hello Plugin</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.2.3</version>
+    </dependency>
+  </dependencies>
+</project>
+ 
+The next step in the development process is creating the MOJO. Listing 5-5 shows the
+code for HelloMojo. As you can see, the implementation is straightforward. We are using
+the Log instance to log output to the console. The most important part of this code is
+actually inside the Java comment section: @goal hello. Using the Javadoc tag @goal,
+we are declaring the name of this goal as hello. It is also possible to use Java 5
+annotations such has @Mojo to provide this metadata. However, it requires the pom.xml
+file changes discussed on the Apache Maven web site (http://maven.apache.org/
+plugin-tools/maven-plugin-plugin/examples/using-annotations.html).
+Listing 5-5.  HelloMojo Java Class
+package com.apress.plugins;
+ 
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+ 
+/**
+*
+* @goal hello
+*/
+public class HelloMojo extends AbstractMojo{
+ 
+public void execute() throws MojoExecutionException,
+MojoFailureException {
+getLog().info("Hello Maven Plugin");
+}
+ 
+}
+ 
+The final step in this process is installing the plug-in in the Maven repository. Run
+the mvn install command at the root of the directory and you should get the output
+shown in Listing 5-6.
+C:\apress\gswm-book\chapter5\gswm-plugin>mvn install
+
+Now you’re ready to start using this plug-in. Remember that the syntax to run any
+goal is mvn pluginId:goalId. 
+C:\apress\gswm-book\chapter5\gswm-plugin>mvn com.apress.plugins:gswm-plugin:hello
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

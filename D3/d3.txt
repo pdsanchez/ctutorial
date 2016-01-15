@@ -1,0 +1,152 @@
+Js Bin
+Js Bin ( http://jsbin.com/ ) is a website that functions as a development tool for
+facilitating the quick creation and sharing of simple JavaScript applications that
+run within the browser. It provides many features, including saving and sharing of
+HTML and JavaScript, real-time update of the UI while you are editing, and a very
+cool ability to push your code and data to GitHub.
+
+bl.ocks.org
+bl.ocks.org ( http://bl.ocks.org ) is a service for D3.js code examples that you
+place on GitHub, a free source code and sharing repository, in an entity known
+as a gist. A gist is simply one or more reusable and sharable piece of code that are
+managed by GitHub. They are an excellent means of remembering and sharing small
+code examples.
+bl.ocks.org was created by Mike Bostock, the original creator of D3.js. It is able to
+create great D3.js visualizations using gists, provided that the gist itself is a piece of
+D3.js code. Many, if not most, D3.js examples on the Web are presented as examples
+on bl.ocks.org, and this book will follow this model.
+For a demonstration, open http://bl.ocks.org/d3byex/ed79b9fee311091333d6 ,
+which takes you to a bl.ock.org version of the Hello World example. Opening the
+link will present you with the following content.
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="D3byEX 1.1>
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"
+charset="utf-8"></script>
+<script>
+d3.select('body')
+.append('h1')
+.text('Hello World!');
+</script>
+</body>
+</html>
+
+
+There are two primary parts to this application, both of which we will see in almost
+every example. The first part includes a reference to the D3.js script, which is
+performed with the following code placed just inside the <body> tag:
+<script src="http://d3js.org/d3.v3.min.js"
+charset="utf-8"></script>
+This references the minified D3.js file directly from the D3.js ( http://d3js.org/ )
+website. You can also copy this file and place it locally on your web server or in a
+Web project. Since all the examples in this book are online, we will always use this
+URL.
+Note that we also have to specify charset="utf-8 ". This is normally not required
+for most JavaScript libraries, but D3.js is UTF-8 encoded and not including this can
+cause issues. So, make sure you don't forget this attribute.
+
+
+
+Accessor functions are commonly used through D3.js. An accessor function has
+two parameters, the first of which represents the datum that has been associated by
+D3.js to the DOM element (we'll come back to this later in the chapter). The second
+parameter represents the 0-based array position of the DOM element in the result of
+the selection.
+The second parameter of an accessor function is optional.
+
+d3.selectAll("div")
+.style('background-color', function (d, i) {
+return (i % 2 === 0) ? "lightblue" : "lightgray";
+});
+
+
+
+Lo mismo:
+d3.selectAll("div")
+.style('width', function(d, i) {
+return (10 + 10 * i) + "px";
+})
+.style('background-color', function (d, i) {
+return (i % 2 === 0) ? 'lightblue' : 'lightgray';
+});
+
+d3.selectAll("div").style({
+width: function (d, i) { return (10 + 10 * i) + "px" },
+'background-color': function (d, i) {
+return (i % 2 === 0) ? 'lightblue' : 'lightgray';
+}
+});
+
+
+D3.js and data binding
+The example in the previous section relied upon the elements that already exist
+in the DOM. Normally, in D3.js we would start with a set of data, and then build
+visualizations based on this data. We would also want to change the visualization as
+the data changes as a result of either adding more data items, removing some or all
+of them, or changing the properties of the existing objects.
+This process of managing mapping of data to visual elements is often referred to as
+binding of data, and in terms of the D3.js nomenclature, it is referred to as a data
+join (do not confuse this with an SQL join). Binding in D3.js is performed by using
+the .data() function of a selector.
+
+Data binding
+Binding of data can be one of the hardest things for someone new to D3.js to get used
+to. Even for somebody who uses other languages and frameworks that provide data
+binding, the way in which D3.js binds data is a little different, and getting to know
+how it does so will save a lot of time down the road. Therefore, we will take the time
+to examine it in detail as it is essential for creating effective D3.js visualizations.
+In D3.js, we drive the visualization of data through binding using the following
+functions of a selector.
+.data() - Specifies the data to be used to drive the visualization
+.enter() - Returns a selector representing the new items to be displayed
+.exit() - Returns a selector representing the items that are no longer to be displayed
+
+This pattern in which test functions are used is so ingrained in the D3.js code that it
+is often referred to as the enter/update/exit pattern or general update pattern. It
+provides a powerful means of declaratively telling D3.js how you want the dynamic
+data to be displayed, and to let D3.js handle the rendering.
+
+
+Each item in a selector can then be thought of as consisting of two other objects. The
+first is the actual DOM element that was identified by the selection, represented by
+a blue square in the preceding diagram. Inside that square in the image is the DOM
+element type ( div ), and the value of its id property.
+The second is the datum that D3.js has associated with that DOM element,
+represented by the green square. In this case, there is no data that is bound at this
+point by D3.js, so the data for each is null (or empty in the diagram). This is because
+these DOM elements were created in HTML and not with D3.js, and hence there is
+no associated datum.
+Let's change that and bind some data to these div tags. We do this by chaining a call
+to .data() immediately following the selection functions. This function is passed a
+collection of values or objects, and it informs D3.js that you want to associate each
+datum with a specific visual representation created by the function calls that follow.
+
+var selector = d3.select('body')
+.selectAll('div')
+.data([10, 20, 30, 40]);
+
+The highlighted red rectangle in the preceding screenshot shows that the div tag
+now has a __data__ property, and its value is 10 . This is how D3.js binds data to the
+visuals, by creating this property on the DOM element and assigning the datum. If
+you examine the three other div tags, you will see that they all have this property
+and the associated value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

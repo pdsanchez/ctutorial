@@ -1,3 +1,5 @@
+Libro: Genetic Algorithms in Java Basics (Lee Jacobson y Burak Kanber)
+
 Holland, J.H. (1975) desarrolló el concepto de algoritmo genético.
 Los algoritmos genéticos son procesos estocásticos (no determinista, aleatorio) dictados por estadística.
 Aunque no suelen ser la mejor elección para resolver un problema muy específico (suele haber mejores soluciones para un problema concreto), son una excelente herramienta genérica que se puede aplicar a diferentes problemas. Son la navaja suiza del aprendizaje automático:
@@ -432,7 +434,7 @@ of a specific gene.
 
 
 
-Schedule
+Schedule (cfr. knapstack problem - problema de la mochila)
 ---------
 El horario de clases es una variación del constraint satisfaction problem. 
 Estos problemas tienen un conjunto de variables que hay que asignar de modo que no se viole el conjunto de restricciones definido (hard constraints y soft constraints)
