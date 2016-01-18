@@ -36,6 +36,7 @@ Para excluir ficheros:
 crear .gitignore y escribir el nombre los ficheros a excluir (uno por línea)
 El fichero .gitignore debe ser commiteado
 
+
 #########
 
 $ git add .  -------  guarda todo lo de la carpeta actual (recursivamente, excepto las carpetas vacías)

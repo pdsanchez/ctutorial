@@ -1,4 +1,6 @@
+http://www.ingenieroperales.com/2015/12/07/primeros-pasos-con-spring-1/
 
+Libro:
 
 
 Considering a scenario of JDBC application without using the Spring Framework,

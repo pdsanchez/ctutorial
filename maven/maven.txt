@@ -377,36 +377,18 @@ El ciclo de vida que sigue Maven al construir, testear y distribuir un artefacto
 -Clean: este ciclo de vida maneja el borrado de ficheros temporales y artefactos generados en el directorio target.
 -Site: este ciclo de vida maneja la generación de documentación y generación del site.
 
-NOTA:
-■ ■ Note  Now that you are aware of the clean life cycle, you can clean the target folder
-simply by running the clean phase using the command mvn clean.
-To better understand the build life cycle and its phases, let’s look at the some of the
-phases associated with the default life cycle:
--Validate: Runs checks to ensure that the project is correct and
-that all dependencies are downloaded and available.
--Compile: Compiles the source code.
--Test: Runs unit tests using frameworks. This step doesn’t
-require that the application be packaged.
--Package: Assembles compiled code into a distributable format,
-such as JAR or WAR.
--Install: Installs the packaged archive into a local repository.
-The archive is now available for use by any project running on
-that machine.
--Deploy: Pushes the built archive into a remote repository for
-use by other teams and team members.
-Because the default life cycle clearly defines the ordering of the phases, you
-can generate an artifact simply by running the command mvn package. Maven will
-automatically execute all of the phases prior to the requested phase. In the provided
-example, Maven will run phases, such as compile and test, prior to running the package
-phase. This means developers and configuration managers only have to learn and use a
-handful of commands.
-A number of tasks need to be performed in each phase. For that to happen, each
-phase is associated with one or more goals. The phase simply delegates those tasks to its
-associated goals.
+Algunas de las fases asociadas con el ciclo de vida por defecto:
+-Validate: ejecuta chequeos para asegurar que el proyecto es correto y que todas las dependencias se han descargado y están disponibles.
+-Compile: compila el código fuente.
+-Test: ejecuta unit tests usando frameworks. Este paso no requiere que la aplicación esté empaquetada.
+-Package: ensambla el código compilado en un formato distribuible (jar, war)
+-Install: instala el archivo empaquetado en un repositorio local. El archivo queda disponible para ser usado en cualquier proyecto que se ejecute en esa máquina.
+-Deploy: lleva el archivo construido al repositorio remoto para que lo usen otros equipos o miembros del equipo.
+Como el ciclo por defecto define claramente el orden de las fases, se puede generar el artefacto simplemente con el comando "mvn package" (Maven ejecutará todas las fases anteriores a la fase especificada)
+En cada fase han de ejecutarse cierto número de tareas, por lo que cada fase se asocia a uno o más objetivos.
+El elemento <packaging/> asigna automáticamente el objetivo correcto a cada fase sin ninguna configuración adicional. 
 
-The <packaging /> element in the pom.xml file will automatically assign the right
-goals for each of the phases without any additional configuration. Remember that this is
-a benefit of CoC. If the packaging element contains the value jar, then the package phase
+If the packaging element contains the value jar, then the package phase
 will be bound to the jar goal in the jar plug-in. Similarly, for a WAR artifact, pom.xml will
 bind the package to a war goal in the war plug-in.
 

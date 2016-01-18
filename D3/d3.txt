@@ -103,8 +103,8 @@ to examine it in detail as it is essential for creating effective D3.js visualiz
 In D3.js, we drive the visualization of data through binding using the following
 functions of a selector.
 .data() - Specifies the data to be used to drive the visualization
-.enter() - Returns a selector representing the new items to be displayed
-.exit() - Returns a selector representing the items that are no longer to be displayed
+.enter() - Returns a selector representing the new items to be displayed [ + append() ]
+.exit() - Returns a selector representing the items that are no longer to be displayed [ + remove() ]
 
 This pattern in which test functions are used is so ingrained in the D3.js code that it
 is often referred to as the enter/update/exit pattern or general update pattern. It
@@ -138,9 +138,255 @@ and the associated value.
 
 
 
+Notas sobre el patrón update:
+• A visualization is almost always based upon data, and is not just coded
+explicitly.
+• Normally, a D3.js application,will perform a .selectAll()
+on the document for the DOM elements that would represent data.
+• A call is then made to .data() to bind data to the selector that results from
+the selection.
+• .data() iterates across the datum that are passed to it, and ensures that there
+are items in the selector to correlate the datum to the visuals. The value of the
+datum is copied into this item. DOM elements are not created by the call to
+.data() .
+• Data in many apps changes dynamically over time without reloading the
+page, either by user interaction or through code that updates the data based
+upon other events. You would want to update the visualization when this
+happens. Therefore, you will need to call .data() multiple times.
+• If the number of items in the data is more than the number of items in the
+selector it is applied to, then more selector items will be created at the end of
+the selector. These will be marked as in a state referred to as entering. These
+will be accessible using the .enter() function on the selector. You then chain
+the function calls to create DOM elements for each new item in the selector.
+• If the number of items in the data is less than the number of items in the
+selector, then selector items will be removed from the end of the selector.
+These will be marked as exiting. These selector items will be available
+through a call to the .exit() function. These DOM elements will not be
+removed from the DOM automatically, and you will need to make a call to
+.remove() to make this so.
+• To optimize this process, D3.js really only concerns itself with ensuring
+the number of items in the selector matches the number of datum that you
+specify with .data() .
+• The data associated with a selector item is by value and not reference. Hence,
+.data() copies data into the __data__ property on the DOM element. On
+subsequent calls to .data() , there is no comparison performed between the
+datum and the value of the __data__ property.
+• To update data, you write code to chain methods for generating DOM on
+the result of a selection, in addition to code that chains on the .enter() and
+.exit() functions.
+• If a new datum has the same value as is already associated to a selector item,
+D3.js does not care. Even though the values have not changed, you will be
+rendering it again, but reusing the DOM elements. You will need to provide
+your own facilities to manage not setting the properties again if the data is
+the same, so as to optimize the browser re-rendering the elements.
+• If you have 1,000,000 data items, and then change just one and call .data()
+again, D3.js will inherently force you to loop through all the 1,000,000
+items. There will likely be visual updates to just one set of visuals, but your
+application will make the effort to iterate through everything every time.
+However, if you have 1,000,000 data items, you probably should be looking
+at another means of summarizing your data before visualizing it.
+• D3.js optimizes around the reuse of visual elements. The assumption is that
+a visualization will only be periodically making updates to the exiting items,
+and that addition or removal of items will be relatively infrequent. Hence,
+the general update pattern would consist of exit, update, and exit, and not
+comparing data.
+• Normally, the rule of thumb is that one or two thousand data items and the
+associated visuals are handled pretty effectively by D3.js.
 
 
 
+
+
+
+SVG is an XML markup language that has been designed to express very rich 2D
+visualizations. SVG can take advantage of the computer's graphics processor to
+accelerate rendering, and is also optimized for user interaction and animation.
+
+Instead of directly manipulating the pixels on the screen, SVG uses vectors for
+building a model of the presentation, and then transforms this representation
+into pixels on your behalf. This makes coding of visualizations much simpler as
+compared to other web technologies such as HTML5 Canvas.
+
+The SVG coordinate system
+The coordinate system of SVG has an origin in the upper-left corner of the SVG
+element, which is (0,0); the value of x increases towards the right, while those of y
+increase towards the bottom.
+
+SVG attributes
+SVG, while being able to seamlessly integrate with HTML, is not HTML. Specifically,
+properties and styles may operate differently. An example of this is that where most
+HTML elements have width and height elements, but not all SVG elements use
+these properties.
+A second important point about SVG is that the position of an element is set through
+attributes. Due to this, it is not possible to set the position of the SVG elements using
+a style. Additionally, to change the position of an SVG element, such as within an
+animation, it is necessary to have code which sets the properties for positioning
+the element.
+
+<svg width="720" height="120">
+  <circle cx="40" cy="20" r="20"></circle>
+</svg> 
+
+The SVG element itself is not visible on the page, and only provides a holder for the
+child tags. In this book, we will always explicitly set the width and heights of the
+SVG tag.
+
+D3 selections work identically with SVG elements as they do with the DOM
+elements.
+
+<svg width="720" height="120">
+  <circle cx="40" cy="20" r="20"></circle>
+</svg> 
+<script>
+ d3.selectAll('circle').style('fill', 'teal');
+</script>
+
+The basic shapes provided by SVG:
+- circle: <circle cx="40" cy="20" r="20" />
+- ellipse: <ellipse cx="50" cy="30" rx="40" ry="20" />
+- rectangle: <rect x="10" y="10" width="150" height="100" />
+- lines: <line x1="10" y1="10" x2="100" y2="100" stroke="black" />
+The last property, albeit not required, is stroke , which
+specifies the color to be used to draw the line. Usually, we must specify the stroke to
+actually see the line.
+- path: <path d="M 10 10 L 310 20 L 160 110 Z" />
+They provide a symbolic notion that can be used to create many geometries.
+The drawing of the path is controlled by specifying one attribute, d , which is passed
+a string that specifies drawing commands that will be executed.
+The basic concept of a path is that you can draw a series of either straight or curved
+lines, and then have the option of filling the space inside if the shape is closed.
+A path usually starts with an M command, which starts drawing at that specific
+location. The final command is Z , which tells SVG that the shape is
+closed.
+common path commands:
+M -- Move-to
+L -- Line-to
+H -- Horizontal line-to
+V -- Veritcal line-to
+C -- Curve-to
+Q -- Quadractic Bezier curve-to
+T -- Smooth quadratic Bezier curve-to
+A -- Elliptical arc
+Z -- Close path
+D3 provides a number of tools to facilitate the use of paths
+- text: <text x="10" y="20" fill="Red" font-family="arial" font-size="16">Content of the SVG text</text>
+Text is positioned using the x and y attributes, which specify the baseline of the text
+
+Applying CSS styles to SVG elements
+SVG elements can be styled identically to the way HTML elements are styled.
+In this book, we will generally try to avoid using CSS, and explicitly code the style
+attributes using the functions provided by D3.js.
+
+Strokes, caps, and dashes
+SVG shapes have an attribute known as stroke . The attribute stroke specifies the
+color of a line that outlines an SVG shape. We saw the use of stroke with a line, but it
+can be used with most of the SVG elements.
+Whenever we specify stroke , we usually also specify a stroke width using the
+stroke-width attribute. This informs SVG about the thickness (in pixels) of the
+outline that will be rendered.
+
+lines have an
+attribute named stroke-linecap which describes the shape of the end of the line,
+known as the line cap.
+The default for this value is butt , which gives us the 90 degree sharp corners.
+The other values that can be used are square or round .
+By default, the SVG lines are solid, but they can also be created with dashes,
+specified by using the stroke-dasharray attribute.
+
+Applying SVG transforms
+Each SVG shape is represented by one or more vectors, where a vector in SVG is
+a tuple (x, y) distance from an origin in the coordinate system. As an example, a
+rectangle will be represented by four 2D vectors, one for each corner of the rectangle.
+When creating graphical visualizations, this modeling of data with vectors has
+several benefits. One of those is that we can define a shape around a coordinate
+system for just that shape. Modeling this way allows us to make copies of the shape,
+but position them in different places in a larger image, rotate them, scale them, and
+perform many other operations.
+Secondly, these transformations are applied on the model before being rendered into
+pixels on the screen. Because of this, SVG can ensure that irrespective of the level of
+scale applied to the image, it does not get pixelated.
+Another important concept in transformations is that they can be applied in a chain
+and in any sequence. This is an extremely powerful concept in linear algebra for
+creating composite models of visuals.
+we will use three general types of
+transformations provided by SVG: translate , rotate , and scale .
+Transformations
+can be applied to an SVG element by using the transform attribute.
+
+Rotate
+We can rotate an SVG
+object by a specified number of degrees using .rotate(x) , where x specifies the
+number of degrees to rotate the element.
+<rect x="0" y="0 " width="100" height="100" fill="red" transform="rotate(45)" />
+the rotation of
+a rectangle is performed around its upper-left corner. To make this appear to have
+rotated around its center, we need to use an alternate form of rotate() which takes
+three parameters: the angle to rotate followed by an offset from the upper-left corner
+of the rectangle to a point that represents the center of the rectangle:
+<rect x="0" y="0" width="100" height="100" fill="red" transform="rotate(45,50,50)" />
+
+Translate
+An SVG element can be repositioned within its containing element by using
+a transformation. A transform is performed using the translate() function.
+translate() takes two values: the distance in x and y and the distance to reposition
+the element within its parent.
+The following example will draw our rectangle, and translate it 30 pixels to the right
+and 30 pixels down:
+<rect x="0" y="0 " width="100" height="100" fill="red" transform="translate(30,30)" />
+<rect x="0" y="0" width="100" height="100" fill="red" transform="translate(30,30) rotate(45,50,50)" />
+
+A common question about translate transform is why not just change the
+x and y attributes to position the elements instead of using the transform?
+The answer to this can be very complicated and has many reasons. The
+first is that not all SVG elements are positioned with x and y attributes,
+for example, a circle, which is positioned using its cx and cy attributes.
+Hence, there is no consistent set of attributes for positioning. Using
+a translate transform therefore allows us to have a uniform means of
+positioning the SVG elements no matter what type they are.
+Another reason is that when applying multiple transforms, it is not easy
+(or possible) to access the x and y attributes. Moreover, through various
+transforms, the actual location of an SVG element may not match directly
+with the pixels or points specified in another coordinate system which
+using x and y attributes be included.
+
+Scale
+Scaling an object changes its apparent visual size by a given percentage along both
+the x and y axes. Scaling is performed using the scale() function. It can be uniformly
+applied to each axis, or you can also specify a different scale value for each.
+The following example demonstrates scaling. We will draw two rectangles, one atop
+the other. The rectangle at the bottom will be blue, and the one on top, red. The red
+will then be scaled to 50 percent of its size:
+<rect x="0" y="0" width="100" height="100" fill="blue"/>
+<rect x="0" y="0" width="100" height="100" fill="red" transform="scale(0.5)" />
+
+
+Groups
+SVG elements can be grouped together using the <g> tag. Any transformations
+applied to the group will be applied to each of the elements in the group. This is
+convenient for applying an overall transform to a particular group of items only.
+<g transform="translate(100,30) rotate(45 50 50)">
+  <rect x="0" y="0" width="100" height="100" style="fill:blue" />
+  <text x="15" y="58" fill="White" font-family="arial" font-size="16">In the box</text>
+</g>
+
+Transparency
+SVG supports drawing of transparent elements. This can be done by either setting
+the opacity attribute or by using the rgba (red-green-blue-alpha) value when
+specifying a color.
+<circle cx="150" cy="150" r="100" style="fill:red" opacity="0.5" />
+<circle cx="200" cy="250" r="100" style="fill:rgba(0, 0, 255, 0.5)" />
+
+Layers
+You may have noticed that the SVG elements overlay each other in a particular order,
+with certain elements appearing to be closer and obscuring those that are behind. 
+This order is defined by the sequence that is specified in the SVG markup,
+with each successive element being rendered atop the previous elements.
+If you have used other graphics packages or UI tools, you would know
+that they often provide a concept known as a Z-order, with Z being a
+pseudo-dimension where the drawing order of the elements is from the
+lowest to the highest Z-order. SVG does not offer this ability, but we will
+see in later chapters that we can address this by sorting the selections
+before laying them out.
 
 
 
