@@ -1,7 +1,16 @@
 http://www.ingenieroperales.com/2015/12/07/primeros-pasos-con-spring-1/
 
 Libro:
+Spring Boot in Action ()??
 
+Suppose you’re given the task of developing a very simple Hello World web applica-
+tion with Spring. What would you need to do? I can think of a handful of things you’d
+need at a bare minimum:
+- A project structure, complete with a Maven or Gradle build file including required dependencies. At the very least, you’ll need Spring MVC and the Servlet API expressed as dependencies.
+- A web.xml file (or a WebApplicationInitializer implementation) that declares Spring’s DispatcherServlet .
+- A Spring configuration that enables Spring MVC .
+- A controller class that will respond to HTTP requests with “Hello World”.
+- A web application server, such as Tomcat, to deploy the application to.
 
 Considering a scenario of JDBC application without using the Spring Framework,
 we have a lot of boilerplate code that needs to be written over and over again to

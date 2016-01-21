@@ -1,298 +1,143 @@
+Libro:
 
-Installing Docker on Linux
+Imagen útil: gliderlabs/logspout
+
+Instalar Docker en Linux
 --------------------------
 
-You should be able to the use the script provided at https://get.docker.com to automatically install Docker
+Usar el script de https://get.docker.com para instalar Docker automáticamente. Dos opciones:
 $ wget -qO- https://get.docker.com/ | sh
-or
 $ curl -sSL https://get.docker.com | sh 
 
-
-Running Without sudo (Ubuntu):
+Para poder trabajar con Docker sin sudo en Ubuntu, crearemos el grupo docker (si no existe ya) y se añadirá al usuario actual. Será necesario hacer un log out y logarse de nuevo:
 $ sudo usermod -aG docker
-which will create the docker group, if it doesn’t exist already, and add the current user (log out and log in again)
 
-Restart the Docker service (Ubuntu):
+Reiniciar el servicio Docker en Ubuntu:
 $ sudo service docker restart
 
-Check:
+Chequear:
 $ docker version
 $ docker --version
 
-If the Docker daemon isn’t running (or the client can’t access it), try starting the Docker daemon manually by running:
+Si el demonio Docker no se ejecuta o el cliente no puede acceder a él, intentaremos arrancar el demonio manualmente:
 $ sudo docker daemon
 
 Test Docker:
 $ docker run debian echo "Hello World"
-run command, which is responsible for launching containers. 
-The argument debian is the name of the image we want to use
-Docker turns the image into a running container and executes the command we specified — echo "Hello World" — inside it.
+El comando 'run' lanza el contenedor. El argumento 'debian' es el nombre de la imagen a usar. 
+Docker genera el contenedor a partir de la imagen y ejecuta en él el comando 'echo "Hello World"'
 
 $ docker run -i -t debian /bin/bash
-The flags -i and -t tell Docker we want an interactive session with a tty attached.
-The command /bin/bash gives us a bash shell inside a container.
+Los flags -i y -t indican a Docker que queremos una sesión interactiva con una tty (terminal).
+El comando '/bin/bash' provee el contenedor con una shell de bash.
 
-
-The Basic Commands
+Comandos básicos
+----------------
 $ docker run --name boris debian echo "Boo"
 Contenedor con nombre boris (en lugar de cientifico aleatorio)
-
 $ docker run -h CONTAINER -i -t debian /bin/bash
-Launch a new container; we’ll give it a new hostname with the -h flag
-
+Lanza un nuevo contenedor con el hostname especificado con el flag -h
 $ docker ps
-This tells us a few details about all the currently running containers
+Muestra detalles de los contenedores que se están ejecutando actualmente.
 $ docker ps -a
-list of all containers including stopped containers (officially called exited containers).
-$ docker rm stupefied_turing
+Lista todos los contenedores, incluidos los que estándetenidos (oficialmente llamados exited containers)
+$ docker rm container_name
 $ docker rm -v $(docker ps -aq -f status=exited)
-To get rid of the container
-
-You can avoid piling up stopped containers by giving the --rm flag to docker run , which will delete the container and associated file system when the container exits.
-
-$ docker inspect stupefied_turing
-$ docker inspect stupefied_turing | grep IPAddress
-$ docker inspect --format {{.NetworkSettings.IPAddress}} stupefied_turing
-$ docker logs stupefied_turing
-If you run this command with the name of your container, you will get a list of everything that’s happened inside the container
-
+Eliminar contenedor
+Para evitar que se acumulen contenedores detenidos se puede poner el flag --rm con el comando 'run'. Esto eliminará el contenedor y el sistema de ficheros asociado cuando se cierre el contenedor.
+$ docker inspect container_name
+$ docker inspect container_name | grep IPAddress
+$ docker inspect --format {{.NetworkSettings.IPAddress}} container_name
+$ docker logs container_name
+Lista todo lo que ha ocurrido en el contenedor especificado.
 
 $ docker run -it --name cowsay --hostname cowsay debian bash
 root@cowsay:/# apt-get update
 root@cowsay:/# apt-get install -y cowsay fortune
 root@cowsay:/# /usr/games/fortune | /usr/games/cowsay
-
-
-Excellent. Let’s keep this container. 6 To turn it into an image, we can just use the
-docker commit command. It doesn’t matter if the container is running or stopped. To
-do this, we need to give the command the name of the container (“cowsay”) a name
-for the image (“cowsayimage”) and the name of the repository to store it in (“test”):
 root@cowsay:/# exit
-exit
+Esto lanza un contenedor e instala una aplicación. Para transformar este contenedor en una imagen podemos usar el comando 'commit'. No importa si el contenedor está ejecutandose o está parado.
+Hay que pasar el nombre del contenedor (“cowsay”) un nombre para la imagen (“cowsayimage”) y el nombre del repositorio donde se guardará (“test”):
 $ docker commit cowsay test/cowsayimage
 d1795abbc71e14db39d24628ab335c58b0b45458060d1973af7acf113a0ce61d
-The returned value is the unique ID of our image. Now we have an image with cow‐
-say installed that we can run:
+Esto retorna el unique ID de la imagen creada. Para ejecutarla:
 $ docker run test/cowsayimage /usr/games/cowsay "Moo"
+El problema de este sistema es que si queremos cambiar algo, hay que empezar de cero. Por esto lo mejor es usar unDockerfile para automatizar la creación de la imagen.
 
-This is great! However, there are a few problems. If we need to change something, we
-have to manually repeat our steps from that point. For example, if we want to use a
-different base image, we would have to start again from scratch. More importantly, it
-isn’t easily repeatable; it’s difficult and potentially error-prone to share or repeat the
-set of steps required to create the image. The solution to this is to use a Dockerfile to
-create an automated build for the image.
-
-
-Building Images from Dockerfiles
-A Dockerfile is simply a text file that contains a set of steps that can be used to create
-a Docker image. Start by creating a new folder and file for this example:
+Crear imagen a partir del Dockerfile
+El Dockerfile es un fichero de texto que contiene un conjunto de pasos que se usan para crear una imagen.
+Empezaremos creando un directorio y un fichero:
 $ mkdir cowsay
 $ cd cowsay
 $ touch Dockerfile
-And insert the following contents into Dockerfile:
+Insertaremos el siguiente contenido en el Dockerfile:
 FROM debian:wheezy
 RUN apt-get update && apt-get install -y cowsay fortune
-The FROM instruction specifies the base image to use ( debian , as before; but this time,
-we have specified that we want to use the version tagged “wheezy”). All Dockerfiles
-must have a FROM instruction as the first noncomment instruction. RUN instructions
-specify a shell command to execute inside the image. In this case, we are just instal‐
-ling cowsay and fortune in the same way as we did before.
-We can now build the image by running the docker build command inside the same
-directory:
-$ ls
-Dockerfile
+La instrucción FROM especifica la imagen base que usaremos (debian, versión “wheezy”). Todos los Dockerfiles deben tener la instrucción FROM como la primera instrucción.
+La instrucción RUN especidica un comando shell a ejecutar en la imagen (en este caso instalar cowsay y fortune)
+
+Ahora podemos construir la imagen desde el directorio en el que se encuentra el Dockerfile:
 $ docker build -t test/cowsay-dockerfile .
-Sending build context to Docker daemon 2.048 kB
-Step 0 : FROM debian:wheezy
----> f6fab3b798be
-Step 1 : RUN apt-get update && apt-get install -y cowsay fortune
----> Running in 29c7bd4b0adc
-...
-Setting up cowsay (3.03+dfsg1-4) ...
----> dd66dc5a99bd
-Removing intermediate container 29c7bd4b0adc
-Successfully built dd66dc5a99bd
-Then we can run the image in the same way as before:
+Y ejecutamos la imagen igual que antes:
 $ docker run test/cowsay-dockerfile /usr/games/cowsay "Moo"
 
 Images, Containers, and the Union File System
-In order to understand the relationship between images and containers, we need to
-explain a key piece of technology that enables Docker—the UFS (sometimes simply
-called a union mount). Union file systems allow multiple file systems to be overlaid,
-appearing to the user as a single filesytem. Folders may contain files from multiple
-filesystems, but if two files have the exact same path, the last mounted file will hide
-any previous files. Docker supports several different UFS implentations, including
-AUFS, Overlay, devicemapper, BTRFS, and ZFS. Which implementation is used is
-system dependent and can be checked by running docker info where it is listed
-under “Storage Driver.” It is possible to change the filesystem, but this is only recom‐
-mended if you know what you are doing and are aware of the advantages and disad‐
-vantages.
-Docker images are made up of multiple layers. Each of these layers is a read-only fil‐
-eystem. A layer is created for each instruction in a Dockerfile and sits on top of the
-previous layers. When an image is turned into a container (from a docker run or
-docker create command), the Docker engine takes the image and adds a read-write
-filesystem on top (as well as initializing various settings such as the IP address, name,
-ID, and resource limits).
-Because unnecessary layers bloat images (and the AUFS filesystem has a hard limit of
-127 layers), you will notice that many Dockerfiles try to minimize the number of lay‐
-ers by specifying several UNIX commands in a single RUN instruction.
-A container can be in one of several states: created, restarting, running, paused, or exi‐
-ted. A “created” container is one that has been initialized with the docker create
-command but hasn’t been started yet. The exited status is commonly referred to as
-“stopped” and indicates there are no running processes inside the container (this is
-also true of a “created” container, but an exited container will have already been
-started at least once). A container exits when its main processes exits. An exited con‐
-tainer can be restarted with the docker start command. A stopped container is not
-the same as an image. A stopped container will retain changes to its settings, meta‐
-data, and filesystem, including runtime configuration such as IP address that are not
-stored in images. The restarting state is rarely seen in practice and occurs when the
-Docker engine attempts to restart a failed container.
+---------------------------------------------
+UFS (Union File System - union mount) Permite que múltiples sistemas de ficheros se solapen de modo que para el usuario aparece como un único sistema de ficheros. Los directorios pueden contener ficheros procedentes de múltiples sistemas de ficheros, pero si dos ficheros tienen exactamente el mismo path, el último fichero montado ocultará a los anteriores.
+Docker soporta varias implementaciones de UFS (AUFS, Overlay, devicemapper, BTRFS, ZFS) La implementación usada depende del sistema y se puede comprobar con 'docker info' (aparecerá especificado como “Storage Driver”)
+Las imagenes en Docker se forman a partir de múltiples capas. Cada una de ellas es un sistema de ficheros de sólo lectura. Se crea una capa por cada instrucción del Dockerfile, y se sitúa encima de las capas anteriores.
+Cuando se crea un contenedor a partir de una imagen, el motor de Docker toma la imagen y añade un sistema de ficheros de lectura encima de todo (también se configura la dirección IP, el nombre, ID y los límites de los recursos)
+Las capas innecesarias consumen recursos de las imágenes (y los UFS pueden tener límites de capas). Por tanto los Dockerfiles tratan de minimizar el número de capas especificando varios comandos UNIX en una única instrucción RUN.
 
+Un contenedor presenta varios estados: created, restarting, running, paused, or exited.
+“created” -- contenedor inicializado con el commando 'create', pero aún no ha arrancado.
+“stopped” -- indica que no hay procesos ejecutándose en el contenedor. Un contenedor en este estado no es igual que su imagen, ya que mantiene los cambios de configuración (dirección IP, metadatos, sistema de ficheros, runtime configuration)
+"exited" -- un contenedor se cierra cuando se cierran sus procesos principales.
+"restarting" -- no es frecuente. Ocurre cuando el motor Docker trata de reiniciar un contenedor fallido.
 
-But we can actually make things a little bit easier for the user by taking advantage of
-the ENTRYPOINT Dockerfile instruction. The ENTRYPOINT instruction lets us specify an
-executable that is used to handle any arguments passed to docker run .
-Add the following line to the bottom of the Dockerfile:
+Para facilitar las cosas podemos usar la instrucción ENTRYPOINT en el Dockerfile. Esta instrucción permite especificar un ejecutable que se usa para manejar argumentos que se pasarán al ejecutar "docker run".
+Añadimos la siguiente línea al final del Dockerfile:
 ENTRYPOINT ["/usr/games/cowsay"]
-We can now rebuild and run the image without needing to specify the cowsay com‐
-mand:
+Ahora podemos reconstruir y ejecutar la imagen sin necesidad de especificar el comando 'cowsay':
 $ docker build -t test/cowsay-dockerfile .
-...
 $ docker run test/cowsay-dockerfile "Moo"
-...
-Much easier! But now we’ve lost the ability to use the fortune command inside
-container as input to cowsay. We can fix this by providing our own script for
-ENTRYPOINT , which is a common pattern when creating Dockerfiles. Create a
-entrypoint.sh with the following contents and save it in the same directory as
-Dockerfile: 7
-the
-the
-file
-the
+
+Pero ahora perdemos la capacidad de usar el comando 'fortune' en el contenedor como entrada de 'cowsay'. Para solucionarlo tenemos que añadir nuestro propio script para ENTRYPOINT, lo cual es común al crear Dockerfiles.
+Creamos un entrypoint.sh en el mismo directorio que el Dockerfile y con lo siguiente:
 #!/bin/bash
 if [ $# -eq 0 ]; then
-/usr/games/fortune | /usr/games/cowsay
+  /usr/games/fortune | /usr/games/cowsay
 else
-/usr/games/cowsay "$@"
+  /usr/games/cowsay "$@"
 fi
-Set the file to be executable with chmod +x entrypoint.sh .
+Hacemos el fichero ejecutable:
+$ chmod +x entrypoint.sh
 
-All this script does is pipe input from fortune into cowsay if it is called with no argu‐
-ments; otherwise, it calls cowsay with the given arguments. We next need to modify
-the Dockerfile to add the script into the image and call it with the ENTRYPOINT
-instruction. Edit the Dockerfile so that it looks like:
+Este script envía la salida de 'fortune' a 'cowsay' cuando no se usan argumentos. Con argumentos se llama a 'cowsay' con esos argumentos. 
+En el Dockerfile añadiremos el script y lo llamaremos con la instrucción ENTRYPOINT:
 FROM debian
 RUN apt-get update && apt-get install -y cowsay fortune
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
-The COPY instruction simply copies a file from the host into the image’s filesys‐
-tem, the first argument being the file on the host and the second the destination
-path, very similar to cp .
-Try building a new image and running containers with and without arguments:
+La instrucción COPY copia el fichero especificado desde el host al sistema de ficheros de la imagen (COPY host_file destination_path)
+Probamos:
 $ docker build -t test/cowsay-dockerfile .
-...snip...
 $ docker run test/cowsay-dockerfile
+$ docker run test/cowsay-dockerfile HOLA
 
+Image Namespaces: evitan confusiones en los usuarios sobre la procedencia de la imagen.
+Existen tres namespaces a los que pueden pertenecer las imágenes de Docker:
+• Nombres precedidos por un string y / (por ejemplo amouat/revealjs). Pertenencen al namespace "user".
+Son imágenes del Docker Hub subidas por un usuario (en el ejemplo la imagen revealjs la ha subido el usuario amouat)
+• Nombres sin prefijos o / (por ejemplo debian, ubuntu). Pertenencen al namespace "root" controlado por Docker Inc. y reservado para imágenes oficiales de software y distribuciones. Son curadas por Docker, aunque las mantienen los proveedores.
+• Nombres precedidos por un hostname o IP (por ejemplo localhost:5000/wordpress). Son imágenes almacenadas en otros registros diferentes a Docker Hub (self-hosted registries de organizaciones, competidores de Hub como quay.io
 
-
-
-Image Namespaces
-There are three namespaces pushed Docker images can belong to, which can be iden‐
-tified from the image name:
-• Names prefixed with a string and / , such as amouat/revealjs , belong to the
-“user” namespace. These are images on the Docker Hub that have been uploaded
-by a given user. For example, amouat/revealjs is the revealjs image uploaded by
-the user amouat . It is free to upload public images to the Docker Hub, which
-already contains thousands of images from the whimisical supertest2014/nyan
-to the very useful gliderlabs/logspout .
-• Names such as debian and ubuntu , with no prefixes or / s, belong to “root” name‐
-space, which is controlled by Docker Inc. and reserved for the official images for
-common software and distributions available from the Docker Hub. Although
-curated by Docker, the images are generally maintained by third parties, nor‐
-mally the providers of the software in question (e.g., the nginx image is main‐
-tained by the nginx company). There are official images for most common
-software packages, which should be your first port of call when looking for an
-image to use.
-• Names prefixed with a hostname or IP are images hosted on third-party regis‐
-tries (not the Docker Hub). These include self-hosted registries for organizations,
-as well as competitors to the Hub, such as quay.io. For example, localhost:
-5000/wordpress refers to an WordPress image hosted on a local registry.
-This namespacing ensures users cannot be confused about where images have come
-from; if you’re using the debian image, you know it is the official image from the
-Docker Hub and not some other registry’s version of the debian image.
-
-
-
-Using the Redis Official Image
-Ok, I admit it: you’re probably not going to get a lot of mileage out of the cowsay
-image. Let’s see how we can use an image from one of the official Docker repositories
-—in this case, we’ll have a look at the offical image for Redis, a popular key-value
-store.
-
-Official Repositories
-If you search the Docker Hub for a popular application or service,
-such as the Java programming language or the PostgreSQL data‐
-base, you will find hundreds of results. 8 The official Docker reposi‐
-tories are intended to provide curated images of known quality and
-provenance and should be your first choice where possible. They
-should be returned at the top of searches and marked as official.
-When you pull from an official repository, the name will have no
-user portion, or it will be set to library (e.g., the MongoDB reposi‐
-tory is available from mongo and library/mongo ). You will also get
-a message saying, “The image you are pulling has been verified,”
-indicating the Docker daemon has validated the checksums for the
-image and therefore has verified its provenance.
-
-Start by getting the image:
+Usar una imagen oficial de Redis (key-value store):
 $ docker pull redis
-Using default tag: latest
-latest: Pulling from library/redis
-d990a769a35e:
-8656a511ce9c:
-f7022ac152fb:
-8e84d9ce7554:
-c9e5dd2a9302:
-27b967cdd519:
-3024bf5093a1:
-Pull
-Pull
-Pull
-Pull
-Pull
-Pull
-Pull
-complete
-complete
-complete
-complete
-complete
-complete
-complete
-e6a9eb403efb: Pull complete
-c3532a4c89bc: Pull complete
-35fc08946add: Pull complete
-d586de7d17cd: Pull complete
-1f677d77a8fa: Pull complete
-ed09b32b8ab1: Pull complete
-54647d88bc19: Pull complete
-2f2578ff984f: Pull complete
-ba249489d0b6: Already exists
-19de96c112fc: Already exists
-library/redis:latest: The image you are pulling has been verified.
-Important: image verification is a tech preview feature and should not be re...
-Digest: sha256:3c3e4a25690f9f82a2a1ec6d4f577dc2c81563c1ccd52efdf4903ccdd26cada3
-Status: Downloaded newer image for redis:latest
-Start up the Redis container, but this time use the -d argument:
+Arrancar el contenedor Redis con -d (en background)
 $ docker run --name myredis -d redis
-585b3d36e7cec8d06f768f6eb199a29feb8b2e5622884452633772169695b94a
-The -d tells Docker to run the container in the background. Docker starts the con‐
-tainer as normal, but rather than printing the output from the container, it returns
-the containers ID and exits. The container is still running in the background, and you
-can use the docker logs command to see any output from the container.
-Ok, so how do we use it? Obviously we need to connect to the database in some way.
-We don’t have an application, so we’ll just use the redis-cli tool. We could just
-install the redis-cli on the host, but it’s easier and more informative to launch a new
-container to run redis-cli in and link the two:
+Con -d se devuelve el ID del contenedor y se sale, aunque el contenedor queda ejecutándose en background (con 'docker logs' se pueden ver las salidas del contenedor)
+¿Y cómo lo usamos? Necesitamos conectar con la base de datos de alguna manera. Usaremos redis-cli, pero en lugar de instalarlo en el host lanzaremos un nuevo contenedor que ejecute redis-cli, y enlazaremos los dos contenedores.
 $ docker run --rm -it --link myredis:redis redis /bin/bash
 root@ca38735c5747:/data# redis-cli -h redis -p 6379
 redis:6379> ping
@@ -304,53 +149,22 @@ redis:6379> get "abc"
 redis:6379> exit
 root@ca38735c5747:/data# exit
 exit
-Pretty neat—we’ve just linked two containers and added some data to Redis in a few
-seconds. So how did this work?
 
-
-Docker Networking Changes
-This chapter, and the rest of this book, use the --link command to
-network containers. Forthcoming changes to the way networking
-works in Docker mean that in the future, it will be more idiomatic
-to “publish services” rather than link containers. However, links
-will continue to be supported for the forseeable future, and the
-examples in this book should work without changes.
-For more information on the upcoming changes to networking, see
-“New Docker Networking”.
-
-
-The linking magic happened with the --link myredis:redis argument to docker
-run . This told Docker that we wanted to connect the new container to the existing
-“myredis” container, and that we want to refer to it by the name “redis” inside our
-new container. To achieve this, Docker set up an entry for “redis” in /etc/hosts inside
-the container, pointing to the IP address of the “myredis”. This allowed us to use the
-hostname “redis” in the redis-cli rather than needing to somehow pass in, or discover,
-the IP address of the Redis container.
-After that, we run the Redis ping command to verify that we are connected to a Redis
-server before adding and retrieving some data with set and put .
-This is all good, but there is still an issue: how do we persist and back up our data?
-For this, we don’t want to use the standard container filesystem—instead we need
-something that can be easily shared between the container and the host or other con‐
-tainers. Docker provides this through the concept of volumes. Volumes are files or
-directories that are directly mounted on the host and not part of the normal union
-file system. This means they can be shared with other containers and all changes will
-be made directly to the host filesystem. There are two ways of declaring a directory as
-a volume, either using the VOLUME instruction inside a Dockerfile or specifying the
--v flag to docker run . Both the following Dockerfile instruction and docker run
-command have the effect of creating a volume as /data inside a container:
+El argumento '--link myredis:redis' indica a Docker que queremos conectar el contenedor nuevo al contenedor existente “myredis”, y que queremos referirnos a él con el nombre “redis” dentro del nuevo contenedor.
+Para esto Docker configura una entrada para "redis" en /etc/hosts dentro del contenedor, apuntando a la dirección IP de “myredis”. Esto nos permite usar el hostname "redis" en la redis-cli en lugar de pasar o descubrir de alguna manera la dirección IP del contenedor Redis.
+El comando 'ping' de Redis permite verificar que estamos conectados a Redis. Después añadimos y recuperamos datos.
+Pero, ¿cómo persistimos y recuperamos nuestros datos?
+Para esto no usaremos el sistema de ficheros estandar del contenedor. Necesitamos algo que permita compartir datos entre el host y los contenedores.
+Docker soluciona esto mediante los volúmenes, ficheros o directorios que se montan en el sistema de ficheros del host directamente. Hay dos modos de declarar un directorio como volumen, usando la instrucción VOLUME en el Dockerfile o con el flag -v en 'docker run'. 
+Por ejemplo:
 VOLUME /data
-and:
 $ docker run -v /data test/webserver
-By default, the directory or file will be mounted on the host inside your Docker
-installation directory (normally /var/lib/docker/). It is possible to specify the host
-directory to use as the mount via the docker run command (e.g., docker run -d -
-v /host/dir:/container/dir test/webserver ). It isn’t possible to specify a host
-directory inside a Dockerfile for reasons of portability and security (the file or direc‐
-tory may not exist in other systems, and containers shouldn’t be able to mount sensi‐
-tive files like etc/passwd without explicit permission).
+Ambos crean un volumen /data en el contenedor.
 
-So, how do we use this to do backups with the Redis container? The following shows
-one way, assuming the myredis container is still running:
+Por defecto, el directorio o fichero se montará en el host, dentro del directorio de instalación de Docker (normalmente /var/lib/docker/). Es posible especificar el directorio del host a usar desde 'docker run' (por ejemplo, docker run -d -v /host/dir:/container/dir test/webserver ).
+Desde el Dockerfile esto no es posible por razones de portabilidad y seguridad (el fichero o directorio puede no existir en otros sistemas, o los contenedores pueden no tener permisos para montar ciertos ficheros o directorios)
+
+En el ejemplo de Redis podemos hacer lo siguiente para crear backups (asumimos que el contenedor 'myredis' está ejecutándose):
 $ docker run --rm -it --link myredis:redis redis /bin/bash
 root@09a1c4abf81f:/data# redis-cli -h redis -p 6379
 redis:6379> set "persistence" "test"
@@ -364,14 +178,14 @@ $ docker run --rm --volumes-from myredis -v $(pwd)/backup:/backup \
 debian cp /data/dump.rdb /backup/
 $ ls backup
 dump.rdb
-Note that we have used the -v argument to mount a known directory on the host and
---volumes-from to connect the new container to the Redis database folder.
-Once you’ve finished with the myredis container, you can stop and delete it:
+
+Hemos usado el argumento -v para montar un directorio conocido en el host y el argumento --volumes-from para conectar el nuevo contenedor a la carpeta de la base de datos Redis.
+Una vez que se termina con el contenedor 'myredis', se puede detener y borrar:
 $ docker stop myredis
 myredis
 $ docker rm -v myredis
 myredis
-And you can remove all leftover containers with:
+Y se pueden eliminar todos los contenedores restantes con:
 $ docker rm $(docker ps -aq)
 45e404caa093
 e4b31d0550cd
@@ -379,61 +193,23 @@ e4b31d0550cd
 ...
 
 
-
 Surrounding Technologies
-The Docker engine and the Docker Hub do not in-and-of themselves constitute a
-complete solution for working with containers.
-The current list of supporting technologies supplied by Docker includes:
-Swarm
-Docker’s clustering solution. Swarm can group together several Docker hosts,
-allowing the user to treat them as a unified resource. See Chapter 12 for more
-information.
-Compose
-Docker Compose is a tool for building and running applications composed of
-multiple Docker containers. It is primarily used in development and testing
-rather than production. See “Automating with Compose” for more details.
-Machine
-Docker Machine installs and configures Docker hosts on local or remote resour‐
-ces. Machine also configures the Docker client, making it easy to swap between
-environments. See Chapter 9 for an example.
-Kitematic
-Kitematic is a Mac OS and Windows GUI for running and managing Docker
-containers.
-Docker Trusted Registry
-Docker’s on-premise solution for storing and managing Docker images. Effec‐
-tively a local version of the Docker Hub that can integrate with an existing secu‐
-rity infrastructure and help organizations comply with regulations regarding the
-storage and security of data. Features include metrics, Role-Based Access Control
-(RBAC), and logs, all managed through an administrative console. This is cur‐
-rently the only non–open source product from Docker Inc.
-there also alternatives to the Docker Trusted Registry, including the CoreOS Enter‐
-prise Registry and Artifactory from JFrog.
-Networking
-Creating networks of containers that span hosts is a nontrivial problem that can
-be solved in a variety of ways. Several solutions have appeared in this area,
-including Weave and Project Calico. In addition, Docker will soon have an inte‐
-grated networking solution called Overlay. Users will be able to swap out the
-Overlay driver for other solutions using Docker’s networking plugin framework.
-Docker also supports volume plugins for integration with other storage systems. Notable volume plu‐
-gins include Flocker, a multihost data management and migration tool, and
-GlusterFS for distributed storage.
-Service discovery
-When a Docker container comes up, it needs some way of finding the other serv‐
-ices it needs to talk to, which are typically also running in containers. As contain‐
-ers are dynamically assigned IP addresses, this isn’t a trivial problem in a large
-system. Solutions in this area include Consul, Registrator, SkyDNS, and etcd.
-Orchestration and cluster management
-In large container deployments, tooling is essential in order to monitor and man‐
-age the system. Each new container needs to be placed on a host, monitored, and
-updated. The system needs to respond to failures or changes in load by moving,
-starting, or stopping containers appropriately. There are already several compet‐
-ing solutions in the area, including Kubernetes from Google, Marathon (a frame‐
-work for Mesos), CoreOS’s Fleet, and Docker’s own Swarm tooling.
-
-
-
+------------------------
+El motor Docker y Docker Hub no son una solución completa para trabajar con contenedores. Otras tecnologías son:
+Swarm -- Solución para clusters. Swarm agrupa varios host Docker, permitiendo al usuario tratarlos como un único recurso.
+Compose -- Permite construir y ejecutar aplicaciones formadas por múltiples contenedores. Se usa principalmente en desarrollo y testeo (no en producción)
+Machine -- Instala y configura hosts de Docker en recursos locales o remotos. También configura el cliente Docker, facilitando el cambio de entorno.
+Kitematic -- GUI para Mac OS y Windows que permite ejecutar y manejar contenedores.
+Docker Trusted Registry -- Solución para almacenar y manejar imágenes (versión local de Docker Hub que permite integrarse con una infraestructura de seguridad existente). A través de la consola administrativa se manejan logs, métricas, RBAC (Role-Based Access Control). No es open-source.
+Alternativas son CoreOS Enterprise Registry and Artifactory de JFrog.
+Networking -- Crear redes de contenedores que engloben varios hosts no es trivial. Existen varias soluciones (Weave y Proyecto Calico).
+La solución de Docker se denomina Overlay. Los usuarios serán capaces de reemplazar el driver de Overlay por otras soluciones usando el networking plugin framework de Docker. Docker también soporta plugins de volúmenes para integrarse con otros sistemas de almacenamiento (Flocker, una herramienta de migración y gestión de datos multihost, y GlusterFS para almacenamiento distribuido)
+Service discovery -- Cuando se crea un contenedor, se necesita algún modo de encontrar los otros servicios con los que tiene que comunicarse, los cuales normalmente se están ejecutando en otros contenedores. Como a los contenedores se les asigna la dirección IP dinámicamente, esto no es un problema trivial en sistemas grandes. Algunas soluciones incluyen Consul, Registrator, SkyDNS.
+Orchestration and cluster management -- Cuando se despliegan contenedores grandes, es necesaria alguna herramienta para monitorizar y gestionar el sistema. Cada contenedor nuevo debe situarse en un host, monitorizarse y actualizarse. El sistema debe responder a fallos o cambios en la carga moviendo, arrancando o deteniendo los contenedores apropiadamente. Algunas soluciones son Kubernetes de Google, Marathon (un frame‐
+work para Mesos), CoreOS de Fleet, y la herramienta de Docker, Swarm.
 
 Connecting Containers to the World
+----------------------------------
 Say you’re running a web server inside a container. How do you provide the outside
 world with access? The answer is to “publish” ports with the -p or -P commands. This
 command forwards ports on the host to the container. For example:
@@ -860,15 +636,604 @@ stopping it.
 This code will only work when attached in interactive mode with a
 TTY (i.e., using both the -i and -t flags).
 
+Docker Info
+-----------
+The following subcommands can be used to get more information on the Docker installation and usage:
+$ docker info  ---  Prints various information on the Docker system and host.
+$ docker help  ---  Prints usage and help information for the given subcommand. Identical to running a command with the --help flag.
+$ docker version  ---  Prints Docker version information for client and server as well as the version of Go used in compilation.
+
+Container Info
+--------------
+The following commands provide more information on running and stopped containers.
+$ docker diff  ---  Shows changes made to the containers filesystem compared to the image it was launched from. For example:
+$ ID=$(docker run -d debian touch /NEW-FILE)
+$ docker diff $ID
+A /NEW-FILE
+
+$ docker events  ---  Prints real-time events from the daemon. Use CTRL-C to quit. 
+$ docker inspect  ---  Provides detailed information on given containers or images. The information
+includes most configuration information and covers network settings and volume mappings. The command can take one argument, -f , which is used to supply a Go template that can be used to format and filter the output.
+$ docker logs  ---  Outputs the “logs” for a container. This is simply everything that has been written to STDERR or STDOUT inside the container. 
+$ docker port  ---  Lists the exposed port mappings for the given container. Can optionally be given
+the internal container port and protocol to look up. Often used after docker run -P <image> to discover the assigned ports.
+$ ID=$(docker run -P -d redis)
+$ docker port $ID
+6379/tcp -> 0.0.0.0:32768
+$ docker port $ID 6379
+0.0.0.0:32768
+$ docker port $ID 6379/tcp
+0.0.0.0:32768
+
+$ docker ps  ---  Provides high-level information on current containers, such as the name, ID, and
+status. Takes a lot of different arguments, notably -a for getting all containers,
+not just running ones. Also note the -q argument, which only returns the con‐
+tainer IDs and is very useful as input to other commands such as docker rm .
+$ docker top  ---  Provides information on the running processes inside a given container. In effect,
+this command runs the UNIX ps utility on the host and filters for processes in
+the given container. The command can be given the same arguments the ps util‐
+ity and defaults to -ef (but be careful to make sure the PID field is still in the
+output).
+For example:
+$ ID=$(docker run -d redis)
+$ docker top $ID
+UID	PID	PPID C STIME TTY TIME	CMD
+999 9243 1836 0 15:44 ? 00:00:00 redis-server *:6379
+$ ps -f -u 999
+UID PID	PPID C STIME TTY	TIME CMD
+999 9243 1836 0 15:44 ? 00:00:00 redis-server *:6379
+$ docker top $ID -axZ
+LABEL	PID TTY STAT TIME COMMAND
+docker-default 9243 ? Ssl 0:00 redis-server *:6379
+
+Dealing with Images
+-------------------
+The following commands provide tools for creating and working with images:
+$ docker build  ---  Builds an image from a Dockerfile
+$ docker commit  ---  Creates an image from the specified container. While docker commit can be use‐
+ful, it is generally preferable to create images using docker build , which is easily
+repeatable. By default, containers are paused prior to commit, but this can be
+turned off with the --pause=false argument. Takes -a and -m arguments for set‐
+ting metadata.
+For example:
+$ ID=$(docker run -d redis touch /new-file)
+$ docker commit -a "Joe Bloggs" -m "Comment" $ID commit:test
+ac479108b0fa9a02a7fb290a22dacd5e20c867ec512d6813ed42e3517711a0cf
+$ docker images commit
+REPOSITORY TAG	IMAGE ID	CREATED	VIRTUAL SIZE
+commit	test ac479108b0fa About a minute ago 111 MB
+$ docker run commit:test ls /new-file
+/new-file
+$ docker export  ---  Exports the contents of the container’s filesystem as a tar archive on STDOUT . The
+resulting archive can be loaded with docker import . Note that only the filesys‐
+tem is exported; any metadata such as exported ports, CMD , and ENTRYPOINT set‐
+tings will be lost. Also note that any volumes are not inlcuded in the export.
+Contrast with docker save .
+$ docker history  ---  Outputs information on each of the layers in an image.
+$ docker images  ---  Provides a list of local images, including information such as repository name,
+tag name, and size. By default, intermediate images (used in the creation of top-
+level images) are not shown. The VIRTUAL SIZE is the total size of the image
+including all underlying layers. As these layers may be shared with other images,
+simply adding up the size of all images does not provide an accurate estimate of
+disk usage. Also, images will appear multiple times if they have more than one
+tag; different images can be discerned by comparing the ID. Takes several argu‐
+ments; in particular, note -q , which only returns the image IDs and is useful as
+input to other commands such as docker rmi .
+For example:
+$ docker images | head -4
+REPOSITORY	TAG	IMAGE ID	CREATED	VIRTUAL SIZE
+identidock_identidock latest 9fc66b46a2e6 26 hours ago 839.8 MB
+redis	latest 868be653dea3 6 days ago	110.8 MB
+containersol/pres-base latest 13919d434c95 2 weeks ago 401.8 MB
+To remove all dangling images:
+$ docker rmi $(docker images -q -f dangling=true)
+Deleted: a9979d5ace9af55a562b8436ba66a1538357bc2e0e43765b406f2cf0388fe062
+$ docker import  ---  Creates an image from an archive file containing a filesystem, such as that created
+by docker export . The archive may be identified by a file path or URL or
+streamed through STDIN (by using the - flag). Returns the ID of the newly cre‐
+ated image. The image can be tagged by supplying a repository and tag name.
+Note that an image built from import will only consist of a single layer and will
+lose Docker configuration settings such as exposed ports and CMD values. Con‐
+trast with docker load .
+Example of “flattening” an image by exporting and importing:
+$ docker export 35d171091d78 | docker import - flatten:test
+5a9bc529af25e2cf6411c6d87442e0805c066b96e561fbd1935122f988086009
+$ docker history flatten:test
+IMAGE	CREATED	CREATED BY SIZE	COMMENT
+981804b0c2b2 59 seconds ago	317.7 MB Imported from -
+$ docker load  ---  Loads a repository from a tar archive passed via STDIN . The repository may con‐
+tain several images and tags. Unlike docker import , the images will include his‐
+tory and metadata. Suitable archive files are created by docker save , making
+save and load a viable alternative to registries for distributing images and pro‐
+ducing backups. See docker save for an example.
+$ docker rmi  ---  Deletes the given image or images. Images are specified by ID or repository and
+tag name. If a repository name is supplied but no tag name, the tag is assumed to
+be latest . To delete images that exist in multiple repositories, specify that image
+by ID and use the -f argument. You will need to run this once per repository.
+$ docker save  ---  Saves the named images or repositories to a tar archive, which is streamed to
+STDOUT (use -o to write to a file). Images can be specified by ID or as
+repository:tag . If only a repository name is given, all images in that repository
+will be saved to the archive, not just the latest tag. Can be used in conjunction
+with docker load to distribute or back up images.
+For example:
+$ docker save -o /tmp/redis.tar redis:latest
+$ docker rmi redis:latest
+Untagged: redis:latest
+Deleted: 868be653dea3ff6082b043c0f34b95bb180cc82ab14a18d9d6b8e27b7929762c
+...
+$ docker load -i /tmp/redis.tar
+$ docker images redis
+REPOSITORY	TAG	IMAGE ID CREATED VIRTUAL SIZE
+redis	latest	0f3059144681 3 months ago	111 MB
+$ docker tag  ---  Associates a repository and tag name with an image. The image can identified by
+ID or repository and tag (the latest tag is assumed if none is given). If no tag is
+given for the new name, latest is assumed.
+For example:
+$ docker tag faa2b75ce09a newname (1)
+$ docker tag newname:latest amouat/newname (2)
+$ docker tag newname:latest amouat/newname:newtag (3)
+$ docker tag newname:latest myregistry.com:5000/newname:newtag (4)
+(1) Adds the image with ID faa2b75ce09a to the repository newname , using the
+tag latest as none was specified.
+(2) Adds the newname:latest image to the amouat/newname repository, again
+using the tag latest. This label is in a format suitable for pushing to the
+Docker Hub, assuming the user is amouat .
+(3) As above except using the tag newtag instead of latest .
+(4) Adds the newname:latest image to the repository myregistry.com/newname
+with the tag newtag . This label is in a format suitable for pushing to a registry
+at
+http://myregistry.com:5000.(((range="endofrange”,
+startref="ix_04_docker_fundamentals-asciidoc23”)))(((range="endofrange”,
+startref="ix_04_docker_fundamentals-asciidoc22”)))
+
+Using the Registry
+------------------
+The following commands relate to using registries, including the Docker Hub. Be
+aware the Docker saves credentials to the file .dockercfg in your home directory:
+$ docker login  ---  Register with, or log in to, the given registry server. If no server is specified, it is
+assumed to be the Docker Hub. The process will interactively ask for details if
+required, or they can be supplied as arguments.
+$ docker logout  ---  Logs out from a Docker registry. If no server is specified, it is assumed to be the
+Docker Hub.
+$ docker pull  ---  Downloads the given image from a registry. The registry is determined by the
+image name and defaults to the Docker Hub. If no tag name is given, the image
+tagged latest will be downloaded (if available). Use the -a argument to down‐
+load all images from a repository.
+$ docker push  ---  Pushes an image or repository to the registry. If no tag is given, this will push all
+images in the repository to the registry, not just the one marked latest .
+$ docker search  ---  Prints a list of public repositories on the Docker Hub matching the search term.
+Limits results to 25 repositories. You can also filter by stars and automated
+builds. In general, it’s easiest to use the website.
+
+---------------------------------------------------------------------------------
+
+Docker containers can be used in development, testing, and production (on a single-host, or on multiple hosts)
+To make the most of Docker, it is important to adopt a DevOps approach. In particular, during
+development, we will be thinking about how to run software in production, which
+will ease the pain of deployment to a variety of environments.
+Containers are not suited to building enterprise software monoliths with a release
+cycle measured in weeks or months. Instead, we will naturally find ourselves taking
+microservice approach and exploring techniques such as continuous deployment
+where it is possible to safely push to production multiple times a day.
+The advantage of containers, DevOps, microservices, and continuous delivery essen‐
+tially comes down to the idea of a fast feedback loop. By iterating quicker, we can
+develop, test, and validate systems of higher quality in shorter time periods.
 
 
+Using Docker in Development
+---------------------------
+Se realizará un ejemplo de aplicación en Python y el framework web Flask. Docker manejará todas las dependencias (por tanto no hay que instalar Python o Flask en tu máquina)
+
+Se creará un servidor web que devuelva “Hello World!”.
+Creamos un directorio (identidock) con un subdirectorio (app) que tendrá el código Python (fichero identidock.py):
+$ tree identidock/
+identidock/
+└── app
+     └── identidock.py
+1 directory, 1 file
+
+identidock.py:
+from flask import Flask
+app = Flask(__name__) # Initializes Flask and sets up the application object.
+
+@app.route('/') # Creates a route associated with the URL. Whenever this URL is requested, it will result in a call to the hello_world function.
+def hello_world():
+  return 'Hello World!\n'
+
+if __name__ == '__main__':
+  app.run(debug=True, host='0.0.0.0') # Creates a route associated with the URL. Whenever this URL is requested, it will
+result in a call to the hello_world function.
+Initializes the Python webserver. The use of 0.0.0.0 (instead of localhost or
+127.0.0.1 ) as host argument binds to all network interfaces, which is needed to
+allow the container to be accessed from the host or other containers. The if
+statement on the line above ensures this line only executes when the file is called
+as a standalone program and not when running as part of a larger application.
+
+Now we need a container to put this code in and run it. In the identidock directory,
+create a file called Dockerfile with the following contents:
+FROM python:3.4
+RUN pip install Flask==0.10.1
+WORKDIR /app
+COPY app /app
+CMD ["python", "identidock.py"]
+This Dockerfile uses an official Python image as a base, which contains a Python 3
+installation. On top of this, it installs Flask and copies in our code. The CMD instruc‐
+tion simply runs our identidock code.
+
+Official Image Variants
+Many of the official repositories for popular programming languages such as Python,
+Go, and Ruby contain multiple images for different purposes. In addition to images
+for different version numbers, you are likely to find one or both of the following:
+slim
+These images are cut-down versions of the standard images. Many common
+packages and libraries will be missing. These are essential when you need to
+reduce on image size for distribution but often require extra work installing and
+maintaining packages already available in the standard image.
+onbuild
+These images use the Dockerfile ONBUILD instruction to delay execution of cer‐
+tain commands until a new “child” image is built that inherits the onbuild image.
+These commands are processed as part of the FROM instruction of the child image
+and typically do things like copy over code and run a compile step. These images
+can make it quicker and easier to get started with a language, but in the long-run,
+they tend to be limiting and confusing. I would generally only recommend using
+onbuild images when first exploring a repository.
+For our example application, we are using a standard base image for Python 3 and not
+one of these variants.
+
+Now we can build and run our simple application:
+$ cd identidock
+$ docker build -t identidock .
+...
+$ docker run -d -p 5000:5000 identidock
+0c75444e8f5f16dfe5aceb0aae074cc33dfc06f2d2fb6adb773ac51f20605aa4
+Here I’ve passed the -d flag to docker run in order to start the container in the back‐
+ground, but you can also omit it if you want to see output from the webserver. The -p
+5000:5000 argument tells Docker we want to forward port 5000 in the container to
+port 5000 on the host.
+Now let’s test it out:
+$ curl localhost:5000
+Hello World!
+
+Docker Machine IPs
+Si se ejecuta Docker usando Docker machine (lo normal si se usa Docker en Mac o Windows), no se puede usar localhost como URL. Hay que usar la dirección IP de la VM que ejecuta Docker. El comando 'docker-machine ip' ayuda a automatizar esto:
+$ curl $(docker-machine ip default):5000
+Hello World!
+
+El problema de este workflow es que cualquier cambio del código obliga a reconstruir la imagen y reiniciar el contenedor.
+Para solucionarlo enlazamos el directorio del código fuente del host sobre el que está en el contenedor (bind mount).
+El siguiente código detiene y elimina el último contenedor antes de arrancar otro nuevo con el código del directorio montado en /app:
+$ docker stop $(docker ps -lq)
+0c75444e8f5f
+$ docker rm $(docker ps -lq)
+$ docker run -d -p 5000:5000 -v "$(pwd)"/app:/app identidock
+El argumento '-v $(pwd)/app:/app' monta el directori app en /app dentro del contenedor. Se sobreescribe el contenido de /app que haya en el contenedor (es writable, pero también se puede hacer read-only). Los argumentos de -v deben ser paths absolutos (en el ejemplo se usa $(pwd) para concatenar el directorio actual (así es más portable)
+
+Bind Mounts
+When a host directory is specified for a volume using the -v
+HOST_DIR:CONTAINER_DIR argument to docker run , it is com‐
+monly referred to as a “bind mount,” as it binds a folder (or file) on
+the host to a folder (or file) inside the container. This is a little con‐
+fusing, as all volumes are technically bind mounts, but we have to
+do a little more work to find the folder on the host when it isn’t
+specificed explicitly.
+Note that the HOST_DIR always refers to the machine running the
+Docker engine. If you are connected to a remote Docker daemon,
+the path must exist on the remote machine. If you’re using a local
+VM provisioned by Docker machine (which you will be if you
+installed Docker via Toolbox), it will cross-mount your home
+directory to make things easier during development.
+
+Verificamos que continúa funcionando:
+$ curl localhost:5000
+Hello World!
+
+Ahora se está usando el mismo directorio en el host y en el contenedor, en lugar de su propia copia de la imagen. Esto permite editar identidock.py para ver los cambios inmediatamente:
+$ sed -i '' s/World/Docker/ app/identidock.py
+$ curl localhost:5000
+Hello Docker!
+
+Ahora tenemos un entorno de desarrollo normal, excepto que las dependencias (el compilador de Python y las librerías) están encapsuladas en el contenedor.
+El problema es que no se puede usar este contenedor en producción, principalmente porque usa el webserver por defecto de Flask que está pensado para desarrollo (es ineficiente e inseguro para producción). Un punto importante a la hora de adoptar Docker es minimizar las diferencias entre desarrollo y producción.
+
+Wot? No virtualenv?
+If you’re an experienced Python developer, you may be surprised that we’re not using
+virtualenv to develop our application. virtualenv is an extremely useful tool for isolat‐
+ing Python environments. It allows developers to have separate versions of Python
+and supporting libraries for each application. Normally, it is essential and ubiquitous
+in Python development.
+When using containers, however, it is less useful, as we are already provided with an
+isolated environment. If you’re used to virtualenv, you can certainly still use it inside a
+container, but you are unlikely to see much benefit, unless you experience clashes
+with other applications or libraries installed in the container.
+
+uWSGI es un servidor de aplicaciones preparado para producción que se puede poner detrás de un webserver como nginx.
+Para usar uWSGI en lugar del webserver por defecto de Flask, modificamos dos líneas del Dockerfile:
+FROM python:3.4
+RUN pip install Flask==0.10.1 uWSGI==2.0.8 # -----> Add uWSGI to the list of Python packages to install.
+WORKDIR /app
+COPY app /app
+CMD ["uwsgi", "--http", "0.0.0.0:9090", "--wsgi-file", "/app/identidock.py", "--callable", "app", "--stats", "0.0.0.0:9191"] # ------> Create a new command to run uWSGI. Here we tell uWSGI to start an http
+server listening on port 9090, running the app application from /app/identi‐
+dock.py. It also starts a stats server on port 9191. We could alternatively have
+overridden the CMD via the docker run command.
+
+Build it and run it so that we can see the difference:
+$ docker build -t identidock .
+...
+Successfully built 3133f91af597
+$ docker run -d -p 9090:9090 -p 9191:9191 identidock
+00d6fa65092cbd91a97b512334d8d4be624bf730fcb482d6e8aecc83b272f130
+$ curl localhost:9090
+Hello Docker!
+
+If you now run docker logs with the container ID, you will see the logging informa‐
+tion for uWSGI, confirming we are indeed using the uWSGI server. Also, we’ve asked
+uWSGI to expose some stats, which you can see at http://localhost:9191. The Python
+code that normally starts the default web server hasn’t been executed as it wasn’t run
+directly from the command line.
+
+The server is working correctly now, but there is still some housekeeping we should
+do. If you examine the uWSGI logs, you’ll notice that the server is rightly complain‐
+ing about being run as root. This is a pointless security leak we can easily fix in the
+Dockerfile by specifying a user to run under. At the same time, we will explicitly
+declare the ports the container listens on:
+
+FROM python:3.4
+RUN groupadd -r uwsgi && useradd -r -g uwsgi uwsgi # ----> Creates the uwsgi user and group in a normal Unix fashion.
+RUN pip install Flask==0.10.1 uWSGI==2.0.8
+WORKDIR /app
+COPY app /app
+EXPOSE 9090 9191 # ----> Uses the EXPOSE instruction to declare the ports accessible to the host and other containers.
+USER uwsgi # ----> Sets the user for all the following lines (including CMD and ENTRYPOINT ) to be uwsgi.
+CMD ["uwsgi", "--http", "0.0.0.0:9090", "--wsgi-file", "/app/identidock.py", "--callable", "app", "--stats", "0.0.0.0:9191"]
+To explain the new lines:
+
+Users and Groups Inside Containers
+The Linux kernel uses UIDs and GIDs to
+identify users and detemine their access rights. Mapping UIDs and
+GIDs to identifiers is handled in userspace by the OS. Because of
+this, UIDs in the container are the same as UIDs on the host, but
+users and groups created inside containers do not propogate to the
+host. A side effect of this is that access permissions can get confus‐
+ing; files can appear to be owned by different users inside and out‐
+side of containers. For example, note the changing owner of the
+following file:
+$ ls -l test-file
+-rw-r--r-- 1 docker staff 0 Dec 28 18:26 test-file
+$ docker run -it -v $(pwd)/test-file:/test-file
+debian bash
+root@e877f924ea27:/# ls -l test-file
+-rw-r--r-- 1 1000 staff 0 Dec 28 18:26 test-file
+root@e877f924ea27:/# useradd -r test-user
+root@e877f924ea27:/# chown test-user test-file
+root@e877f924ea27:/# ls -l /test-file
+-rw-r--r-- 1 test-user staff 0 Dec 28 18:26 /test-file
+root@e877f924ea27:/# exit
+exit
+docker@boot2docker:~$ ls -l test-file
+-rw-r--r-- 1 999 staff 0 Dec 28 18:26 test-file
+
+Build this image as normal and test the new user setting:
+$ docker build -t identidock .
+...
+$ docker run identidock whoami
+uwsgi
+Note we’ve overridden the default CMD instruction that calls the webserver with the
+whoami command, which returns the name of the running user inside the container.
 
 
+Always Set a USER
+It’s important to set the USER statement in all your Dockerfiles (or
+change the user within an ENTRYPOINT or CMD script). If you don’t
+do this, your processes will be running as root within the container.
+As UIDs are the same within a container and on the host, should
+an attacker manage to break the container, he will have root access
+to the host machine.
+
+Great, now commands inside the container are no longer running as root. Let’s
+launch the container again, but with a slightly different set of arguments:
+$ docker run -d -P --name port-test identidock
+This time we haven’t specified specific ports on the host to bind to. Instead, we’ve
+used the -P argument, which makes Docker automatically map a random high-
+numbered port on the host to each “exposed” port on the container. We have to ask
+Docker what these ports are before we can access the service:
+$ docker port port-test
+9090/tcp -> 0.0.0.0:32769
+9191/tcp -> 0.0.0.0:32768
+Here we can see that it has bound 9090 to 32769 on the host and 9191 to 32768, so we
+can now access the service (note that the port numbers are likely to be different for
+you):
+$ curl localhost:32769
+Hello Docker!
+At first this might seem a pointless extra step—and it is in this case—but when you
+have multiple containers running on a single host, it’s a lot easier to ask Docker to
+automatically map free ports than it is keep track of unused ports yourself.
+So now we have a webservice running that is pretty close to how it would look in pro‐
+duction. There are still a lot of things you would want to tweak in production—such
+as the uWSGI options for processes and threads—but we have closed the gap enor‐
+mously from the default Python debug webserver.
+We now have a new problem: we’ve lost access to the development tools such as
+debugging output and live code-reloading provided by the default Python web server.
+While we can drastically reduce the differences between the development and pro‐
+duction environments, they still have fundamentally different needs that will always
+require some changes. Ideally, we want to use the same image for both development
+and production but enable a slightly different set of features depending on where it is
+running. We can achieve this by using an environment variable and a simple script to
+switch features depending on context.
+Create a file called cmd.sh in the same directory as the Dockerfile with the following
+contents:
+#!/bin/bash
+set -e
+if [ "$ENV" = 'DEV' ]; then
+  echo "Running Development Server"
+  exec python "identidock.py"
+else
+  echo "Running Production Server"
+  exec uwsgi --http 0.0.0.0:9090 --wsgi-file /app/identidock.py --callable app --stats 0.0.0.0:9191
+fi
+The intent of this script should be fairly clear. If the variable ENV is set to DEV , it will
+run the debug webserver; otherwise it will use the production server. 2 . The exec com‐
+mand is used in order to avoid creating a new process, which ensures any signals
+(such as SIGTERM ) are recieved by our uwsgi process rather than being swallowed by
+the parent process.
+
+Use Configuration Files and Helper Scripts
+To keep things simple, I’ve included everything inside the Docker‐
+file. However, as the application grows, it makes sense to move
+things out into supporting files and scripts where possible. In par‐
+ticular, the pip dependencies should be moved to a requirements.txt
+file, and the uWSGI configuration can move to a .ini file.
+
+Next, we need to update the Dockerfile to use the script:
+FROM python:3.4
+RUN groupadd -r uwsgi && useradd -r -g uwsgi uwsgi
+RUN pip install Flask==0.10.1 uWSGI==2.0.8
+WORKDIR /app
+COPY app /app
+COPY cmd.sh / # ----> Adds the script to the container.
+EXPOSE 9090 9191
+USER uwsgi
+CMD ["/cmd.sh"] # ----> Calls it from the CMD instruction.
+
+Before we try out the new version, it’s time to stop any old containers we have run‐
+ning. The following will stop and remove all containers from the host; do not run this
+if you have containers you want to keep:
+$ docker stop $(docker ps -q)
+c4b3d240f187
+9be42abaf902
+78af7d12d3bb
+$ docker rm $(docker ps -aq)
+1198f8486390
+c4b3d240f187
+9be42abaf902
+78af7d12d3bb
+Now we can rebuild the image with the script and test it out:
+$ chmod +x cmd.sh
+$ docker build -t identidock .
+...
+$ docker run -e "ENV=DEV" -p 5000:5000 identidock
+unning Development Server
+* Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+* Restarting with stat
+Good. Now when we run with -e "ENV=DEV" , we get a development server; other‐
+wise, we get the production server.
+
+Development Servers
+You may find that the default Python server doesn’t meet your
+needs during development, especially when linking several con‐
+tainers together. In this case, you can run uWSGI in development
+as well. You will still want the ability to switch environments so that
+you can turn on uWSGI features such as live code-reloading, which
+shouldn’t be run in production.
+
+Automating with Compose
+There’s a final bit of automation we can add to make things a bit simpler. Docker
+Compose is designed to quickly get Docker development environments up and run‐
+ning. Essentially, it uses YAML files to store the configuration for sets of containers,
+saving developers from repetitive and error-prone typing or rolling thier own solu‐
+tion. Our application is so basic that it doesn’t buy us much at the moment, but it will
+quickly come into its own as things get more complicated. Compose will free us from
+the need to maintain our own scripts for orchestration, including starting, linking,
+updating, and stopping our containers.
+If you installed Docker using the Docker Toolbox, you should already have Compose
+available. If not, follow the instructions at the Docker website. I used version 1.4.0 of
+Compose in this chapter, but as we’re only using basic functionality, anything after 1.2
+should be good.
+Create a file called docker-compose.yml in the identidock directory with the following contents:
+identidock:  # ------> (1)
+build: . # ----> (2)
+ports: # ----> (3)
+- "5000:5000"
+environment: # ----> (4)
+ENV: DEV
+volumes: # ----> (5)
+- ./app:/app
+
+(1) The first line declares the name of the container to build. Multiple containers
+(often called services in Compose lingo) can be defined in a single YAML file.
+(2) The build key tells Compose that the image for this container is to be built from
+a Dockerfile that exists in the current directory ( . ). Every container definition
+needs to include either a build or image key. image keys take the tag or ID of an
+image to use for the container, the same as image argument to docker run .
+(3) The ports key is directly analagous to the -p argument to docker run for expos‐
+ing ports. Here we map port 5000 in the container to port 5000 on the host. Ports
+can be specified without quotes, but this is best avoided as it can cause confusion
+when YAML parses statements such as 56:56 as a base 60 number.
+(4) The environment key is directly analagous to the -e argument to docker run ,
+which sets environment variables in the container. Here we are setting ENV to DEV
+in order to run the Flask development webserver.
+(5) The volumes key is directly analogous to the -v argument to docker run for set‐
+ting volumes. Here we are bind mounting the app directory into the container as
+before in order to allow us to make changes to the code from the host.
+
+Many more keys can be set in Compose YAML files, normally mapping directly to the
+equivalent docker run arguments.
+If you now run docker-compose up , you will get almost exactly the same result as the
+previous docker run command:
+$ docker-compose up
+Creating identidock_identidock_1...
+Attaching to identidock_identidock_1
+identidock_1 | Running Development Server
+identidock_1 | * Running on http://0.0.0.0:5000/
+identidock_1 | * Restarting with reloader
+From another terminal:
+$ curl localhost:5000
+Hello Docker!
+When you’re finished running the application, you can just hit ctrl-c to stop the
+container.
+To switch to the uWSGI server, we would need to change the environment and ports
+keys in the YAML. This can either be done by editing the existing docker-compose.yml
+or by creating a new YAML file for production and pointing docker-compose at using
+the -f flag or the COMPOSE_FILE environment variable.
+
+The Compose Workflow
+The following commands are commonly used when working with Compose. 
+up --- Starts all the containers defined in the Compose file and aggregates the log out‐
+put. Normally you will want to use the -d argument to run Compose in the back‐
+ground.
+build ---  Rebuilds any images created from Dockerfiles. The up command will not build
+an image unless it doesn’t exist, so use this command whenever you need to
+update an image.
+ps  --- Provides information on the status of containers managed by Compose.
+run --- Spins up a container to run a one-off command. This will also spin up any linked
+containers unless the --no-deps argument is given.
+logs --- Outputs colored and aggregated logs for the Compose-managed containers.
+stop --- Stops containers without removing them.
+rm --- Removes stopped containers. Remember to use the -v argument to remove any
+Docker-managed volumes.
+
+A normal workflow begins with calling docker-compose up -d to start the applica‐
+tion. The docker-compose logs and ps commands can be used to verify the status of
+the application and help debugging.
+After changes to the code, call docker-compose build followed by docker-compose
+up -d . This will build the new image and replace the running container. Note that
+Compose will preserve any old volumes from the original containers, which means
+that databases and caches persist over containers (this can be confusing, so be care
+ful). If you don’t need a new image but have modified the Compose YAML, calling up
+-d will cause Compose to replace the container with one with the new settings. If you
+want to force Compose to stop and recreate all the containers, use the --force-
+recreate flag.
+When you’re finished with the application, calling docker-compose stop will halt the
+application. The same containers will be restarted if docker-compose start or up is
+called, assuming no code has changed. Use docker-compose rm to get rid of them
+completely.
 
 
-
-
-
+Conclusion
+We’re now at the stage where we have a working environment and we can begin to
+develop our application. We’ve seen:
+• How to leverage the official images to quickly create a portable and recreatable
+development suite, without installing any tools on the host
+• How to use volumes to make dynamic changes to code running in containers
+• How to maintain both a production and development environment in a single
+container
+• How to use Compose to automate the development workflow
+Docker has given us a familiar development environment, with all the tools we need;
+yet at the same time, we can quickly test things out in an environment that mirrors
+production.
+There’s still a lot of things we need to do, especially with regard to testing and contin‐
+uous integration/delivery, but we’ll come to those in the next few chapters as we pro‐
+gress with development.
 
 
 

@@ -473,14 +473,427 @@ C:\apress\gswm-book\chapter5\gswm-plugin>mvn com.apress.plugins:gswm-plugin:hell
 
 
 
+Maven Archetypes
+----------------
+Para crear proyectos Maven tiene los arquetipos.
+
+Maven archetypes are project templates that allow users to generate new projects easily.
+Maven archetypes also provide a great platform to share best practices and enforce
+consistency beyond Maven’s standard directory structure. For example, an enterprise can
+create an archetype with the company’s branded cascading style sheet (CSS), approved
+JavaScript libraries, and reusable components. Developers using this archetype to
+generate projects will automaticaly conform to the company’s standards.
+
+Built-in Archetypes
+Maven provides hundreds of out-of-the-box archetypes for developers to use.
+Additionally, a lot of open source projects provide additional archetypes that you can
+download and use. Maven also provides an archetype plug-in with goals to create
+archetypes and generate projects from archetypes.
+The archetype plug-in’s generate goal allows you to view and select an archetype
+for use. 
+$ mvn archetype:generate
+
+Maven provides the maven-archetype-webapp archetype for generating a web
+application. 
+$ mvn archetype:generate -DarchetypeArtifactId=maven-archetype-webapp
+
+project_name
+ |--- pom.xml
+ |--- src
+       |--- main
+             |---resources
+             |---webapp
+                  |---WEB-INF
+                  |     |---web.xml
+                  | 
+                  |---index.jsp
+
+The pom.xml file is minimal and only has a JUnit dependency. Maven makes it easier
+to run your web application using embedded web servers, such as Tomcat and Jetty.
+Listing 6-2 shows the modified pom.xml file with a Tomcat plug-in added.
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm-web</artifactId>
+  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>gswm-web Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>gswm-web</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat7-maven-plugin</artifactId>
+        <version>2.2</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+In order to launch the web application inside the Tomcat server, run the following
+command at the root directory of the project:
+$ mvn tomcat7:run
+Now launch the browser and navigate to http://localhost:8080/gswm-web/.
+
+Multimodule Project
+Java Enterpise Edition (JEE) projects are often split into several modules to ease
+development and maintainability. Each of these modules produces artifacts such as
+Enterprise JavaBeans (EJBs), web services, web projects, and client jars. Maven supports
+development of such large JEE projects by allowing multiple Maven projects to be nested
+under a single Maven project. 
+The parent project has a pom.xml file and individual Maven projects inside it.
+The layout of such a multimodule project is:
+
+ParentProject
+  |---Module1
+  |      |---pom.xml
+  | 
+  |---Module2
+  |      |---pom.xml
+  | 
+  |---Module3
+  |      |---pom.xml
+  | 
+  |---pom-xml
+
+In the rest of this section, we will explain how to build a multimodule project for the
+scenario where you have to split your large project into a web application (WAR artifact)
+that provides a user interface, a service project (JAR artifact) that holds service layer code,
+and a persistence project that holds your repository layer code.
+
+Let’s start the process by generating the parent project. To do this, run the following
+command at the command line under C:\apress\gswm-book\chapter6:
+$ mvn archetype:generate -DgroupId=com.apress.gswmbook -DartifactId=gswm-parent -Dversion=1.0.0-SNAPSHOT -DarchetypeGroupId=org.codehaus.mojo.archetypes -DarchetypeArtifactId=pom-root
+ 
+The archetype pom-root creates the gswm-parent folder and a pom.xml file
+underneath it. As you can see in Listing 6-4, the generated pom.xml file has minimal
+content. Notice that the packaging of the parent project is set to type pom.
+Listing 6-4.  Parent pom.xml File
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm-parent</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>gswm-parent</name>
+</project>
+ 
+Then create the web project by running the following command in the
+C:\apress\gswm-book\chapter6\gswm-parent folder:
+$ mvn archetype:generate -DgroupId=com.apress.gswmbook -DartifactId=gswm-web -Dversion=1.0.0-SNAPSHOT -Dpackage=war -DarchetypeArtifactId=maven-archetype-webapp
+ 
+During this web project generation, you are providing Maven coordinates,
+such as groupId, version, and so on, as parameters to the generate goal. This created the
+gswm-web project.
+The next step is to create the service project. Run the following command under
+C:\apress\gswm-book\chapter6\gswm-parent:
+$ mvn archetype:generate -DgroupId=com.apress.gswmbook -DartifactId=gswm-service -Dversion=1.0.0-SNAPSHOT -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+ 
+Notice that you didn’t provide the package parameter, as the maven-
+archetype-quickstart produces a JAR project by default. Also, notice the use of the
+interactiveMode parameter. This instructs Maven to simply run the command without
+prompting the user for input.
+
+Similar to the previous step, create another Java project gswm-repository by running
+the following command under C:\apress\gswm-book\chapter6\gswm-parent:
+$ mvn archetype:generate -DgroupId=com.apress.gswmbook -DartifactId=gswm-repository -Dversion=1.0.0-SNAPSHOT -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+ 
+Now that you have all of the projects generated, let’s look at the pom.xml file under
+gswm-parent. Listing 6-5 shows the pom.xml file.
+Listing 6-5.  Parent pom.xml File with Modules
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm-parent</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>gswm-parent</name>
+  <modules>
+    <module>gswm-web</module>
+    <module>gswm-service</module>
+    <module>gswm-repository</module>
+  </modules>
+</project>
+ 
+The modules element allows you to declare child modules in a multimodule project.
+As you generated each module, Maven intelligently registered them as a child module.
+Additionally, it modified the individual module’s pom.xml file and added the parent pom
+information. Listing 6-6 shows gswm-web project’s pom.xml file with the parent pom elements.
+Listing 6-6.  The pom.xml File for the Web Module 
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.apress.gswmbook</groupId>
+    <artifactId>gswm-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm-web</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>gswm-web Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>gswm-web</finalName>
+  </build>
+</project>
+ 
+With the entire infrastructure set up, you are ready to build the next project. To
+accomplish this, simply run the mvn package command under gswm-project, as shown
+in Listing 6-7.
+Listing 6-7.  Maven Package Run on the Parent Project
+C:\apress\gswm-book\chapter6\gswm-parent>mvn package
+
+Creating an Archetype
+Maven provides several ways to create a new archetype. Here we will use an existing
+project to generate an archetype.
+Let’s start by creating a prototype project that you will use as the seed for archetype
+creation. This project will be Servlet 3.0 compatible, and it has a Status Servlet that
+returns a HTTP status code 200. Instead of creating a web project from scratch, copy the
+previously generated gswm-web project code and create gswm-web-prototype under
+C:\apress\gswm-book\chapter6. Make the following changes to the newly copied project:
+1.	 Remove all other resources, such as Integrated Development
+Environment (IDE) specific files (.project, .classpath, and
+so forth) that you don’t want to end up in the archetype.
+
+2.	 Replace the contents of the web.xml file under the webapp/
+WEB-INF folder. This will upgrade the web application to use
+Servlet 3.0:
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+version="3.0">
+  <display-name>Archetype Created Web Application</display-name>
+</web-app>
+ 
+3.	 Add the Servlet 3.0 dependency to the pom.xml file. The
+updated pom.xml is shown in Listing 6-8.
+Listing 6-8.  The pom.xml with Servlet Dependency 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apress.gswmbook</groupId>
+  <artifactId>gswm-web</artifactId>
+  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>gswm-web Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>gswm-web</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat7-maven-plugin</artifactId>
+        <version>2.2</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+ 
+4.	 Because you will be doing Java web development, create a
+folder named java under src/main. Similarly, create test/
+java and test/resources folders under src.
+
+5.	
+Create the AppStatusServlet.java file in the com.apress.
+gswmbook.web.servlet package under src/main/java.
+The package com.apress.gswmbook.web.servlet translates
+to folder structure com\apress\gswmbook\web\servlet. The
+source code for AppStatusServlet.java is shown in Listing 6-9.
+Listing 6-9.  AppStatusServlet Java Class Source Code 
+package com.apress.gswmbook.web.servlet;
+ 
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.*;
+@WebServlet("/status")
+public class AppStatusServlet extends HttpServlet {
+ 
+public void doGet(HttpServletRequest request, HttpServletResponse
+response) throws IOException {
+ 
+PrintWriter writer = response.getWriter();
+writer.println("OK");
+response.setStatus(response.SC_OK);
+}
+ 
+}
+ 
+The prototype project will be similar to the structure shown in Figure 6-5.
+
+
+project_name
+ |--- pom.xml
+ |--- src
+       |--- main
+       |     |---java
+       |     |     |---com/.../web/servlet/AppStatusServlet.java
+       |     |
+       |     |---resources
+       |     |---webapp
+       |          |---WEB-INF
+       |          |     |---web.xml
+       |          | 
+       |          |---index.jsp
+       |
+       |---test
+             |---java
+             |     |---com/.../web/servlet
+             |
+             |---resources
 
 
 
+Using the command line, navigate to the project folder gswm-web-prototype and run
+the following command:
+$ mvn archetype:create-from-project
+ 
+Upon completion of the command, you should see the message Archetype created
+in target/generated-sources/archetype. The newly created archetype is now under
+gswm-web-prototype/target/generated-sources/archetype.
+The next step is to move the newly created archetype into a separate folder
+gswm-web-archetype so that it can be tweaked before it is published. To accomplish this,
+follow these steps:
+1.	 Create folder gswm-web-archetype in the C:\apress\gswm-
+book\chapter6 folder.
+2.	 Copy subdirectories and files in the C:\apress\gswm-book\
+chapter6\gswm-web-prototype\target\generated-
+sources\archetype folder to the gswm-web-archetype folder.
+3.	 Delete the target subdirectory from the C:\apress\gswm-
+book\chapter6\gswm-web-archetype folder.
+The directory structure for gswm-web-archetype should be similar to that shown in
+Figure 6-6.
+
+project_name_archetype
+ |--- pom.xml
+ |--- src
+       |--- main
+       |     |---resources
+       |           |---META-INF
+       |           |     |---maven
+       |           |          |---archetype-metadata.xml
+       |           |
+       |           |---archetype-resources
+       |                 |---pom.xml
+       |                 |---src 
+       |                      |---main
+       |                           |---java
+       |                           |     |---/web/servlet/AppStatusServlet.java
+       |                           |
+       |                           |---webapp
+       |                                 |---WEB-INF
+       |                                 |     |---web.xml
+       |                                 | 
+       |                                 |---index.jsp
+       |
+       |---test
+             |---resources
+                   |---projects
+                         |---basic
+                               |---archetype.properties
+                               |---goal.txt
 
 
+Let’s start the modification process with the pom.xml file located at gswm-web-
+archetype\src\main\resources\archetype-resources. Change the final name in
+the pom.xml file from gswm-web to ${artifactId}. During project creation, Maven will
+replace the ${artifactId} expression with the user-supplied artifactId value.
+When a project is created from an archetype, Maven prompts the user for a package
+name. It will create the directories corresponding to the package under the src/main/java
+folder of the newly created project. It then moves all of the contents under the archetype’s
+archetype-resources/src/main/java folder into that package. Because you would like
+the AppStatusServlet under the subpackage web.servlet, create the folder web/servlet
+and move AppStatusServlet.java under the newly created folder. The new location of
+the AppStatusServlet.java is shown in Figure 6-7.
+
+Open AppStatusServlet.java and change the package name from
+package ${package}; to package ${package}.web.servlet;.
+The final step in creating the archetype is to run the following at the command line
+inside the folder gswm-web-archetype:
+$ mvn clean install
 
 
-
+Using the Archetype
+Once the archetype is installed, the easiest way to create a project from it is to run the
+following command under C:\apress\gswm-book\chapter6:
+ 
+$ mvn archetype:generate -DarchetypeCatalog=local
+ 
+Enter the values shown in Listing 6-10 for the Maven prompts, and you will see a
+test-project created.
+Listing 6-10.  Creating a New Project Using Archetype
+ 
+C:\apress\gswm-book\chapter6>mvn archetype:generate -DarchetypeCatalog=local
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Maven Stub Project (No POM) 1
+[INFO] ------------------------------------------------------------------------
+[INFO] Generating project in Interactive mode
+[INFO] No archetype defined. Using maven-archetype-quickstart (org.apache.
+maven.archetypes:maven-archetype-quickstart:1.0)
+Choose archetype:1: local -> com.apress.gswmbook:gswm-web-archetype
+(gswm-web-archetype)
+Choose a number or apply filter (format: [groupId:]artifactId, case
+sensitive contains): : 1
+Define value for property 'groupId': : com.apress.gswmbook
+Define value for property 'artifactId': : test-project
+Define value for property 'version': 1.0-SNAPSHOT: :
+Define value for property 'package': com.apress.gswmbook: :
+Confirm properties configuration:
+groupId: com.apress.gswmbook
+artifactId: test-project
+version: 1.0-SNAPSHOT
+package: com.apress.gswmbook
+Y: :
+------------------------------------------------------------------------------
+project
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1:27.635s
+[INFO] Finished at: Mon Oct 13 23:36:01 MDT 2014
+[INFO] Final Memory: 9M/22M
+[INFO] ------------------------------------------------------------------------
+ 
+Because the pom.xml file for the test-project already has the embedded Tomcat
+plug-in, run mvn tomcat7:run in the command line under the folder C:\apress\gswm-
+book\chapter6\test-project to launch the project. Open a browser and navigate to
+http://localhost:8080/test-project/status.
 
 
 
