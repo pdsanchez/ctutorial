@@ -5,6 +5,9 @@ $ git config --global push.default matching (git hace push de los cambios desde 
 $ git config --global push.default simple (git hace push de los cambios desde la rama actual a la rama remota que tiene el mismo nombre) PREFERIBLE
 $ git config --list
 
+Fichero que contiene la configuración global de git (.gitconfig en el home):
+$ cat ~/.gitconfig
+
 Crear directorio con contenido.
 $ git init ------ crear nuevo repositorio en la carpeta actual (se crea .git)
 $ git status ----- chequear estado del repositorio
@@ -41,6 +44,14 @@ El fichero .gitignore debe ser commiteado
 
 $ git add .  -------  guarda todo lo de la carpeta actual (recursivamente, excepto las carpetas vacías)
 $ git add folder ----- guarda todo lo de la carpeta folder (recursivamente)
+
+REMOVE:
+$ git rm file --> queda en stage => commit
+$ rm file --> queda en local => $ git add -u ---> queda en stage => commit
+
+MOVE
+$ git mv file_src destino --> queda en stage => commit
+$ mv file_src destino --> queda en local => $ git add -u ---> queda en stage => commit
 
 ########
 
@@ -113,7 +124,14 @@ https://help.github.com/articles/generating-ssh-keys
 
 Se necesitan ficheros id_rsa (el pub contiene la clave pública) en .ssh del home
 
+Crear directorio .ssh en el home
+Dentro del ese directorio:
+$ ssh-keygen -t rsa -C "email@miemail.com"
+Creamos clave pública/privada de tipo rsa (se crean dos ficheros id_rsa e id_rsa.pub -pública)
+Copiar contenido de id_rsa.pub y pegar en GitHub (apartado SSH keys, en Title poner nombre de tu ordenador)
 
+$ ssh -T git@github.com
+Para acceder a GitHub
 
 
 

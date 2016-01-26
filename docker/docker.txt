@@ -50,6 +50,12 @@ $ docker inspect container_name | grep IPAddress
 $ docker inspect --format {{.NetworkSettings.IPAddress}} container_name
 $ docker logs container_name
 Lista todo lo que ha ocurrido en el contenedor especificado.
+$ docker images
+Lista las imágenes (se encuentran en /var/lib/docker)
+$ docker rmi nombre_imagen
+Borra la imagen especificada
+$ docker stop nombre_contenedor
+Detiene el contenedor especificado
 
 $ docker run -it --name cowsay --hostname cowsay debian bash
 root@cowsay:/# apt-get update
@@ -80,6 +86,16 @@ Ahora podemos construir la imagen desde el directorio en el que se encuentra el 
 $ docker build -t test/cowsay-dockerfile .
 Y ejecutamos la imagen igual que antes:
 $ docker run test/cowsay-dockerfile /usr/games/cowsay "Moo"
+
+Service image / Executable image
+--------------------------------
+
+service images: servicios que se ejecutan en servidor sin influir en el host (Web servers, load balancers y databases). Estos contenedores se pueden comparar con las máquinas virtuales.
+executable images: imágenes usadas para lanzar procesos de vida corta (normalmente el contenedor ejecuta una tarea corta y después se elimina). Por ejemplo compiladores (Golang) o buil tools (Maven), software para presentaciones, browsers... (ver blog de Jessie Frazelle)
+http://www.infoq.com/interviews/jessica-frazelle-qcon-2015
+https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+https://www.youtube.com/watch?v=1qlLUf7KtAw
+
 
 Images, Containers, and the Union File System
 ---------------------------------------------
@@ -163,6 +179,7 @@ Ambos crean un volumen /data en el contenedor.
 
 Por defecto, el directorio o fichero se montará en el host, dentro del directorio de instalación de Docker (normalmente /var/lib/docker/). Es posible especificar el directorio del host a usar desde 'docker run' (por ejemplo, docker run -d -v /host/dir:/container/dir test/webserver ).
 Desde el Dockerfile esto no es posible por razones de portabilidad y seguridad (el fichero o directorio puede no existir en otros sistemas, o los contenedores pueden no tener permisos para montar ciertos ficheros o directorios)
+$ sudo du -sh /var/lib/docker/ --------> tamaño del directorio
 
 En el ejemplo de Redis podemos hacer lo siguiente para crear backups (asumimos que el contenedor 'myredis' está ejecutándose):
 $ docker run --rm -it --link myredis:redis redis /bin/bash
@@ -210,9 +227,8 @@ work para Mesos), CoreOS de Fleet, y la herramienta de Docker, Swarm.
 
 Connecting Containers to the World
 ----------------------------------
-Say you’re running a web server inside a container. How do you provide the outside
-world with access? The answer is to “publish” ports with the -p or -P commands. This
-command forwards ports on the host to the container. For example:
+Cuando se ejecuta un servidor web dentro de un contenedor, ¿como das acceso al mundo exterior?
+La respuesta es publicar puertos con los comandos -p o -P. Estos comandos hacen un forward de los puertos del host al contenedor.
 $ docker run -d -p 8000:80 nginx
 af9038e18360002ef3f3658f16094dadd4928c4b3e88e347c9a746b131db5444
 $ curl localhost:8000
@@ -221,9 +237,8 @@ $ curl localhost:8000
 <head>
 <title>Welcome to nginx!</title>
 ...
-The -p 8000:80 argument has told Docker to forward port 8000 on the host to port
-80 in the container. Alternatively, the -P argument can be used to tell Docker to auto‐
-matically select a free port to forward to on the host. For example:
+El argumento '-p 8000:80' indica a Docker que haga forward del puerto 8000 del host al puerto 80 del contenedor.
+El argumento -P se usa para decir a Docker que seleccione automáticamente un puerto libre al que hacer forward desde el host. Por ejemplo:
 $ ID=$(docker run -d -P nginx)
 $ docker port $ID 80
 0.0.0.0:32771
@@ -233,29 +248,20 @@ $ curl localhost:32771
 <head>
 <title>Welcome to nginx!</title>
 ...
-The primary advantage of the -P command is that you are no longer responsible for
-keeping track of allocated ports, which becomes important if you have several con‐
-tainers publishing ports. In these cases you can use the docker port command to
-discover the port allocated by Docker.
+La principal ventaja del comando -P es que no necesitas hacer un seguimiento de los puertos asignados, lo cual es importante si tienes varios contenedores publicando puertos. En estos casos se puede usar el comando 'docker port' para descubrir el puerto asignado por docker.
+
 
 Linking Containers
-Docker links are the simplest way to allow containers on the same host to talk to each
-other. When using the default Docker networking model, communication between
-containers will be over an internal Docker network, meaning communications are
-not exposed to the host network.
+------------------
+Los links en Docker son la forma más sencilla de que los contenedores del mismo host se comuniquen entre sí.
+Cuando se usa el modelo de red por defecto de Docker, la comunicación entre contenedores del mismo host será a través de una red interna de Docker, y las comunicaciones no se exponen en la red del host.
+
 Docker Networking Changes
-In future versions of Docker (likely 1.9 and on), the idiomatic way
-to network containers will be to “publish services,” rather than link
-containers. 
-Links are initialized by giving the argument --link CONTAINER:ALIAS to docker
-run , where CONTAINER is the name of the link container 3 and ALIAS is a local name
-used inside the master container to refer to the link container.
-Using Docker links will also add the alias and the link container ID to /etc/hosts on
-the master container, allowing the link container to be addressed by name from the
-master container.
-In addition, Docker will set a bunch of environment variables inside the master con‐
-tainer that are designed to make it easy to talk to the link container. For example, if
-we create and link to a Redis container:
+En el futuro en lugar de link se usará “publish services”
+Los links se inicializan con el argumento '--link CONTAINER:ALIAS' en el comando 'docker run', donde CONTAINER es el nombre del contenedor a enlazar y ALIAS es un nombre local usado dentro del contenedor maestro para referirse al contenedor que se enlaza.
+También se añade el alias y el ID del contenedor enlazado a /etc/hosts en el contenedor maestro, permitiendo que el contenedor enlazado sea direccionado por nombre desde el contenedor maestro.
+Docker crea un conjunto de variables de entorno en el contenedor maestro que se usan para facilitar la comunicación con el contenedor enlazado.
+Por ejemplo, si creamos un enlace (link) al contenedor Redis:
 $ docker run -d --name myredis redis
 c9148dee046a6fefac48806cd8ec0ce85492b71f25e97aae9a1a75027b1c8423
 $ docker run --link myredis:redis debian env
@@ -271,116 +277,68 @@ REDIS_ENV_REDIS_VERSION=3.0.3
 REDIS_ENV_REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-3.0.3.tar.gz
 REDIS_ENV_REDIS_DOWNLOAD_SHA1=0e2d7707327986ae652df717059354b358b83358
 HOME=/root
-we can see that Docker has set up environment variables prefixed with REDIS_PORT ,
-that contain information on how to connect to the container. Most of these seem
-somewhat redundant, as the information in the value is already contained in the vari‐
-able name. Nevertheless, they are useful as a form of documentation if nothing else.
-Docker has also imported environment variables from the linked container, which it
-has prefixed with REDIS_ENV . While this functionality can be very useful, it’s impor‐
-tant to be aware that this happens if you use environment variables to store secrets
-such as API tokens or database passwords.
-By default, containers will be able to talk to each other whether or not they have been
-explicitly linked. If you want to prevent containers that haven’t been linked from
-communicating, use the arguments --icc=false and --iptables when starting the
-Docker daemon. Now when containers are linked, Docker will set up Iptables rules to
-allow the containers to communicate on any ports that have been declared as
-exposed.
-Unfortunately, Docker links as they stand have several shortcomings. Perhaps most
-significantly, they are static—although links should survive container restarts, they
-aren’t updated if the linked container replaced. Also, the link container must be
-started before the master container, meaning you can’t have bidirectional links.
-
+vemos que Docker crea variables de entorno con el prefijo REDIS_PORT que contienen información de como conectar al contenedor.
+Docker también tiene variables de entorno importadas del contenedor enlazado cuyo prefijo es REDIS_ENV (ojo si usamos variables de entorno para API tokens o contraseñas)
+Por defecto los contenedores ueden comunicarse aunque no estén enlazados explicitamente. Para evitar que los contenedores que no estén enlazados se comuniquen se usa los argumentos --icc=false y --iptables al arrancar el demonio Docker (así, cuando los contenedores se enlacen, Docker meterá reglas Iptables para permitir que los contenedores se comuniquen por los puertos que se hayan declarado como expuestos)
+Los links en Doker tienen inconvenientes. Son estáticos, y aunque sobreviven al reinicio del contenedor, no se actualizan si el contenedor enlazado se reemplaza. Además, el contenedor enlazado debe arrancarse antes del contenedor maestro, lo que significa que no se pueden tenen enlaces bidireccionales.
 
 Managing Data with Volumes and Data Containers
-To recap, Docker volumes are directories 4 that are not part of the container’s UFS (see
-“Images, Containers, and the Union File System”)—they are just normal directories
-on the host that are bind mounted (see Bind Mounting) into the container.
-There are three 5 different ways to initialize volumes, and it’s important to understand
-the differences between the methods. First, we can declare a volume at runtime with
-the -v flag:
+----------------------------------------------
+En Docker los volúmenes son directorios que no son parte del UFS (Union File System) de los contenedores. Son directorios normales del host que están montados (bind mounted) en el contenedor. Existen tres modos de inicializar los volúmenes:
+
+1. Declarar un volúmen en runtime con el flag -v
 $ docker run -it --name container-test -h CONTAINER -v /data debian /bin/bash
 root@CONTAINER:/# ls /data
 root@CONTAINER:/#
-This will make the directory /data inside the container into a volume. Any files the
-image held inside the /data directory will be copied into the volume. We can find out
-where the volume lives on the host by running docker inspect on the host from a
-new shell:
+Cualquier fichero que haya en el directorio /data se copiará al volumen.
+Podemos descubrir dónde están los volúmenes desde un shell del host con 'docker inspect'
 $ docker inspect -f {{.Mounts}} container-test
-[{5cad... /mnt/sda1/var/lib/docker/volumes/5cad.../_data /data local
-true}]
-In this case, the volume /data/ in the container is simply a link to the direc‐
-tory /var/lib/docker/volumes/5cad.../_data on the host. To prove this, we can add a
-file into the directory on the host: 6
+[{5cad... /mnt/sda1/var/lib/docker/volumes/5cad.../_data /data local true}]
+En este caso, el volumen /data/ del contenedor es un enlace al directorio /var/lib/docker/volumes/5cad.../_data del host. 
+Para probarlo podemos añadir un fichero en ese directorio del host:
 $ sudo touch /var/lib/docker/volumes/5cad.../_data/test-file
-And you should immediately be able to see from inside the container:
+Inmediatamente debe aparecer en el contenedor:
 $ root@CONTAINER:/# ls /data
 test-file
-The second way to set up a volume is by using the VOLUME instruction in a Dockerfile:
+
+2. Usar la instrucción VOLUME en el Dockerfile (tiene el mismo efecto que especificar 'docker run -v /data')
 FROM debian:wheezy
 VOLUME /data
-This has exactly the same effect as specifying -v /data to docker run .
 
 Setting Volume Permissions in Dockerfiles
-You will often need to set the permissions and ownership on a volume or initialize a
-volume with some default data or configuration files. The key point to be aware of
-here is that any instruction after the VOLUME instruction in a Dockerfile will not be
-able to make changes to that volume. For example, the following Dockerfile will not
-work as expected:
+A menudo hay que dar permisos y propietario a un volumen o inicializarlo con datos por defecto o ficheros de configuración. Lo importante es tener en cuenta que cualquier instrucción posterior a VOLUME en el Dockerfile no realizará cambios en ese volumen. Por ejemplo:
 FROM debian:wheezy
 RUN useradd foo
 VOLUME /data
 RUN touch /data/x
 RUN chown -R foo:foo /data
-We want the touch and chown commands to run on the image’s filesystem, but they
-will actually run inside the volume of a temporary container used to create the layer
-(refer back to “How Images Get Built” for more details). This volume will be removed
-once the commands complete, rendering the instruction pointless.
-The following Dockerfile will work:
+Queremos que los comandos touch y chown se ejecuten en el sistema de ficheros de la imagen, pero realmente se ejecutan en el volumen de un contenedor temporal usado para crear la capa. Ese volumen se eliminará una vez que los comandos se completen haciendo inutil la instrucción.
+Deberíamos especificar lo siguiente en el Dockerfile:
 FROM debian:wheezy
 RUN useradd foo
 RUN mkdir /data && touch /data/x
 RUN chown -R foo:foo /data
 VOLUME /data
-When a container is started from this image, Docker will copy any files from the vol‐
-ume directory in the image into the container’s volume. This won’t happen if you
-specify a host directory for the volume (so that host files aren’t accidentally overwrit‐
-ten).
-If for some reason you can’t set permissions and ownership in a RUN instruction, you
-will have to do so using a CMD or ENTRYPOINT script that runs after container creation.
+Cuando el contenedor se ejecuta desde esta imagen, Docker copiará cualquier fichero desde el directorio volumen de la imagen al volumen del contenedor. Esto no ocurrirá si se especifica un directorio del host para el volumen (para que esos ficheros del host no se sobreescriban accidentalmente)
+Si no se dan permisos y propietario en una instrucción RUN, habrá que hacerlo usando un script en CMD o ENTRYPOINT que se ejecute antes de la creación del contenedor.
 
-The third 7 way is to extend the -v argument to docker run with an explicit directory
-to bind to on the host using the format -v HOST_DIR:CONTAINER_DIR . This can’t be
-done from a Dockerfile (it would be nonportable and a security risk). For example:
+3. Extender el argumento -v con un directorio explícito a enlazar al host usando el formato -v HOST_DIR:CONTAINER_DIR
+Esto no se puede hacer desde el Dockerfile (no portable e inseguro)
 $ docker run -v /home/adrian/data:/data debian ls /data
-This will mount the directory /home/adrian/data on the host as /data inside the con‐
-tainer. Any files already existing in the /home/adrian/data directory will be available
-inside the container. If the /data directory already exists in the container, its contents
-will be hidden by the volume. Unlike the other invocations, no files from the image
-will be copied into the volume, and the volume won’t be deleted by Docker (i.e.,
-docker rm -v will not remove a volume that is mounted at a user-chosen directory).
+Esto montará el directorio /home/adrian/data en el host y como /data dentro del contenedor. Cualquier fichero que exista en /home/adrian/data estará disponible dentro del contenedor. Si el directorio /data ya existe en el contenedor, su contenido será ocultado por el volumen. A diferencia de los dos casos anteriores, ningún fichero de la imagen se copiará en el volumen, y el volumen no será borrado por Docker (es decir, 'docker rm -v' no eliminará un volumen montado en un directorio elegido por el usuario)
 
-Bind Mounting
-When a specific host directory is used in a volume (the -v
-HOST_DIR:CONTAINER_DIR syntax), it is often referred to as bind
-mounting. This is somewhat misleading, as all volumes are techni‐
-cally bind mounted—the difference is that the mount point is made
-explicit rather than hidden in a directory owned by Docker.
-
+Bind Mounting: Este término se usa cuando un directorio específico del host se usa como volumen (-v HOST_DIR:CONTAINER_DIR)
+El punto de montaje es explicito en lugar de un directorio oculto propiedad de Docker.
 
 Sharing Data
-The -v HOST_DIR:CONTAINER_DIR syntax is very useful for sharing files between the
-host and one or more containers. For example, configuration files can be kept on the
-host and mounted into containers built from generic images.
-We can also share data between containers by using the --volumes-from CONTAINER
-argument with docker run . For example, we can create a new container that has
-access to the volumes from the container in our previous example like so:
+'-v HOST_DIR:CONTAINER_DIR' es muy útil para compartir ficheros entre el host y uno o mas contenedores. Por ejemplo, los ficheros de configuración pueden estar en el host y montarse en contenedores construidos desde imágenes genéricas.
+También podemos compartir datos entre contenedores usando 'docker run --volumes-from CONTAINER'. Por ejemplo: 
 $ docker run -it -h NEWCONTAINER --volumes-from container-test debian /bin/bash
 root@NEWCONTAINER:/# ls /data
 test-file
 root@NEWCONTAINER:/#
-It’s important to note that this works whether or not the container holding the vol‐
-umes ( container-test in this case) is currently running. As long as at least one exist‐
-ing container links to a volume, it won’t be deleted.
+Esto funciona independientemente de que el contenedor que tiene los volúmenes (container-test en este caso) esté ejecutandose. Mientras al menos un contenedor se enlace al volumen, no será borrado.
+
 
 
 Data Containers

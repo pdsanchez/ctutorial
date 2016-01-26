@@ -1,0 +1,66 @@
+http://docker-software-inc.scoop.it/t/docker-by-docker
+
+
+http://blog.arungupta.me/9-docker-recipes-javaee-applications-techtip80/
+
+http://www.infoq.com/articles/docker-executable-images
+http://fabiorehm.com/blog/2014/09/11/running-gui-apps-with-docker/
+http://linoxide.com/linux-how-to/run-gui-apps-docker-container/
+https://haven.nightlyart.com/trying-gui-apps-with-docker/
+http://wiki.ros.org/docker/Tutorials/GUI
+
+ data-container:
+http://container-solutions.com/understanding-volumes-docker/
+
+
+https://developer.atlassian.com/blog/2015/08/minimal-java-docker-containers/
+
+http://stackoverflow.com/questions/27767264/how-to-dockerize-maven-project-and-how-many-ways-to-accomplish-it
+
+http://www.javaworld.com/article/3000781/development-tools/open-source-java-projects-docker.html
+
+https://rpestano.wordpress.com/2015/01/10/a-simple-java-ee-docker-example/
+
+https://blog.docker.com/2015/11/docker-toolbox-compose/
+
+http://blog.giantswarm.io/getting-started-with-java-development-on-docker/
+
+http://www.javiergarzas.com/2015/07/que-es-docker-sencillo.html
+
+http://blog.zenika.com/2014/10/07/setting-up-a-development-environment-using-docker-and-vagrant/
+
+https://medium.com/iron-io-blog/why-and-how-to-use-docker-for-development-a156c1de3b24#.gcbylfm8f
+
+http://blog.zenika.com/2015/06/15/docker-meets-the-ide/
+https://github.com/domeide/doclipser
+
+http://www.ibm.com/developerworks/library/wa-docker-polyglot-programmers/index.html
+
+http://blog.vngrs.com/dockerize-your-development-environment/
+
+http://www.westerndevs.com/running-tomcat-apps-on-docker-through-eclipse/
+http://www.eclipse.org/community/eclipse_newsletter/2015/june/article3.php
+
+http://www.infoq.com/articles/docker-executable-images
+
+
+
+
+
+$ docker run -it java:8 bash
+
+$ docker build -t giantswarm/sparkexample .
+
+$ docker run -d -p 4567:4567 giantswarm/sparkexample
+
+
+$ curl localhost:4567
+hello from sparkjava.com  
+
+
+
+docker run -v /home/pdsanchez/Descargas/prb:/usr/bin/java -it java:8
+docker run -v /home/pdsanchez/Descargas/prb:/data -it java:8
+docker run --name java8 -itp 8888 java:8
+
+docker run --rm --name java8 -dP java:8 
