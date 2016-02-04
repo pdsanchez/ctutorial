@@ -1,0 +1,186 @@
+SVN
+
+Repositorio: lugar centralizado donde se almacena y mantiene información digital (bases de datos, archivos informáticos)
+Copia Local (working copy): cada cliente crea una ”working copy” (reflejo de los archivos y directorios) a partir del repositorio.
+Módulo/Proyecto: conjunto de archivos y directorios.
+Revisiones: Persona autorizada para trabajar con un módulo.
+
+Estados en los que podemos encontrar un archivo:
+(U)pdated: Fichero que fue actualizado (traído del repositorio)
+(A)dded: Elemento añadido a nuestra copia de trabajo
+(D)eleted: Archivo eliminado de nuestra copia de trabajo
+(R)eplaced: Elemento reemplazado, fue eliminado y un nuevo elemento con el mismo nombre es añadido
+Mer(G)ed: Fichero recibido con cambios desde el repo y que tiene cambios en la copia de trabajo (Sin conflicto)
+(C)onflicting: Archivo recibido con cambios desde el servidor. Cambios solapados con los realizados en local
+! / ?: cuando movemos un fichero localmente(svn status)
+
+Estos son los comandos más frecuentes que utilizaremos con SVN:
+svn checkout
+svn commit
+svn update
+svn revert
+svn add
+svn delete
+svn log
+svn status 
+svn diff
+
+SVN checkout
+Utilizado para recibir una copia de trabajo de un cierto proyecto que se encuentra alojado dentro del repositorio.
+$ svn checkout svn://10.40.78.53/ IdM-VF-SSII-DES
+$ svn co svn://10.40.78.53/ IdM-VF-SSII-DES
+
+SVN commit
+Orden utilizada para transmitir/publicar los cambios realizados en la copia de trabajo local al repositorio.
+$ svn commit foo.java -m ”Arreglado bug de IdM ;)”
+Opción -m utilizada para establecer un mensaje resumiendo los cambios realizados.
+Comprobará recursivamente si han sido modificados todos los ficheros, a partir de un directorio establecido.
+
+SVN update (NOTA: ¡Lo primero un update!)
+Orden utilizada para actualizar todos los ficheros y directorios de nuestra copia de trabajo a la versión actual (almancenada en el repositorio)
+$ svn update
+Recibir una revisión específica de todos los elementos
+$ svn update -r 11
+Recibir una revisión concreta de un elemento
+$ svn update -r 10 foo.java
+
+SVN revert
+Deshace todos las ediciones locales que haya realizado a sus objetivos. No requiere tener acceso a la red.
+Opera recursivamente con la opción -R
+$ svn revert -R
+NOTA: Posible solución a un conflicto (no confiar en los cambios realizados localmente)
+
+SVN add
+Comando que marca los ficheros o directorios a añadir en el repositorio en el siguiente commit.
+$ svn add NewClass.java
+$ svn commit
+$ svn mkdir testdir -> Creación de un directorio en el repositorio
+
+SVN delete
+Orden que marca los ficheros o directorios a eliminar en el repositorio en el siguiente commit.
+$ svn delete OldClass.java
+$ svn commit
+
+SVN log
+Comando utilizado para obtener los mensajes del cuaderno de bitácora que acompaña al control de versiones.
+La opción -r limita la lista a una revisión o un intervalo de revisiones.
+svn log -r42:HEAD <fichero>
+HEAD palabra clave que se puede usar en lugar de un número de revisión. Hace referencia al número de la última revisión que se envió al repositorio. 
+
+SVN status
+Con este comando podemos conocer el estado de nuestra copia de trabajo local.
+$ svn status
+U foo.java
+A bar.java
+D baz.java
+Más información con: $ svn status -v
+Muestra números de revisión
+Muestra quien cambió los archivos
+
+SVN diff
+Este comando se utiliza para examinar tus cambios
+svn diff: muestra las modificaciones realizadas en tu copia de trabajo local.
+Ejemplos: 
+Entre una revisión del repositorio y tu copia local
+$ svn diff -r 34 foo.java
+Entre dos revisiones del repositorio
+$ svn diff -r 2:5 foo.java
+
+
+Para recibir ayuda acerca del uso de los comandos anteriores:
+$ svn help
+Recibir ayuda sobre un comando. p. ej.
+$ svn help checkout
+También se extiende al resto de componentes
+$ svnadmin help
+
+
+Branching y Tagging
+-------------------
+Usando SVN, el concepto se llama 'copiado'
+$ svn copy <SRC> <DST> -m "msj"
+NOTA: Utilizar las opciones --username=<USER> --password=<PASSWD> con el fin de identificar las operaciones realizadas por un usuario en el repositorio
+Subdirectorios de proyecto:
+Trunk: el desarrollo principal
+Tags: es para 'snapshots' de sólo-lectura
+Branches: son la áreas de trabajo
+No existe distinción técnica entre tagging y branching
+La idea es realizar una “copia” de  tu proyecto dentro del repositorio
+
+Resolución de Conflictos
+-------------------------
+Cuando realizamos un update buscar "C" 
+Se colocan marcadares dentro de los ficheros afectados que señalan la zona de solapamiento
+Cuando se produce un conflicto se generan tres ficheros temporales que no podrán ser 'committed'
+SVN impide realizar commit de ficheros que se encuentran en conflicto
+Soluciones para resolver el conflicto
+Fusionar manualmente los ficheros
+Copiar uno de los ficheros temporales en nuestra copia de trabajo (seleccionar una versión del fichero)
+Deshacer cambios locales (svn revert)
+Una vez hayamos solucionado el conflicto tenemos que indicarselo a SVN.
+svn resolved <NOMBRE_ARCHIVO>
+
+Best Practice
+-------------
+Realizar commit frecuentemente
+El commit debe contener conjuntos de cambios lógicos
+Gestionar los merges manualmente
+Cuando realizamos un commit del resultado de un merge escribir un log descriptivo
+Revisiones fusionadas 3490:4120 de /branches/idm a /trunk
+La creación de ramas debe estar justificada por un cambio importante en la línea de desarrollo.
+Trunk debería ser lo más estable posible
+
+Componentes
+-------------
+svn: El programa cliente de línea de comandos.
+svnversion: Programa para reportar el estado (en términos de revisiones de los ítems presentes) de una copia en funcionamiento.
+svnlook: Herramienta para inspeccionar un repositorio Subversion.
+svnadmin: Herramienta para crear, configurar, o reparar un repositorio.
+mod_dav_svn: Módulo plugin para el servidor Apache, para usar el repositorio a través de la red.
+svnserve: Otro programa para usar el repositorio a través de la red.
+svndumpfilter: Programa para filtrar dump streams de repositorios de Subversion.
+svnsync: Programa para hacer mirrors de un repositorio a otro por la red.
+
+
+IMPORTANTE: 
+Recordar realizar un UPDATE 
+antes de realizar un COMMIT!
+
+Opciones Avanzadas
+------------------
+Ignorar archivos en el control de versiones
+Si queremos que un grupo de archivos de nuestro proyecto no sean incluidos dentro del control de versiones.
+En general serán archivos que no vayan a sufrir modificaciones se puede utilizar las properties de SVN para ignorarlos.
+$ svn propset svn:ignore “*.jpg” <PATH>
+$ svn propedit svn:ignore -F .svnignore
+Dentro del archivo .svnignore el listado de archivos a ignorar.
+
+Añadir a Subversion todos los archivos no añadidos previamente de un subdirectorio y sus hijos
+$ svn st | grep ^\? | cut -d ' ' -f 7 | xargs svn add
+Listar la propiedades de un fichero:
+$ svn proplist <ARCHIVO>
+Properties on '<ARCHIVO>':
+svn:mime-type
+svn:eol-style
+$ svn propget svn:mime-type <ARCHIVO>
+$ svn propset svn:eol-style native <ARCHIVO>
+
+Algunos comandos que también son útiles pero no están relacionados directamente con el desarrollo
+$ svn list file:///usr/local/svnrep
+$ svnlook tree svnrep
+Estos comandos son utilizados para visualizar el contenido del repositorio
+Administración del repositorio (admins)
+$ svn delete \ file:///usr/local/svnrep/VF-SSII-DES
+$ svn mkdir file:///usr/local/svnrep/IdM-Vodafone/branches/<NEW_BRANCH>
+
+
+
+
+
+
+
+
+
+
+
+

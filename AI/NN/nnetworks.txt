@@ -1,0 +1,221 @@
+LIBRO: Neural Network Programming with Java (Fábio M. Soares y Alan M.F. Souza)
+
+The very basic element – artificial neuron
+Las neuronas biológicas son procesadores de señales, reciben microseñales por las dendritas y en función de su magnitud lanzan una señal por el axón. Existe un potencial umbral que cuando se alcanza lanza la señal por el axón hacia otras neuronas.
+
+FUNCION DE ACTIVACION
+En las neuronas artificiales el potencial de acción se emula con una función de activación que representa comportamientos no lineales (aunque en algunos casos puede ser una función lineal)
+La función de activación suele estar limitada por dos valores en la salida y por lo tanto es una función lineal.
+Las funciones de activación más usadas son
+• Sigmoid
+• Hyperbolic tangent
+• Hard limiting threshold
+• Purely linear
+The equations and charts associated with these functions are shown in the table (IMP)
+
+The fundamental values – weights
+Los pesos representan las conexiones entre neuronas y tienen la capacidad de amplificar o atenuar la señal. Por tanto los pesos influyen en la salidad de la neurona, y la activación dependerá de las entradas y de los pesos. 
+
+Thus, since the weights are
+internal to the neural network and influence its outputs, we can consider them as
+neural network knowledge, provided that changing the weights will change the
+neural network's capabilities and therefore actions.
+
+An important parameter – bias
+La neurona artificial puede tener un componente independiente llamado bias que añade una señal extra a la función de activación.
+Al igual que las entradas, los biases también tienen un peso asociado. Esta característica ayuda en la representación del conocimiento de la red neuronal como un sistema no lineal.
+
+The parts forming the whole – layers
+Las neuronas se organizan en capas. La capa de entrada recibe los estímulos del exterior y la de salida dispara acciones que tienen influencia directa en el mundo exterior.
+Entre ambas hay un número de capas ocultas, en el sentido que no interaccionan directamente con el mundo exterior.
+En la red neuronal artificial, todas las neuronas de una capa comparten las mismas entradas y función de activación.
+Las NN pueden estar formadas de varias capas enlazadas formando una red multicapa. Las capas pueden ser:
+• Input layer
+• Hidden layer
+• Output layer
+En la práctica, cada capa adicional añade un nuevo nivel de abstración a los estímulos externos, aumentando la capacidad de la NN para representar conocimiento más complejo.
+
+
+
+
+
+
+
+
+
+
+
+
+Learning about neural network architectures
+Existen dos modalidades de arquitectura en NN:
+• Neuron connections
+° ° Monolayer networks
+° ° Multilayer networks
+• Signal flow
+° ° Feedforward networks
+° ° Feedback networks
+
+Monolayer networks
+Todas las neuronas están al mismo nivel formando un única capa.
+La NN recibe las señales de entrada y las lleva a las neuronas que producen en turno las señales de salida. Las neuronas pueden estar altamente conectadas entre sí con o sin recurrencia.
+Ejemplos de esta arquitectura son: single-layer perceptron, Adaline, self-organizing map, Elman, y Hopfield neural networks.
+
+Multilayer networks
+Las neuronas se dividen en múltiples capas, cada capa corresponde a una capa paralela de neuronas que comparten los mismos datos de entrada.
+Ejemplos de esta arquitectura son Radial basis functions y multilayer perceptrons.
+Estas NN son útiles para aproximar datos reales a una función especialmente diseñada para representar esos datos.
+Como existen múltiples capas de procesamiento, estas NN están adaptadas para aprender a partir de datos no lineales, siendo capaces de separalos o determinar el conocimiento que reproduce o reconocen estos datos.
+
+Feedforward networks
+El flujo de las señales en NN puede ser en una dirección o recurrente. En el primer caso se denomina feedforward ya que las señales de entrada alimentan la capa de entrada, se procesan y se envían a la siguiente capa. Ejemplos son Multilayer perceptrons y radial basis functions.
+
+Feedback networks
+Cuando la NN tiene algún tipo de recurrencia interna, significa que las señales retroalimentan una neurona o capa que ya ha recibido o procesado esa señal.
+La razón principal para añadir recurrencia en la NN es conseguir un comportamiento dinámico, particularmente cuando los problemas implican series temporales o reconocimiento de patrones que requieren una memoria interna para reforzar el aprendizaje.
+Estas NN son particularmente difícil de entrenar. La mayoría de las redes feedback tienen una única capa (por ejemplo, Elman y Hopfield), pero es posible construit una red multicapa recurrente (por ejemplo echo y recurrent multilayer perceptron)
+
+From ignorance to knowledge – learning process
+Las NN aprenden ajustando las conexiones entre neuronas (los pesos). Los pesos representan el conocimiento de la NN.
+Diferentes pesos dan lugar a diferentes resultados para las mismas entradas. De este modo una NN puede mejorar sus resultados adaptando sus pesos en función de las reglas de aprendizaje.
+
+
+
+
+So, let's start implementing. Initially, we are going to define six classes, detailed
+as follows:
+
+
+How Neural Networks Learn
+Lo más asombroso de las redes neuronales es su capacidad para aprender del entorno a través de la observaciones y la repetición.
+El proceso de aprendizaje es una reconfiguración de las conexiones entre neuronas. Esto distribuye el conocimiento entre toda la estructura y la hace flexible para adquirir una amplia variedad de conocimiento.
+Al contrario de los computadores que ejecutan las tareas para las que están programados, los sistemas neurales mejoran y realizan nuevas actividades en función de un sistema de satisfacción. Las redes neuronales no necesitan ser programadas, aprenden el programa por si mismas.
+
+How learning helps to solve problems
+Considerando que las tareas que requieren ser solucionadas presentan un gran número de soluciones posibles, el proceso de aprendizaje busca encontrar la solución óptima.
+Las estructuras del tipo ANNs (Artificial Neural Networks) tienen la habilidad de adquirir conocimiento de cualquier tipo recibiendo estímulos de entrada (datos relevantes para la tarea/problema). La ANN produce resultados aleatorios y un error en primer lugar, y en base a ese error se ajustan los parámetros (pesos) del ANN. Por tanto los parámetros del ANN son los componentes de la solución. Imaginemos que una única solución representa un único punto en el hiperespacio de soluciones. Cada solución produce un error que indica cuánto se aleja esa solución de la óptima. Para cada iteración, el algoritmo de aprendizaje busca una solución con un menor error, y por tanto más cercana a la solución óptima.
+
+
+Learning paradigms
+Existen dos tipos de aprendizaje en las NN, supervisado (con un patrón a seguir) y no supervisada (sin un patrón).
+
+Supervised learning
+
+This category of learning deals in pairs of X's and Y's, and the objective is to map
+them in a function f: X → Y. Here, the Y data is the supervisor, the target desired
+outputs, and the X data is the source-independent data that generates the Y data. It is
+analogous to a teacher who is teaching somebody a certain task to be performed, as
+shown in the following figure:
+
+One particular feature of this learning paradigm is that there is a direct error
+reference, which is just the comparison between the target and the current actual
+result. The network parameters are fed into a cost function, which quantifies the
+mismatch between the desired and the actual outputs.
+A cost function is just a measurement to be minimized in an
+optimization problem. That means that one seeks to find the
+parameters that drive the cost function to the lowest possible value.
+The cost function will be covered in detail further in this chapter.
+Supervised learning is very suitable for tasks that already provide a pattern, a
+goal to be reached. Some examples are as follows: classification of images, speech
+recognition, function approximation, and forecasting. Note that the neural network
+should be provided previous knowledge of both input-independent values (X) and
+the output classification-dependent values (Y). The presence of a dependent output
+value is a necessary condition for the learning to be supervised.
+
+Unsupervised learning
+As illustrated in the following figure, in unsupervised learning, we deal only with
+data without any labeling or classification; instead, our neural structure tries to draw
+inferences and extract knowledge by taking into account only the input data X.
+
+This is analogous to self-learning, when someone learns by him/herself taking
+into account his/her experience and a set of supporting criteria. In unsupervised
+learning, we don't have a defined desired pattern to be applied on each observation,
+but the neural structure can produce one by itself without any supervising need.
+Here, the cost function plays an important role. It will
+strongly affect all the neural properties as well as the
+relation between the input data.
+Examples of tasks that unsupervised learning can be applied to are as follows:
+clustering, data compression, statistical modeling, and language modeling. This
+learning paradigm will be covered in more detail in Chapter 4, Self-Organizing Maps.
+
+Systematic structuring – learning
+algorithm
+So far, we have theoretically defined the learning process and how it is carried out.
+However, in practice, we must dive a little bit deeper into the mathematical logic, the
+learning algorithm itself. A learning algorithm is a procedure that drives the learning
+process of neural networks and is strongly determined by the neural network
+architecture. From the mathematical point of view, one wishes to find the optimal
+weights W that can drive the cost function C(X,[Y]) to the lowest possible value.
+In general, this process is carried out in the fashion presented in the following
+flowchart:
+
+Just like any program that we wish to write, we should have defined our goal, so in
+here, we are talking about a neural network to learn some knowledge. We should
+present this knowledge (or environment) to the ANN and check its response,
+which naturally will make no sense. The network response is then compared to the
+expected result, and this is fed to a cost function C. This cost function will determine
+how the weights W can be updated. The learning algorithm then computes the
+ΔW term, which means the variation of the values of the weights to be added. The
+weights are updated as in the equation.
+Where k refers to the k th iteration and W(k) refers to the neural weights at the k th
+iteration, and subsequently, k + 1 refers to the next iteration.
+As the learning process is run, the neural network must give results closer and
+closer to the expectation, until finally, it reaches the acceptation criteria. The learning
+process is then considered to be finished.
+
+Two stages of learning – training and testing
+Well, we might ask now whether the neural network has already learned from
+the data, but how can we attest it has effectively learnt the data? The answer is
+just like in the exams that students are subjected to; we need to check the network
+response after training. But wait! Do you think it is likely that a teacher would put
+in an exam the same questions he/she has presented in the classes? There is no
+sense in evaluating somebody's learning with examples that are already known or a
+suspecting teacher would conclude the student might have memorized the content,
+instead of having learnt it.
+Okay, let's now explain this part. What we are talking about here is testing. The
+learning process that we have covered is called training. After training a neural
+network, we should test it whether it has really learnt. For testing, we must present
+to the neural network another fraction of data from the same environment that it has
+learnt from. This is necessary because, just like the student, the neural network could
+respond properly with only the data points that it had been exposed to; this is called
+overtraining. To check whether the neural network has not passed on overtraining,
+we must check its response to other data points.
+The following figure illustrates the overtraining problem. Imagine that our network
+is designed to approximate some function f(x) whose definition is unknown. The
+neural network was fed with some data from that function and produced the
+following result shown in the figure on the left. However, when expanding to a
+wider domain, we note that the neural response does not follow the data.
+In this case, we see that the neural network failed to learn the whole environment
+(the function f(x)). This happens because of a number of reasons:
+•	 The neural network didn't receive enough information from the environment
+•	 The data from the environment is nondeterministic
+•	 The training and testing datasets are poorly defined
+•	 The neural network has learnt a lot from the training data and forgets about
+the testing data
+In this book, we will cover this process to prevent this and other issues that may arise
+during training.
+
+The details – learning parameters
+El proceso de aprendizaje debe ser controlado. Un parámetro importante es la tasa de aprendizaje (learning rate, η).
+Este parámetro dicta como de fuerte variarán los pesos en el hiperespacio de pesos. Imaginemos una NN con dos entradas y una salida. Por tanto tendremos dos pesos w1 y w2. 
+
+Now suppose that we
+want to train this network and imagine whether we could evaluate the error for each
+pair of weights. Suppose that we found a surface like the one in the following figure:
+The learning rate is responsible for regulating how far the weights are going to move
+on the surface. This may speed up the learning process but can also lead to a set of
+weights worse than the previous one.
+
+Otro parámetro importante es la condición de parada. Normalmente el entrenamiento finaliza cuando el error promedio general se alcanza. Hay casos en los que la NN falla al aprender y no existe cambio en los pesos o es muy pequeño. En esas situaciones la condición de parada será un número máximo de iteraciones o épocas.
+
+
+
+
+
+
+
+
+
+
+
+
+

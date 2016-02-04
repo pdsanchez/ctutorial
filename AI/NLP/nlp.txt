@@ -1,0 +1,15 @@
+SimMetrics
+http://sourceforge.net/projects/simmetrics/?source=navbar
+
+NGramJ
+http://ngramj.sourceforge.net/
+
+http://johannburkard.de/software/stringsearch/
+
+Fuzzy Regular Expressions for Java
+http://frej.sourceforge.net/
+
+Mensa
+https://github.com/dell-oss/Mensa
+
+

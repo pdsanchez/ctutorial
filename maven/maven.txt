@@ -1,4 +1,11 @@
 Libro: Introducing Maven (Balaji Varanasi y Sudha Belida)
+Libro: Maven Essentials (Prabath Siriwardena)
+
+Docker:
+http://www.infoq.com/articles/docker-executable-images
+
+
+
 
 Maven es un framework gestor de proyectos que simplifica la construcción, validación, generación de documentación, empaquetado de los proyectos.
 - Usa una estructura de directorios estandarizada para el código y los ficheros de configuración (la estructura se vuelve independiente del IDE que usemos)
@@ -40,6 +47,12 @@ $ mvn --version.
 Getting Help
 $ mvn -h 
 $ mvn --help
+
+
+
+
+
+
 
 Additional Settings
 Los pasos previos son suficientes para comenzar con Maven. La información de configuración adicional se añade en el fichero settings.xml que está en la carpeta .m2 situada por defecto en el directorio home.

@@ -1,0 +1,83 @@
+
+LIBS:
+spring-core
+spring-context
+
+slf4j-api
+slf4j-simple
+
+
+
+Estructura del proyecto:
+
+package.model : contiene las entidades
+package.data : contiene DAO
+package.service : contiene interfaces
+
+Al service se le pasa el DAO (setter)
+Si se usan anotaciones:
+-Se anota el service con @Service("nombreSvc")
+-No es necesario pasar el DAO, sino que se anota como @Autowired la propiedad correspondiente al DAO (Autowired indica que se cree la instancia y se asigne a la variable)
+-Se anota la implementación del DAO que se va a pasar con @Repository("nombre")
+-<context:component-scan base-package="..."/>
+
+<bean id="engine" class="com.apress.isf.spring.annotated.service AnnotatedSearchEngine">  -----> @Service
+  <property name="documentDAO" ref="documentDAO" />  ----> @Autowired
+</bean> 
+
+
+Spring sterotypes are simply markers that help the Spring container to identify them as Spring-managed components.
+These markers can be used for external processing tools or can be used as a reference for pointcuts in an aspect-
+oriented programming context. Nowadays in the Spring community, in many projects, the use of these stereotypes
+helps not only to understand the code by making it more readable but also by identifying the structure and the
+architectural layers.
+
+Stereotype/Markers:
+@Component -- This is a marker, a generic stereotype that Spring will recognize as a Spring-managed component.
+@Repository -- This is a specialization of the @Component annotation and it fulfills the idea of the data access object. Classes annotated with this annotation can be processed by other tools or even aspects within the Spring container.
+@Service -- This is a specialization of the @Component annotation and it fulfills the idea of a service layer.
+@Controller -- This is also a specialization of the @Component annotation and normally is used on a web context.
+
+
+JAVA BEAN CONFIGURATION
+package.config: contiene clases (bean) de configuración --- NombreContext.java anotado con @Configuration y los métodos anotados con @Bean (equivale a <bean/>)
+
+ApplicationContext ctx = new AnnotationConfigApplicationContext(NombreContext.class);
+
+CONFIGURACIONES:
+XML -- This can be used with third party libraries and/or different development environments. It’s easy to read and follow but it can grow, and even though it can be split into different files, you need to keep track of them.
+ApplicationContext ctx = new ClassPathXmlApplicationContext("META-INF/spring/mydocs-context.xml");
+Annotations -- It is another way to do configurations, but here you are attaching the Spring context to your application. This can be avoided by using your own domain-based annotations and just these can be annotated.
+<context:component-scan base-package="..."/>
+Java Bean Configuration -- This is now one of the preferred methods for developers who hate to struggle with the XML, and it can be used for beans or components that don’t change too much.
+ApplicationContext ctx = new AnnotationConfigApplicationContext(NombreContext.class);
+Groovy Bean Configuration -- This is a new complete feature that can be used with the power of the Groovy programming language; it’s simple and there’s less to type.
+ApplicationContext ctx = new GenericGroovyApplicationContext("META-INF/spring/mydocuments.groovy");
+
+
+TEST
+----
+test.service : implementaciones de test (implementan las clases de package.service)
+
+Other Test Sources:
+src/test/resources/META-INF/spring/mydocs-context.xml
+
+Aqui especifico las clases que se van a instanciar
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+</beans>
+
+En la claseTest:
+
+ApplicationContext ctx = new ClassPathXmlApplicationContext("META-INF/spring/mydocs-context.xml");
+
+
+
