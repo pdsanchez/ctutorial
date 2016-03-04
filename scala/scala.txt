@@ -1,0 +1,48 @@
+http://alvinalexander.com/scala/
+http://joelabrahamsson.com/programming/scala/
+http://www.tutorialspoint.com/scala/
+
+
+Scala class
+
+class Person(var name: String)
+class Person(private var name: String)
+class Person(val name: String)
+class Person(name: String)
+
+Declaration    Getter?    Setter?
+-----------    -------    -------
+var            yes        yes
+val            yes        no
+default        no         no
+
+
+Auxiliary constructors
+Define auxiliary constructors using this as the name for each auxiliary constructor. Make sure you call a previously defined constructor:
+
+class Pizza {
+ 
+  var crustSize = 12
+  var crustType = "Thin"
+   
+  def this(crustSize: Int) {
+    this()
+    this.crustSize = crustSize
+  }
+ 
+  def this(crustSize: Int, crustType: String) {
+    this(crustSize)
+    this.crustType = crustType
+  }
+ 
+  override def toString = {
+    "A %s inch pizza with %s crust.".format(crustSize, crustType)
+  }
+ 
+}
+
+--------
+
+override def toString: String = {
+  return "%s %s, age %d".format(firstName, lastName, age)
+}
