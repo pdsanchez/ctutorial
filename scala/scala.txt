@@ -41,8 +41,5 @@ class Pizza {
  
 }
 
---------
 
-override def toString: String = {
-  return "%s %s, age %d".format(firstName, lastName, age)
-}
+
