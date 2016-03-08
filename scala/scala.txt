@@ -2,6 +2,12 @@ http://alvinalexander.com/scala/
 http://joelabrahamsson.com/programming/scala/
 http://www.tutorialspoint.com/scala/
 
+https://ademirar.wordpress.com/2010/08/28/programacion-funcional-para-el-resto-de-nosotros/
+
+https://github.com/ErunamoJAZZ/ScalaByExample-es
+
+http://codigolinea.com/2015/03/27/introduccion-a-scala/
+http://scala-exercises.47deg.com/
 
 Scala class
 
