@@ -9,6 +9,9 @@ https://github.com/ErunamoJAZZ/ScalaByExample-es
 http://codigolinea.com/2015/03/27/introduccion-a-scala/
 http://scala-exercises.47deg.com/
 
+http://scalafiddle.net/console
+
+
 Scala class
 
 class Person(var name: String)
@@ -47,5 +50,16 @@ class Pizza {
  
 }
 
+
+
+
+// TIMER
+
+scala> def timer(total: Int, time: Int, callback: (Int) => Unit) {
+     | var cont = 0
+     | while (cont < total) { callback(cont); Thread.sleep(time); cont += 1 }
+     | }
+
+scala> timer(5, 500, (c) => println("prb" + c))
 
 
