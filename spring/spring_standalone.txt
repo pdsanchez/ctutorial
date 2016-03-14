@@ -37,3 +37,132 @@ https://github.com/steveonjava/JavaFX-Spring
 https://es.linkedin.com/pub/eugenia-pérez-martínez/57/b46/17b
 
 
+:::::::::::::::::::::::::::::::::::
+
+
+MAVEN
+---------
+Normally, we just use the following two templates :
+
+maven-archetype-webapp – Java Web Project (WAR)
+maven-archetype-quickstart – Java Project (JAR) Create a simple java application
+
+.
+ |-- src
+ |   |-- main
+ |   |   `-- java
+ |   |       `-- [your project's package]   
+ |   |           `-- App.java
+ |   `-- test
+ |       `-- java
+ |           `-- [your project's package]   
+ |               `-- AppTest.java
+  `-- pom.xml
+
+Updated pom.xml
+The dependency spring-context defines the actual Spring Injection Container and has a small number of dependencies: spring-core, spring-expression, spring-aop and spring-beans.
+
+
+ESTRUCTURA
+---------
+es.pdsanchez.config
+es.pdsanchez.persistence
+es.pdsanchez.persistence.entities [beans]
+es.pdsanchez.persistence.dao
+es.pdsanchez.persistence.dao.impl
+es.pdsanchez.service
+es.pdsanchez.service.impl
+es.pdsanchez.presentation
+
+
+CONFIGURACION
+---------
+package es.pdsanchez.config
+@Configuration
+public class ClassNameConfiguration {
+@Bean
+public SequenceGenerator sequenceGenerator() {
+SequenceGenerator seqgen = new SequenceGenerator();
+seqgen.setPrefix("30");
+seqgen.setSuffix("A");
+seqgen.setInitial("100000");
+return seqgen;
+}
+}
+
+src/main/resources/beans.xml
+[src/main/resources/spring-config.xml]
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+	<context:component-scan base-package="com.apress.springrecipes.shop.config" />
+</beans>
+
+The use of <context:component-scan> implicitly enables the functionality of <context:annotation-config> .
+There is no need to include the <context:annotation-config> element when using <context:component-scan> .
+
+
+DAO
+---------
+The POJO instantiation process for most applications is done from either a database or user input.
+we’ll use a Domain class and a Data Access Object (DAO) class to create POJOs.
+
+@Component("sequenceDao")
+public class SequenceDaoImpl implements SequenceDao {
+ 
+private Map<String, Sequence> sequences;
+private Map<String, Integer> values;
+ 
+public SequenceDaoImpl() {
+sequences = new HashMap<String, Sequence>();
+sequences.put("IT", new Sequence("IT", "30", "A"));
+values = new HashMap<String, Integer>();
+values.put("IT", 100000);
+}
+ 
+public Sequence getSequence(String sequenceId) {
+return sequences.get(sequenceId);
+}
+ 
+public synchronized int getNextValue(String sequenceId) {
+int value = values.get(sequenceId);
+values.put(sequenceId, value + 1);
+return value;
+}
+}
+ 
+Observe how the SequenceDaoImpl class is decorated with the @Component("sequenceDao") annotation. This
+marks the class so Spring can create POJOs from it. The value inside the @Component annotation defines the bean
+instance id, in this case sequenceDao. If no bean value name is provided in the @Component annotation, by the default
+bean name is assigned as the uncapitalized non-qualified class name. (e.g., For the SequenceDaoImpl class the default
+bean name would be sequenceDaoImpl).
+A call to the getSequence method returns the value of the given sequenceID. And a call to the getNextValue
+method creates a new value based on the value of the given sequenceID and returns the new value.
+
+POJOs are classified in application layers. In Spring these layers are three: persistence, service and presentation.
+@Component is a general purpose annotation to decorate POJOs for Spring detection. Whereas @Repository,
+@Service, and @Controller are specializations of @Component for more specific cases of POJOs associated with
+the persistence, service, and presentation layers.
+
+
+
+
+
+
+ApplicationContext context = new GenericXmlApplicationContext("beans.xml");
+
+
+Auto-wire POJOs the @Resource and @Inject annotation
+the three annotations @Autowired, @Resource and @Inject can achieve
+the same result. The @Autowired annotation is a Spring based solution, whereas the @Resource and @Inject
+annotations are Java standard (i.e., JSR) based solutions.
+If you’re going to do name based autowiring, the @Resource annotation offers the simplest syntax. For autowiring
+by class type, all three annotations are as straightforward to use because all three require a single annotation.
+
+
+
+
