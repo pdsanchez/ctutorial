@@ -65,6 +65,7 @@ The dependency spring-context defines the actual Spring Injection Container and 
 
 ESTRUCTURA
 ---------
+es.pdsanchez.app --- main
 es.pdsanchez.config
 es.pdsanchez.persistence
 es.pdsanchez.persistence.entities [beans]
@@ -90,8 +91,8 @@ return seqgen;
 }
 }
 
-src/main/resources/beans.xml
-[src/main/resources/spring-config.xml]
+src/main/resources/config/beans.xml
+[src/main/resources/config/spring-config.xml]
 <beans xmlns="http://www.springframework.org/schema/beans"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns:context="http://www.springframework.org/schema/context"

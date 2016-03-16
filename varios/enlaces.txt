@@ -1,0 +1,15 @@
+http://portecle.sourceforge.net/
+Portecle is a user friendly GUI application for creating, managing and examining keystores, keys, certificates, certificate requests, certificate revocation lists and more. 
+
+
+https://andalinux.wordpress.com/2012/01/25/recuperar-recovery-partition-tras-instalar-linux/
+
+http://www.ubuntufacil.com/2014/05/ubuntu-particionamiento-recomendado/
+
+https://www.digitalocean.com/community/tutorials/instalar-java-en-ubuntu-con-apt-get-es
+Muchos artículos y programas requieren ternet Java instalado, este artículo te guiarå lo suficiente para instalar y manejar las diferentes versiones de Java.
+http://www.ubuntu-guia.com/2012/04/instalar-oracle-java-7-en-ubuntu-1204.html
+
+Aplicaciones Chrome:
+draw.io
+
