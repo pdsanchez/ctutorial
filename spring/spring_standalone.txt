@@ -1,3 +1,7 @@
+https://dzone.com/articles/enterprise-spring-best
+
+http://www.javapractices.com/topic/TopicAction.do?Id=205
+
 https://www.cursogram.com/curso/desarrollo-de-aplicaciones-con-spring-framework#
 
 http://www.mkyong.com/tutorials/spring-tutorials/
@@ -29,6 +33,9 @@ http://www.codejava.net/frameworks/spring/spring-mvc-beginner-tutorial-with-spri
 http://www.javatutoriales.com/2015/12/spring-mvc-parte-1-configuracion.html
 http://www.baware.com.mx/es/index.php/blog/66-comenzando-a-crear-aplicaciones-con-spring-4-x-spring-boot-1-2-7-y-weblogic-12c
 
+http://cs.lmu.edu/~ray/notes/largejavaapps/
+
+http://www.javapractices.com/topic/TopicAction.do?Id=205
 
 
 https://github.com/steveonjava/JavaFX-Spring
@@ -63,10 +70,11 @@ Updated pom.xml
 The dependency spring-context defines the actual Spring Injection Container and has a small number of dependencies: spring-core, spring-expression, spring-aop and spring-beans.
 
 
-ESTRUCTURA
+ESTRUCTURA ('package by feature' o 'package by layer')
 ---------
 es.pdsanchez.app --- main
 es.pdsanchez.config
+es.pdsanchez.model
 es.pdsanchez.persistence
 es.pdsanchez.persistence.entities [beans]
 es.pdsanchez.persistence.dao
@@ -74,6 +82,85 @@ es.pdsanchez.persistence.dao.impl
 es.pdsanchez.service
 es.pdsanchez.service.impl
 es.pdsanchez.presentation
+
+es.pdsanchez.project --- main
+es.pdsanchez.project.beans
+es.pdsanchez.project.dao
+es.pdsanchez.project.service
+es.pdsanchez.project.service.message
+es.pdsanchez.project.service.combinator
+
+
+
+com
+ +- example
+     +- myproject
+         +- Application.java
+         |
+         +- domain
+         |   +- Customer.java
+         |   +- CustomerRepository.java
+         |
+         +- service
+         |   +- CustomerService.java
+         |
+         +- web
+             +- CustomerController.java
+
+
+
+The format looks something like this:
+
+revdomain.moduleType.moduleName.layer.[layerImpl].feature.subfeatureN.subfeatureN+1...
+
+Where: 
+revdomain Reverse domain e.g. com.mycompany
+moduleType [app*|framework|util] 
+moduleName e.g. myAppName if module type is an app or 'finance' if its an accounting framework 
+layer [model|ui|persistence|security etc.,]
+layerImpl eg., wicket, jsp, jpa, jdo, hibernate (Note: model layer has only single implementation so leave out for model layer)
+feature eg., finance
+subfeatureN eg., accounting
+subfeatureN+1 eg., depreciation
+
+*Sometimes 'app' left out if moduleType is an application but putting it in there makes the package structure consistent across all module types.
+
+
+eg., framework where some UI elements require access to common model objects in feature 1 but UI elements for feature2 model objects have very specific feature 2 references
+ com.mycompany.framework.myFrameworkA.model.feature1
+ com.mycompany.framework.myFrameworkA.model.feature2
+ com.mycompany.framework.myFrameworkA.ui.wicket
+ com.mycompany.framework.myFrameworkA.ui.wicket.feature2
+ 
+If you decide to make your framework available for multiple UI libaries you would add separate packages for each of these and ship each with the shared model code.
+
+com.mycompany.framework.myFrameworkA.ui.jsp
+com.mycompany.framework.myFrameworkA.ui.jsp.feature2
+
+com.mycompany.framework.myFrameworkA.ui.jsf
+com.mycompany.framework.myFrameworkA.ui.jsf.feature2
+ 
+I usually rename 'framework' with 'util' if it's more of a basic utility more than a framework with its own model and UI.
+If you write code using a persistence technology that supports transparent persistence (e.g. an ORM) then your model code can be written in a fairly ORM agnostic way but you'll put supporting, ORM specific repository/service classes (or DAO classes if your into that) in a separate package for the persistence layer
+e.g.
+com.mycompany.framework.myFrameworkA.persistence.jdo.feature1
+com.mycompany.framework.myFrameworkA.persistence.jdo.feature2
+
+com.mycompany.framework.myFrameworkA.persistence.jpa.feature1
+com.mycompany.framework.myFrameworkA.persistence.jpa.feature2
+ 
+eg., for apps I drop the 'framework' and follow mycompany with the app name:
+
+com.mycompany.app.myApp.model.feature1
+com.mycompany.app.myApp.model.feature2
+com.mycompany.app.myApp.persistence.jpa.feature2
+com.mycompany.app.myApp.ui.wicket
+com.mycompany.app.myApp.ui.wicket.feature2
+
+
+
+
+
 
 
 CONFIGURACION
@@ -111,6 +198,22 @@ DAO
 ---------
 The POJO instantiation process for most applications is done from either a database or user input.
 we’ll use a Domain class and a Data Access Object (DAO) class to create POJOs.
+
+
+public interface AbstractDAO<T> {
+    void crear(T obj);
+    void editar(T obj);
+    void eliminar(T obj);
+    T obtener(Object id);
+    List<T> obtenerTodos();
+    int total();
+}
+
+public interface UsuarioDAO extends AbstractDAO<Usuario> {}
+
+MysqlDao, JpaDao or (worst case) DefaultDao or StandardDao
+
+
 
 @Component("sequenceDao")
 public class SequenceDaoImpl implements SequenceDao {
@@ -151,7 +254,12 @@ the persistence, service, and presentation layers.
 
 
 
+Some of the useful ApplicationContext implementations that we use are;
 
+AnnotationConfigApplicationContext: If we are using Spring in standalone java applications and using annotations for Configuration, then we can use this to initialize the container and get the bean objects.
+ClassPathXmlApplicationContext: If we have spring bean configuration xml file in standalone application, then we can use this class to load the file and get the container object.
+FileSystemXmlApplicationContext: This is similar to ClassPathXmlApplicationContext except that the xml configuration file can be loaded from anywhere in the file system.
+AnnotationConfigWebApplicationContext and XmlWebApplicationContext for web applications.
 
 
 ApplicationContext context = new GenericXmlApplicationContext("beans.xml");
